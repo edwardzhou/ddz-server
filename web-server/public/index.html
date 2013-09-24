@@ -26,6 +26,9 @@
       pomelo.on('onPlayerJoin', function(msg){
         console.log('onPlayerJoin: ', JSON.stringify(msg));
       });
+      pomelo.on('onPlayerLeave', function(msg){
+          console.log('onPlayerLeave: ', JSON.stringify(msg));
+      });
 
       function queryEntry(uid, callback) {
         var route = 'gate.gateHandler.queryEntry';

@@ -9,8 +9,8 @@
       {"id": "gate-server-1", "host": "127.0.0.1", "port": 4101, "clientPort": 4001, "frontend": true}
     ],
     "room": [
-      {"id": "room-server-1", "host": "127.0.0.1", "port": 3201, "room_id": 1, "args": " --debug=32312 "}
-      , {"id": "room-server-2", "host": "127.0.0.1", "port": 3202, "room_id": 2}
+      {"id": "room-server-1", "host": "127.0.0.1", "port": 3201, "room_id": 1}
+      , {"id": "room-server-2", "host": "127.0.0.1", "port": 3202, "room_id": 2, "args": " --debug=32312 "}
       , {"id": "room-server-3", "host": "127.0.0.1", "port": 3203, "room_id": 3, "auto-restart": true}
     ]
   },

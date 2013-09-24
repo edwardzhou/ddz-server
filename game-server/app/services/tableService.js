@@ -47,3 +47,13 @@ exp.arrangeTable = function(player, lastTableId) {
 
   return _tables[index];
 };
+
+exp.getTable = function(table_id) {
+  for (var index=0; index<_tables.length; index++) {
+    if (_tables[index].tableId == table_id) {
+      return _tables[index];
+    }
+  }
+
+  return null;
+};
