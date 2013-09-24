@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>
+      Pomelo
+    </title>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+    <meta http-equiv="content-style-type" content="text/css" />
+    <meta http-equiv="content-scripte-type" content="text/javascript" />
+    <meta name="author" content="netease" />
+    <meta name="version" content="1.0" />
+    <meta name="keywords" content="pomelo" />
+    <link type="text/css" rel="stylesheet" href="css/base.css" />
+    <script src="js/lib/build/build.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      require('boot');
+    </script> 
+    <script type="text/javascript">
+      var pomelo = window.pomelo;
+      var host = "127.0.0.1";
+      var port = "4001";
+
+      var userId = Math.ceil(Math.random() * 1000) + 1000;
+
+      pomelo.on('onPlayerJoin', function(msg){
+        console.log('onPlayerJoin: ', JSON.stringify(msg));
+      });
+
+      function queryEntry(uid, callback) {
+        var route = 'gate.gateHandler.queryEntry';
+        pomelo.init({
+          host: host,
+          port: port,
+          log: true
+        }, function(){
+          pomelo.request(route, {
+            uid: uid
+          }, function(data) {
+            pomelo.disconnect();
+            callback(data.host, data.port);
+          });
+        });
+      }
+
+      function show() {
+        queryEntry(userId, function(host, port){
+            pomelo.init({
+              host: host,
+              port: port,
+              log: true
+            }, function() {
+
+
+
+//              pomelo.request("connector.entryHandler.entry", "hello pomelo", function( data) {
+//                  console.log(data.msg);
+
+                pomelo.request("connector.entryHandler.enterRoom", {uid: userId, room_id: 2}, function(data) {
+                  var table = data.table;
+                  var users = table.players;
+                  console.log("server_id: ", data.server_id);
+                  console.log("room_server_id: ", data.room_server_id);
+                  console.log("table: ", JSON.stringify(table));
+                  for(var index in users) {
+                    var user = users[index];
+                    console.log("user: " + JSON.stringify(user));
+                  }
+                });
+
+    //            pomelo.request("connector.entryHandler.enterRoom", {uid: "2001", room_id: 2}, function(data) {
+    //              var users = data.users;
+    //              console.log("server_id: ", data.server_id);
+    //              console.log("room_server_id: ", data.room_server_id);
+    //              for(var index in users) {
+    //                var user = users[index];
+    //                console.log("user: " + JSON.stringify(user));
+    //              }
+    //            });
+    //
+    //            pomelo.request("room.roomHandler.enterRoom", {uid: "2001", room_id: 1}, function(data) {
+    //              var users = data.users;
+    //              console.log("server_id: ", data.server_id);
+    //              console.log("room_server_id: ", data.room_server_id);
+    //              for(var index in users) {
+    //                var user = users[index];
+    //                console.log("user: " + JSON.stringify(user));
+    //              }
+    //            });
+    //
+    //            pomelo.request("room.roomHandler.enterRoom", {uid: "2001", room_id: 2}, function(data) {
+    //              var users = data.users;
+    //              console.log("server_id: ", data.server_id);
+    //              console.log("room_server_id: ", data.room_server_id);
+    //              for(var index in users) {
+    //                var user = users[index];
+    //                console.log("user: " + JSON.stringify(user));
+    //              }
+    //            });
+
+                pomelo.request("connector.entryHandler.queryRooms", {}, function(data) {
+                  console.log("rooms: " + JSON.stringify(data));
+                  for(var index in data) {
+                    var room = data[index];
+                    console.log("room: " + JSON.stringify(room));
+                  }
+                });
+
+              });
+ //           });
+        });
+      }
+    </script>
+  </head>
+  <body>
+    <div class="g-doc">
+      <div class="g-banner" style="border:none">
+        <div class="logo">
+          <div class="img"></div>
+        </div>
+      </div>
+      <div class="g-background">
+        <div class="g-content">
+          Welcome to Pomelo
+        </div>
+      </div>
+      <div class="g-link">
+        Home:
+        <a href="https://github.com/NetEase/pomelo">https://github.com/NetEase/pomelo</a>
+      </div>
+      <div class="g-button">
+        <input id="test" type="button" value="Test Game Server" onclick="show()"/>
+      </div>
+    </div>
+  </body>
+</html>

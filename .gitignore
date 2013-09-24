@@ -1,0 +1,5 @@
+*~
+*.DS*
+logs/
+.idea/
+node_modules/
