@@ -1,5 +1,6 @@
 var format = require('util').format;
 var logger = require('pomelo-logger').getLogger(__filename);
+var GameTable = require('../../../domain/gameTable');
 
 module.exports = function(app) {
   return new Handler(app);
@@ -50,9 +51,10 @@ Handler.prototype.enterRoom = function(msg, session, next) {
   session.on('closed', onUserLeave.bind(null, self.app));
 
   this.app.rpc.room.roomRemote.enter(session, uid, this.app.get('serverId'), session.id, room_id, function(err,room_server_id, table) {
-    logger.info("[enterRoom] room.roomRemote.enter return: room_server_id: %s, users: %s", room_server_id, JSON.stringify(table));
+    table = new GameTable(table);
+    logger.info("[enterRoom] room.roomRemote.enter return: room_server_id: %s, users: %j", room_server_id, table.toParams());
     var resp = {
-      table: table,
+      table: table.toParams(),
       room_server_id: room_server_id,
       server_id: server_id
     };

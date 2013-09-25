@@ -1,6 +1,7 @@
 var logger = require('pomelo-logger').getLogger(__filename);
 var roomDao = require('../../../dao/roomDao');
 var tableService = require('../../../services/tableService');
+var Player = require('../../../domain/player');
 var format = require('util').format;
 
 module.exports = function(app) {
@@ -21,9 +22,9 @@ var remoteHandler = RoomRemote.prototype;
 
 remoteHandler.enter = function(uid, sid, sessionId, room_id, cb) {
   var self = this;
-  var player = {userId: uid, nickName: "user_001"};
+  var player = {userId: uid, nickName: "user_001", serverId: sid};
   var table = tableService.arrangeTable(null, 0);
-  table.players.push(player);
+  table.players.push(new Player(player));
 
   var thisServerId = self.app.getServerId();
 
@@ -43,9 +44,9 @@ remoteHandler.enter = function(uid, sid, sessionId, room_id, cb) {
 
       logger.info("[<%s> RoomRemote.enter] uid: %s, sid: %s, room_id: %s",
         self.app.getServerId(), uid, sid,  room_id);
-      logger.info("[<%s> RoomRemote.enter] table: %j", thisServerId, table);
+      logger.info("[<%s> RoomRemote.enter] table: %j", thisServerId, table.toParams());
 
-      channel.pushMessage('onPlayerJoin', table, function(err){
+      channel.pushMessage('onPlayerJoin', table.toParams(), function(err){
         if (!!err)
           logger.error("got error: %j" , err);
       });
@@ -78,11 +79,20 @@ remoteHandler.leave = function(msg, cb) {
   var table = tableService.getTable(table_id);
   table.removePlayer(uid);
 
-  logger.info("channelName: %s", channelName);
-  var channel = self.channelService.getChannel(channelName, true);
-  channel.leave(sid, uid);
-  channel.pushMessage('onPlayerJoin', table, function(err) {
-  });
+  var ids = [];
+  for(var index in table.players) {
+    var player = table.players[index];
+    ids.push({uid: player.userId, sid: player.serverId});
+  }
+
+  if (ids.length > 0)
+    self.channelService.pushMessageByUids("onPlayerJoin", table.toParams(), ids, null);
+
+//  logger.info("channelName: %s", channelName);
+//  var channel = self.channelService.getChannel(channelName, true);
+//  channel.leave(sid, uid);
+//  channel.pushMessage('onPlayerJoin', table, function(err) {
+//  });
 };
 
 
