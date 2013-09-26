@@ -20,6 +20,8 @@
       var pomelo = window.pomelo;
       var host = "127.0.0.1";
       var port = "4001";
+      var room_id = 2;
+      var table_id = -1;
 
       var userId = Math.ceil(Math.random() * 1000) + 1000;
 
@@ -46,6 +48,10 @@
         });
       }
 
+      function readyGame() {
+        pomelo.request("connector.gameHandler.ready", {}, null);
+      }
+
       function show() {
         queryEntry(userId, function(host, port){
             pomelo.init({
@@ -69,6 +75,9 @@
                     var user = users[index];
                     console.log("user: " + JSON.stringify(user));
                   }
+
+                  table_id = table.tid;
+
                 });
 
     //            pomelo.request("connector.entryHandler.enterRoom", {uid: "2001", room_id: 2}, function(data) {
@@ -133,6 +142,9 @@
       </div>
       <div class="g-button">
         <input id="test" type="button" value="Test Game Server" onclick="show()"/>
+      </div>
+      <div class="g-button">
+        <input id="ready" type="button" value="ready game" onclick="readyGame()"/>
       </div>
     </div>
   </body>

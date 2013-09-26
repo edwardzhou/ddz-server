@@ -15,12 +15,23 @@ var GameTable = function (opts) {
     }
   }
   this.state = opts.state || 0;
-  this.jsonAttrs = {tableId: "tid", players: "players"};
+  //this.jsonAttrs = {tableId: "tid", players: "players"};
 };
 
 util.inherits(GameTable, DomainBase);
 
 module.exports = GameTable;
+
+GameTable.jsonAttrs = {tableId: "tid", players: "players"};
+
+GameTable.prototype.addPlayer = function (player) {
+  if (!(player instanceof Player) )
+    player = new Player(player);
+  this.players.push(player);
+  player.tableId = this.tableId;
+
+  return player;
+};
 
 GameTable.prototype.removePlayer = function (playerId) {
   var index = -1;
@@ -36,5 +47,17 @@ GameTable.prototype.removePlayer = function (playerId) {
   }
 
   return null;
+};
+
+GameTable.prototype.getPlayerUidsMap = function() {
+  var uids = [];
+  for (var index=0; index<this.players.length; index++) {
+    var player = this.players[index];
+    uids.push({
+      uid: player.userId,
+      sid: player.serverId
+    });
+  }
+  return uids;
 };
 

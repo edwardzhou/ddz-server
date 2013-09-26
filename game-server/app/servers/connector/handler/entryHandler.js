@@ -52,6 +52,8 @@ Handler.prototype.enterRoom = function(msg, session, next) {
 
   this.app.rpc.area.roomRemote.enter(session, uid, this.app.get('serverId'), session.id, room_id, function(err,room_server_id, table) {
     table = new GameTable(table);
+    session.set('table_id', table.tableId);
+    session.push('table_id', null);
     logger.info("[enterRoom] area.roomRemote.enter return: room_server_id: %s, users: %j", room_server_id, table.toParams());
     var resp = {
       table: table.toParams(),

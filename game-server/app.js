@@ -1,6 +1,9 @@
 var pomelo = require('pomelo');
 var routeUtil = require('./app/util/routeUtil');
 var tableService = require('./app/services/tableService');
+var roomService = require('./app/services/roomService');
+var logger = require('pomelo-logger').getLogger('pomelo', __filename);
+
 
 /**
  * Init app for client.
@@ -35,6 +38,11 @@ app.configure('production|development', 'connector|gate', function () {
 
 // Configure for area server
 app.configure('production|development', 'area', function () {
+  var servers = app.getServersByType('area');
+  logger.info("app.getServerId: %s", app.getServerId());
+  logger.info("server: %s", servers);
+  roomService.init(app, [app.getCurServer().room_id] );
+  //app.getCurServer();
   tableService.init();
 });
 
