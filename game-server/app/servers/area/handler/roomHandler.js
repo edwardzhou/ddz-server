@@ -32,8 +32,8 @@ handler.enterRoom = function(msg, session, next) {
 
   logger.info("[roomHandler.enterRoom] server_id: %s, room_id: %s, uid: %s", server_id, room_id, uid);
 
-  this.app.rpc.room.roomRemote.enter(session, uid, this.app.get('serverId'), room_id, function(room_server_id, users) {
-    logger.info("[enterRoom] room.roomRemote.enter return: room_server_id: %s, users: %s", room_server_id, JSON.stringify(users));
+  this.app.rpc.area.roomRemote.enter(session, uid, this.app.get('serverId'), room_id, function(room_server_id, users) {
+    logger.info("[enterRoom] area.roomRemote.enter return: room_server_id: %s, users: %s", room_server_id, JSON.stringify(users));
     var resp = {
       users: users,
       room_server_id: room_server_id.toString(),

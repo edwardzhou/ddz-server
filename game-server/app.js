@@ -34,12 +34,12 @@ app.configure('production|development', 'connector|gate', function () {
 });
 
 // Configure for area server
-app.configure('production|development', 'room', function () {
+app.configure('production|development', 'area', function () {
   tableService.init();
 });
 
 app.configure('production|development', function () {
-  app.route("room", routeUtil.room);
+  app.route("area", routeUtil.area);
 });
 
 
