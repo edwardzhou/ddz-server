@@ -1,6 +1,8 @@
 var DomainBase = require('./domainBase');
 var Player = require('./player');
 var util = require('util');
+var logger = require('pomelo-logger').getLogger('pomelo', __filename);
+
 
 var GameTable = function (opts) {
   DomainBase.call(this, opts);
@@ -29,6 +31,8 @@ GameTable.prototype.addPlayer = function (player) {
     player = new Player(player);
   this.players.push(player);
   player.tableId = this.tableId;
+
+  player.on("onReady", this.onPlayerReady.bind(this) );
 
   return player;
 };
@@ -61,3 +65,14 @@ GameTable.prototype.getPlayerUidsMap = function() {
   return uids;
 };
 
+GameTable.prototype.onPlayerReady = function (player) {
+  logger.info("player[%j] is ready", player);
+  this.emit("playerReady", this, player);
+
+  n = this.players.filter(function(p) {return p.isReady(); }).length;
+
+  if (n == 3) {
+    this.emit("gameStart", this);
+  }
+
+};

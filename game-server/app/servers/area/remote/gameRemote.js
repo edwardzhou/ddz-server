@@ -30,7 +30,8 @@ remoteHandler.readyGame = function(msg, cb) {
   var room = roomService.getRoom(room_id);
   var player = room.getPlayer(uid);
   var table = room.getGameTable(player.tableId);
-  player.state = PlayerState.ready;
+  // player.state = PlayerState.ready;
+  player.ready();
 
   messageService.pushTableMessage(this.app, table, "onPlayerJoin", table.toParams(), null);
 

@@ -26,6 +26,7 @@ exp.enterRoom = function(player, roomId, lastTableId) {
   var room = roomsMap[roomId];
 
   var table = room.enter(player, lastTableId);
+  table.on
 //  table.players.push(player);
 //  player.tableId = table.tableId;
 
@@ -45,5 +46,7 @@ exp.leave = function(roomId, playerId) {
 };
 
 var loadRoom = function(roomId) {
-  return new GameRoom({roomId:roomId, roomName: 'room_' + roomId})
+  var room = new GameRoom({roomId:roomId, roomName: 'room_' + roomId});
+
+  return room;
 };
