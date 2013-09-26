@@ -25,7 +25,7 @@ Handler.prototype.entry = function(msg, session, next) {
 };
 
 Handler.prototype.queryRooms = function(msg, session, next) {
-  this.app.rpc.room.roomRemote.queryRooms(session, function(rooms) {
+  this.app.rpc.area.roomRemote.queryRooms(session, function(rooms) {
      next(null, rooms);
   });
 };
@@ -89,7 +89,7 @@ var onUserLeave = function(app, session) {
     channelName: session.get('tableChannel')
   };
 
-  app.rpc.room.roomRemote.leave(session, msg, null );
+  app.rpc.area.roomRemote.leave(session, msg, null );
 };
 
 
