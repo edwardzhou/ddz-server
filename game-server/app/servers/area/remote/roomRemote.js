@@ -4,6 +4,8 @@ var roomService = require('../../../services/roomService');
 var messageService = require('../../../services/messageService');
 var Player = require('../../../domain/player');
 var format = require('util').format;
+var utils = require('../../../util/utils');
+var cardService = require('../../../services/cardService');
 
 module.exports = function(app) {
   return new RoomRemote(app);
@@ -23,6 +25,8 @@ remoteHandler.enter = function(uid, sid, sessionId, room_id, cb) {
   var player = {userId: uid, nickName: "user_001", serverId: sid};
 
   var table = roomService.enterRoom(new Player(player), room_id, -1);
+
+  utils.on(table, "playerReady", cardService.onPlayerReady);
 
   var thisServerId = self.app.getServerId();
 

@@ -33,7 +33,7 @@ remoteHandler.readyGame = function(msg, cb) {
   // player.state = PlayerState.ready;
   player.ready();
 
-  messageService.pushTableMessage(this.app, table, "onPlayerJoin", table.toParams(), null);
+  // messageService.pushTableMessage(this.app, table, "onPlayerJoin", table.toParams(), null);
 
   cb(null, null);
 };

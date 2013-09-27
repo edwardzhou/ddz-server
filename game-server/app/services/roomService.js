@@ -26,7 +26,7 @@ exp.enterRoom = function(player, roomId, lastTableId) {
   var room = roomsMap[roomId];
 
   var table = room.enter(player, lastTableId);
-  table.on
+  // table.setupEvents(engine);
 //  table.players.push(player);
 //  player.tableId = table.tableId;
 

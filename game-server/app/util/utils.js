@@ -82,3 +82,8 @@ utils.myPrint = function() {
 };
 // print the file name and the line number ~ end
 
+utils.on = function (obj, event, listener) {
+  var listeners = obj.listeners(event);
+  if (listeners.indexOf(listener) < 0)
+    obj.on(event, listener);
+};

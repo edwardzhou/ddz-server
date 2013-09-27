@@ -31,6 +31,9 @@
       pomelo.on('onPlayerLeave', function(msg){
           console.log('onPlayerLeave: ', JSON.stringify(msg));
       });
+      pomelo.on('onGameStart', function(msg){
+          console.log('onGameStart: ', JSON.stringify(msg));
+      });
 
       function queryEntry(uid, callback) {
         var route = 'gate.gateHandler.queryEntry';
