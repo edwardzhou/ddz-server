@@ -2,6 +2,7 @@ var util = require('util');
 var utils = require('../util/utils');
 var DomainBase = require('./domainBase');
 var PlayerState = require('../consts/consts').PlayerState;
+var cardUtil = require('../util/cardUtil');
 
 var Player = function(opts) {
   DomainBase.call(this, opts);
@@ -33,9 +34,5 @@ Player.prototype.getUidSid = function() {
 
 
 Player.prototype.pokeCardsString = function() {
-  return this.pokeCards.map(_pokeCardChar).join("");
-};
-
-var _pokeCardChar = function(pokeCard) {
-  return pokeCard.pokeChar;
+  return cardUtil.pokeCardsToString(this.pokeCards);
 };

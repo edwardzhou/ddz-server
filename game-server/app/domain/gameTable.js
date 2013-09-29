@@ -72,6 +72,16 @@ GameTable.prototype.onPlayerReady = function (player) {
   this.emit("playerReady", this, player);
 };
 
+GameTable.prototype.reset = function() {
+  this.nextUserId = null;
+  this.lordPokeCards = [];
+  this.lordValue = 0;
+  for (var index=0; index<this.players.length; index++) {
+    this.players[index].pokeCards = [];
+  }
+
+};
+
 GameTable.prototype.setupEvents = function (service) {
 
 };

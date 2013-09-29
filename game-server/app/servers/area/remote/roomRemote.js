@@ -49,7 +49,10 @@ remoteHandler.leave = function(msg, cb) {
   var uid = msg.uid;
   var room_id = msg.room_id;
 
+  var room = roomService.getRoom(room_id);
+  var player = room.getPlayer(uid);
   var table = roomService.leave(room_id, uid);
+  table.reset();
   // table.removePlayer(uid);
 
   messageService.pushTableMessage(self.app, table, "onPlayerJoin", table.toParams(), null);

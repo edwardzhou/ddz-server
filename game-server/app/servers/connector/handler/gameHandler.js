@@ -20,3 +20,24 @@ Handler.prototype.ready = function(msg, session, next) {
      next(null, null);
   });
 };
+
+Handler.prototype.grabLord = function(msg, session, next) {
+  var room_id = session.get('room_id');
+  var uid = session.uid;
+  var sid = session.frontendId;
+  var table_id = session.get('table_id');
+  var lordValue = msg.lordValue;
+
+  var params = {
+    uid: uid,
+    serverId: sid,
+    room_id: room_id,
+    table_id: table_id,
+    lordValue: lordValue
+  };
+
+  this.app.rpc.area.gameRemote.grabLord(session, params, function() {
+    next(null, null);
+  });
+
+};

@@ -25,6 +25,8 @@
 
       var userId = Math.ceil(Math.random() * 1000) + 1000;
 
+      console.log("this userId: %s", userId);
+
       pomelo.on('onPlayerJoin', function(msg){
         console.log('onPlayerJoin: ', JSON.stringify(msg));
       });
@@ -33,6 +35,9 @@
       });
       pomelo.on('onGameStart', function(msg){
           console.log('onGameStart: ', JSON.stringify(msg));
+      });
+      pomelo.on('onGrabLord', function(msg){
+          console.log('onGrabLord: ', JSON.stringify(msg));
       });
 
       function queryEntry(uid, callback) {
@@ -54,6 +59,12 @@
       function readyGame() {
         pomelo.request("connector.gameHandler.ready", {}, null);
       }
+
+      function grabLord() {
+        pomelo.request("connector.gameHandler.grabLord", {
+            lordValue: (Math.ceil(Math.random()*10000) % 3) + 1
+        }, null);
+      };
 
       function show() {
         queryEntry(userId, function(host, port){
@@ -145,9 +156,8 @@
       </div>
       <div class="g-button">
         <input id="test" type="button" value="Test Game Server" onclick="show()"/>
-      </div>
-      <div class="g-button">
         <input id="ready" type="button" value="ready game" onclick="readyGame()"/>
+        <input id="grabLord" type="button" value="grab Lord" onclick="grabLord()"/>
       </div>
     </div>
   </body>

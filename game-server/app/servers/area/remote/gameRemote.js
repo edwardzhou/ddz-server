@@ -2,6 +2,7 @@ var logger = require('pomelo-logger').getLogger('pomelo', __filename);
 var roomDao = require('../../../dao/roomDao');
 var roomService = require('../../../services/roomService');
 var messageService = require('../../../services/messageService');
+var cardService = require('../../../services/cardService');
 var Player = require('../../../domain/player');
 var PlayerState = require('../../../consts/consts').PlayerState;
 var format = require('util').format;
@@ -34,6 +35,22 @@ remoteHandler.readyGame = function(msg, cb) {
   player.ready();
 
   // messageService.pushTableMessage(this.app, table, "onPlayerJoin", table.toParams(), null);
+
+  cb(null, null);
+};
+
+remoteHandler.grabLord = function(msg, cb) {
+  var uid = msg.uid;
+  var sid = msg.serverId;
+  var room_id = msg.room_id;
+  var table_id = msg.table_id;
+  var lordValue = msg.lordValue;
+
+  var room = roomService.getRoom(room_id);
+  var player = room.getPlayer(uid);
+  var table = room.getGameTable(player.tableId);
+
+  cardService.grabLord(table, player, lordValue);
 
   cb(null, null);
 };

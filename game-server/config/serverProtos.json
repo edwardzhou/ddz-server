@@ -6,6 +6,15 @@
       "required uInt32 state": 3
     },
     "required Player player": 1,
-    "required string pokeCards": 2
+    "required uInt32 grabLord": 2,
+    "required string pokeCards": 3
+  },
+  "onGrabLord" : {
+    "required uInt32 lordValue": 1,
+    "required uInt32 nextUserId": 2,
+    "optional uInt32 lordUserId": 3,
+    "optional uInt32 lastUserId": 4,
+    "optional string lordPokeCards": 5
+
   }
 }
