@@ -1,8 +1,7 @@
 var newPomelo = require('./lib/pomelo-client');
+var options =require('node-options');
 
-
-
-var host = "127.0.0.1";
+var host = "dev";
 var port = "4001";
 //var room_id = 2;
 var table_id = -1;
@@ -82,7 +81,7 @@ var connectServer = function(room_id, userId) {
         log: true
       }, function() {
 
-        pomelo.request("connector.entryHandler.enterRoom", {uid: userId, room_id: 2}, function(data) {
+        pomelo.request("connector.entryHandler.enterRoom", {uid: userId, room_id: room_id}, function(data) {
           var table = data.table;
           var users = table.players;
           console.log("[%d] server_id: ", userId, data.server_id);
@@ -117,10 +116,28 @@ var connectServer = function(room_id, userId) {
 
 };
 
+var opts = {
+  "server" : "dev",
+  "port" : 4001,
+  "start" : 1000,
+  "count" : 99,
+  "room_id" : 1
+};
 
 
-var startId = 1000;
-var count = 99*5;
+var args = options.parse(process.argv.slice(2), opts)
+
+
+if (args.errors) {
+  console.log('"Unknown arggument(s): "' + args.errors.join('","'));
+  console.log('USAGE: [--server=dev] [--port=80] [--start=1000] [--count=99]')
+  process.exit(-1)
+}
+
+var startId = Number(opts.start);
+var count = opts.count;
+host = opts.server;
+port = opts.port;
 
 for(var i=0; i<count; i++) {
   connectServer((i%3 +1), startId + i);
