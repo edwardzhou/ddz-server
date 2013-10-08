@@ -15,7 +15,7 @@ app.set('name', 'ddz_server');
 app.configure('production|development', function () {
   app.enable('systemMonitor');
 
-  app.enable('rpcDebugLog');
+  //app.enable('rpcDebugLog');
 
   app.loadConfig('mongodb', app.getBase() + "/config/mongodb.json");
 

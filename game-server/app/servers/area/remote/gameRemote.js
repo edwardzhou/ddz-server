@@ -5,6 +5,7 @@ var messageService = require('../../../services/messageService');
 var cardService = require('../../../services/cardService');
 var Player = require('../../../domain/player');
 var PlayerState = require('../../../consts/consts').PlayerState;
+var utils = require('../../../util/utils');
 var format = require('util').format;
 
 module.exports = function(app) {
@@ -35,8 +36,8 @@ remoteHandler.readyGame = function(msg, cb) {
   player.ready();
 
   // messageService.pushTableMessage(this.app, table, "onPlayerJoin", table.toParams(), null);
-
-  cb(null, null);
+  utils.invokeCallback(cb, {result:0} );
+  //cb(null, {result: 0});
 };
 
 remoteHandler.grabLord = function(msg, cb) {
@@ -52,5 +53,21 @@ remoteHandler.grabLord = function(msg, cb) {
 
   cardService.grabLord(table, player, lordValue);
 
-  cb(null, null);
+  utils.invokeCallback(cb, {result:0} );
+};
+
+remoteHandler.playCard = function(msg, cb) {
+  var uid = msg.uid;
+  var sid = msg.serverId;
+  var room_id = msg.room_id;
+  var table_id = msg.table_id;
+  var card = msg.card;
+
+  var room = roomService.getRoom(room_id);
+  var table = room.getGameTable(table_id);
+  var player = room.getPlayer(uid);
+
+  cardService.playCard(table, player, card);
+  cb(null, {result: 0});
+
 };

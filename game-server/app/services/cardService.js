@@ -18,7 +18,7 @@ exp.init = function (app) {
 
 exp.onPlayerReady = function (table, player, cb) {
   logger.info("onPlayerReady");
-  messageService.pushTableMessage(theApp, table, "onPlayerJoin", table.toParams(), null );
+  messageService.pushTableMessage(table, "onPlayerJoin", table.toParams(), null );
 
   if ( (table.players.length == 3) &&
     table.players[0].isReady() && table.players[1].isReady() && table.players[2].isReady) {
@@ -56,7 +56,7 @@ exp.startGame = function (table, cb) {
 
   for (var index=0; index<table.players.length; index ++) {
     var player = table.players[index];
-    messageService.pushMessage(theApp, "onGameStart",
+    messageService.pushMessage("onGameStart",
       {
         player: player.toParams(),
         grabLord: (player.userId == lordUserId ? 1 : 0),
@@ -102,6 +102,19 @@ exp.grabLord = function(table, player, lordValue, cb) {
     }
   }
 
-  messageService.pushTableMessage(theApp, table, "onGrabLord", msgBack, null);
+  messageService.pushTableMessage(table, "onGrabLord", msgBack, null);
 
+};
+
+exp.playCard = function(table, player, card) {
+  var index = table.players.indexOf(player);
+  var nextIndex = (index+1) % table.players.length;
+  var nextPlayer = table.players[nextIndex];
+  var msgBack = {
+    player_id: player.userId,
+    card: card,
+    nextUserId: nextPlayer.userId
+  };
+
+  messageService.pushTableMessage(table, "onPlayCard", msgBack, null);
 };

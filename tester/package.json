@@ -1,0 +1,8 @@
+{
+  "name": "tester",
+  "version": "0.0.1",
+  "private": false,
+  "dependencies": {
+    "websocket": "1.0.8"
+  }
+}

@@ -30,7 +30,7 @@ remoteHandler.enter = function(uid, sid, sessionId, room_id, cb) {
 
   var thisServerId = self.app.getServerId();
 
-  messageService.pushTableMessage(self.app, table, "onPlayerJoin", table.toParams(), null);
+  messageService.pushTableMessage(table, "onPlayerJoin", table.toParams(), null);
 
 //  var ids = getPlayerIds(table);
 //  process.nextTick( function() {
@@ -55,7 +55,7 @@ remoteHandler.leave = function(msg, cb) {
   table.reset();
   // table.removePlayer(uid);
 
-  messageService.pushTableMessage(self.app, table, "onPlayerJoin", table.toParams(), null);
+  messageService.pushTableMessage(table, "onPlayerJoin", table.toParams(), null);
 //  var ids = getPlayerIds(table);
 //  if (ids.length > 0)
 //    self.channelService.pushMessageByUids("onPlayerJoin", table.toParams(), ids, null);
