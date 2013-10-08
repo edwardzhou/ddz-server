@@ -28,18 +28,18 @@ var connectServer = function(room_id, userId) {
   pomelo.on('onGrabLord', function(msg){
     console.log('[%d] onGrabLord: ', userId, JSON.stringify(msg));
     if (!!msg.lordUserId && msg.lordUserId == userId) {
-      setTimeout(1000, function() {
+      setTimeout(function() {
         playCard('a');
-      });
+      }, 1000);
       //playCard('a');
     }
   });
   pomelo.on('onPlayCard', function(msg) {
     console.log('[%d] onPlayCard:  ', userId, JSON.stringify(msg));
     if (msg.nextUserId == userId) {
-      setTimeout(1000, function() {
+      setTimeout(function() {
         playCard('a');
-      });
+      }, 1000);
     }
   });
 
