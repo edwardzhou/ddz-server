@@ -30,7 +30,17 @@ remoteHandler.enter = function(uid, sid, sessionId, room_id, cb) {
 
   var thisServerId = self.app.getServerId();
 
-  messageService.pushTableMessage(table, "onPlayerJoin", table.toParams(), null);
+  var msg = table.toParams()
+
+  var big_array = [];
+  for (var i=0; i< 1000; i++) {
+    big_array.push('0123456789')
+  }
+  msg.extra = big_array.join("")
+
+  logger.debug('msg length => %d', JSON.stringify(msg).length)
+
+  messageService.pushTableMessage(table, "onPlayerJoin", msg, null);
 
 //  var ids = getPlayerIds(table);
 //  process.nextTick( function() {
