@@ -4,13 +4,26 @@ module.exports = {
   },
 
   PlayerState: {
-    prepareReady: 0,
-    ready: 1,
-    grabLord: 2,
-    playCard: 3,
-    tuoGuan: 4,
-    gameOver: 5,
-    leaveGame: 6
+    PREPARE_READY: 0,
+    READY: 1,
+    GRABBING_LORD: 2,
+    PLAYING: 3,
+    DELEGATING: 4,
+    GAME_OVER: 5,
+    LEAVE_GAME: 6
+  },
+
+  TableState: {
+    IDLE: 0,
+    BUSY: 1
+  },
+
+  GameState: {
+    PENDING_FOR_READY: 0,
+    ALL_READY: 1,
+    GRABBING_LORD: 2,
+    PLAYING: 3,
+    GAME_OVER: 4
   },
 
   PokeCardValue: {

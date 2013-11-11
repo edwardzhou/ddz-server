@@ -1,4 +1,7 @@
 var GameTable = require('../domain/gameTable');
+var TableState = require('../consts/consts');
+var utils = require('../util/utils');
+
 var _tables = [];
 var _tableId = 1;
 
@@ -13,7 +16,7 @@ var _randomSelect = function(tables) {
   return tables[index];
 };
 
-exp.init = function() {
+exp.init = function(opts) {
   _tables.push(new GameTable({tableId: _tableId++}));
   _tables.push(new GameTable({tableId: _tableId++}));
   _tables.push(new GameTable({tableId: _tableId++}));
@@ -22,6 +25,21 @@ exp.init = function() {
   _tables.push(new GameTable({tableId: _tableId++}));
   _tables.push(new GameTable({tableId: _tableId++}));
   return exp;
+};
+
+exp.releaseIdleTables = function(idle_seconds, cb) {
+  var iter = _tables.length - 1;
+  var idle_ms = idle_seconds * 1000;
+  var now = new Date();
+  while(iter >= 0) {
+    var table = _tables[iter];
+    if (table.state == TableState.IDLE && (now - table.lastAccessTime > idle_ms) ) {
+      _tables.splice(iter, 1);
+    }
+    iter --;
+  }
+
+  utils.invokeCallback(cb, null);
 };
 
 exp.arrangeTable = function(player, lastTableId) {

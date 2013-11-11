@@ -3,6 +3,7 @@ var Player = require('./player');
 var util = require('util');
 var logger = require('pomelo-logger').getLogger('pomelo', __filename);
 var utils = require('../util/utils');
+var TableState = require('../consts/consts').TableState;
 
 
 var GameTable = function (opts) {
@@ -34,7 +35,9 @@ GameTable.prototype.addPlayer = function (player) {
   player.tableId = this.tableId;
 
   utils.on(player, "ready", this.onPlayerReady.bind(this));
-  //player.on("onReady", this.onPlayerReady.bind(this) );
+
+  this.state = TableState.BUSY;
+  this.lastAccessTime = new Date();
 
   return player;
 };
@@ -48,11 +51,17 @@ GameTable.prototype.removePlayer = function (playerId) {
     }
   }
 
+  var player = null;
   if (index >= 0) {
-    return this.players.splice(index, 1);
+    player = this.players.splice(index, 1);
+    this.lastAccessTime = new Date();
   }
 
-  return null;
+  if (this.players.length == 0) {
+    this.state = TableState.IDLE;
+  }
+
+  return player;
 };
 
 GameTable.prototype.getPlayerUidsMap = function() {
