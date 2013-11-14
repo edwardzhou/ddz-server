@@ -9,6 +9,7 @@
     "mongoose": "3.8.0",
     "async": "0.2.9",
     "mess": "0.1.1",
+    "js-combinatorics": "*",
     "crc": "0.2.0"
   }
 }

@@ -45,5 +45,23 @@ module.exports = {
     BIG_JOKER: 17     // 大王
   },
 
+  CardType: {
+    NONE                : 0, // 无效
+    SINGLE              : 1, // 单张
+    PAIRS               : 2, // 一对
+    PAIRS_STRAIGHT      : 3, // 连对
+    THREE               : 4, // 三张
+    THREE_WITH_ONE      : 5, // 三带一
+    THREE_WITH_PAIRS    : 6, // 三带一对
+    THREE_STRAIGHT      : 7, // 三张的顺子
+    FOUR_WITH_TWO       : 8, // 四带二
+    FOUR_WITH_TWO_PAIRS : 9, // 四带二对
+    PLANE               : 10, // 飞机
+    PLANE_WITH_WING     : 11, // 飞机带翅膀(三张带一对的顺子)
+    STRAIGHT            : 12, // 顺子
+    BOMB                : 13, // 炸弹
+    ROCKET              : 14 // 火箭(王炸)
+  },
+
   STUB: null
 };
