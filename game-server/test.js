@@ -105,3 +105,7 @@ CardUtil.sortPokeCards(pokes)
 pp = pokes.slice(3, 7);
 console.log(CardUtil.pokeCardsToIdChars(pp));
 console.log(CardUtil.getCardType(pp));
+
+console.log(PokeCard.allPokeCardsCharMap['A']);
+console.log(PokeCard.pokeCardsFromChars('ABCDEF'));
+console.log(PokeCard.pokeCardsFromChars(['A', 'B', 'C', 'D', 'E', 'F']));

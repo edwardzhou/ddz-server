@@ -83,6 +83,6 @@ var getPlayerIds = function(table) {
 
 remoteHandler.queryRooms = function(cb) {
   roomDao.getActiveRooms(function(err, rooms) {
-    cb(rooms);
+    cb(err, rooms);
   });
 };

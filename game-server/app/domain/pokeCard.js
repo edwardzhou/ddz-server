@@ -5,6 +5,8 @@ var PokeCardValue = require('../consts/consts').PokeCardValue;
 
 var allPokeCards = [];
 var allPokeCardsMap = {};
+var allPokeCardsCharMap = {};
+//var allPokeCardsIdCharMap = {};
 
 var PokeCard = function(opts) {
   opts = opts || {};
@@ -34,7 +36,9 @@ PokeCard.init = function() {
       var pokeChar = String.fromCharCode(pokeIndex + 64);
       var pokeCard = new PokeCard({id:pokeId, value: pokeValue, pokeChar: pokeChar, pokeIndex: pokeIndex, idChar: idChars[i]});
       allPokeCards.push(pokeCard);
-      allPokeCardsMap[pokeCard.id] = pokeCard;
+//      allPokeCardsMap[pokeCard.id] = pokeCard;
+//      allPokeCardsCharMap[pokeChar] = pokeCard;
+//      allPokeCardsIdCharMap[idChars[i]] = pokeCard;
     }
   }
 
@@ -46,7 +50,9 @@ PokeCard.init = function() {
     idChar: idChars[13]
   });
   allPokeCards.push(pokeCard);
-  allPokeCardsMap[pokeCard.id] = pokeCard;
+//  allPokeCardsMap[pokeCard.id] = pokeCard;
+//  allPokeCardsCharMap[poke] = pokeCard;
+//  allPokeCardsIdCharMap[idChars[i]] = pokeCard;
 
   ci++;
   pokeCard = new PokeCard({
@@ -57,7 +63,13 @@ PokeCard.init = function() {
     idChar: idChars[14]
   });
   allPokeCards.push(pokeCard);
-  allPokeCardsMap[pokeCard.id] = pokeCard;
+//  allPokeCardsMap[pokeCard.id] = pokeCard;
+
+  for(var index in allPokeCards) {
+    var pokeCard = allPokeCards[index];
+    allPokeCardsMap[pokeCard.id] = pokeCard;
+    allPokeCardsCharMap[pokeCard.pokeChar] = pokeCard;
+  }
 };
 
 PokeCard.getAllPokeCards = function() {
@@ -74,3 +86,25 @@ PokeCard.shuffle = function() {
   var tmpPokeCards = allPokeCards.slice(0, allPokeCards.length);
   return mess( mess(tmpPokeCards) );
 };
+
+PokeCard.getByChar = function(pokeChar) {
+  return allPokeCardsCharMap[pokeChar];
+};
+
+PokeCard.pokeCardsFromChars = function(pokeChars) {
+  if (!pokeChars)
+    return null;
+
+  var pokeCards = [];
+  for(var index=0; index < pokeChars.length; index++) {
+    var pokeCard = allPokeCardsCharMap[pokeChars[index]];
+    if (pokeCard == null)
+      return null;
+
+    pokeCards.push( pokeCard );
+  }
+
+  return pokeCards;
+};
+
+PokeCard.allPokeCardsCharMap = allPokeCardsCharMap;

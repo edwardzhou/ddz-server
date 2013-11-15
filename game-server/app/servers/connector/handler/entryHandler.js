@@ -25,7 +25,7 @@ Handler.prototype.entry = function(msg, session, next) {
 };
 
 Handler.prototype.queryRooms = function(msg, session, next) {
-  this.app.rpc.area.roomRemote.queryRooms(session, function(rooms) {
+  this.app.rpc.area.roomRemote.queryRooms(session, function(err, rooms) {
      next(null, rooms);
   });
 };
