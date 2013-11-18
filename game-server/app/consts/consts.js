@@ -1,6 +1,14 @@
 module.exports = {
   Event:{
-    chat:'onChat'
+    chat: 'onChat',
+    GameEvent: {
+      playerJoin: 'onPlayerJoin',
+      playerReady: 'onPlayerReady',
+      gameStart: 'onGameStart',
+      grabLord: 'onGrabLord',
+      playCard: 'onPlayCard',
+      gameOver: 'onGameOver'
+    }
   },
 
   PlayerState: {
@@ -24,6 +32,17 @@ module.exports = {
     GRABBING_LORD: 2,
     PLAYING: 3,
     GAME_OVER: 4
+  },
+
+  GameAction: {
+    NONE: 0,
+    PLAYER_JOIN: 1,
+    PLAYER_READY: 2,
+    GRAB_LORD: 3,
+    DOUBLE_BET: 4,
+    GAME_START: 5,
+    PLAY_CARD: 6,
+    GAME_OVER: 7
   },
 
   PokeCardValue: {

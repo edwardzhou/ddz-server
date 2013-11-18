@@ -1,13 +1,37 @@
+var mongoose = require('mongoose');
+var util = require('util');
+var DomainBase = require('./domainBase');
+
 var GameTable = require('./gameTable');
 
+var roomSchema = new mongoose.Schema({
+  roomId: Number,     // 房间Id
+  roomName: String,   // 房间名称
+  roomDesc: String,   // 描述
+  state: Number,      // 状态, ref: RoomState
+  ante: Number,       // 底注
+  rake: Number,       // 佣金
+  roomType: String,   // 房间类型
+  createdAt: {type: Date, default: Date.now},
+  updatedAt: {type: Date, default: Date.now}
+});
+
+var GameRoomInfo = mongoose.model('GameRoom', roomSchema);
+
 var GameRoom = function(opts) {
-  this._id = opts._id;
-  this.roomId = opts.roomId;
-  this.roomName = opts.roomName;
+  DomainBase.call(this, opts);
+
+  this.info = new GameRoomInfo(opts);
+
   this.tablesMap = {};
   this.playersMap = {};
   this.tables = [];
   this.tableNextId = 1;
+
+  this.jsonAttrs = {
+    'info.roomName' : 'roomName',
+    'info.roomId' : 'roomId'
+  };
 
   if (!!opts.tables) {
     for(var index in opts.tables) {
@@ -23,6 +47,8 @@ var GameRoom = function(opts) {
     this.tableNextId = Number(opts.tableNextId);
   }
 };
+
+util.inherits(GameRoom, DomainBase);
 
 module.exports = GameRoom;
 

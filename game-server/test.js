@@ -109,3 +109,10 @@ console.log(CardUtil.getCardType(pp));
 console.log(PokeCard.allPokeCardsCharMap['A']);
 console.log(PokeCard.pokeCardsFromChars('ABCDEF'));
 console.log(PokeCard.pokeCardsFromChars(['A', 'B', 'C', 'D', 'E', 'F']));
+
+var GameRoom = require ('./app/domain/gameRoom');
+
+var r = new GameRoom({roomId: 5, roomName: 'starter', ante: 300, rake: 50});
+console.log(r);
+
+console.log(r.toParams());
