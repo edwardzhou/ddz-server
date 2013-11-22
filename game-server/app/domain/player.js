@@ -6,17 +6,23 @@ var cardUtil = require('../util/cardUtil');
 
 var Player = function(opts) {
   DomainBase.call(this, opts);
-  this.pokeCards = [];
+  this.pokeCards = opt.pokeCards || [];
+  this.initPokeCards = this.pokeCardsString();
   this.userId = opts.userId;
   this.nickName = opts.nickName;
   this.serverId = opts.serverId;
   this.state = PlayerState.prepareReady;
-  this.jsonAttrs = {userId: "uid", nickName: "nick_name", state: "state"};
 };
 
 util.inherits(Player, DomainBase);
 
 module.exports = Player;
+Player.jsonAttrs = {userId: "uid", nickName: "nick_name", state: "state"};
+
+Player.prototype.setPokeCards = function(pokeCards) {
+  this.pokeCards = pokeCards;
+  this.initPokeCards = this.pokeCardsString();
+};
 
 Player.prototype.ready = function(cb) {
   this.state = PlayerState.ready;

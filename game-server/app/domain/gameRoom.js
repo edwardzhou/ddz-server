@@ -52,6 +52,10 @@ util.inherits(GameRoom, DomainBase);
 
 module.exports = GameRoom;
 
+GameRoom.prototype.getRoomId = function() {
+  return this.info.roomId;
+};
+
 GameRoom.prototype.getNextTableId = function() {
   return this.tableNextId ++;
 };
@@ -91,7 +95,7 @@ GameRoom.prototype.enter = function (player, lastTableId) {
   if (!table) {
     var index = this.tables.length;
     for(var i=0; i<10; i++) {
-      var newTable = new GameTable({tableId: this.getNextTableId()});
+      var newTable = new GameTable({tableId: this.getNextTableId(), room: this});
       this.tables.push(newTable);
       this.tablesMap[newTable.tableId] = newTable;
     }

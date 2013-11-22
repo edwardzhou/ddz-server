@@ -9,6 +9,7 @@ var TableState = require('../consts/consts').TableState;
 var GameTable = function (opts) {
   DomainBase.call(this, opts);
   this.tableId = opts.tableId;
+  this.room = opts.room;
   this.players = [];
   if (!!opts.players) {
     for (var index = 0; index < opts.players.length; index++) {

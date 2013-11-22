@@ -43,11 +43,16 @@ exp.startGame = function (table, cb) {
     return p1.pokeIndex - p2.pokeIndex;
   };
 
-  table.players[0].pokeCards = pokeCards1.sort(_sortPokeCard);
-  table.players[1].pokeCards = pokeCards2.sort(_sortPokeCard);
-  table.players[2].pokeCards = pokeCards3.sort(_sortPokeCard);
+  table.players[0].setPokeCards(pokeCards1.sort(_sortPokeCard));
+  table.players[1].setPokeCards(pokeCards2.sort(_sortPokeCard));
+  table.players[2].setPokeCards(pokeCards3.sort(_sortPokeCard));
 
   table.lordPokeCards = pokeCards.sort(_sortPokeCard);
+
+  var newPokeGame = PokeGame.newGame(table.room.getRoomId(), table.tableId, table.players);
+  newPokeGame.lordPokeCards = cardUtil.pokeCardsToString(table.lordPokeCards);
+
+  table.game = newPokeGame;
 
   var lordUserIndex = (new Date()).getTime() % 3;
   var lordUserId = table.players[lordUserIndex].userId;

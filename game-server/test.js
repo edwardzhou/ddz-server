@@ -75,44 +75,57 @@ var Combinatorics = require('js-combinatorics').Combinatorics;
 
 var CardUtil = require('./app/util/cardUtil');
 
-CardUtil.buildCardTypes();
-var cc = 0;
-for( var cardId in CardUtil.allCardTypes) {
-  console.log(cardId);
-  cc ++;
-}
+//CardUtil.buildCardTypes();
+//var cc = 0;
+//for( var cardId in CardUtil.allCardTypes) {
+//  console.log(cardId);
+//  cc ++;
+//}
+//
+////var comb = CardUtil.getValidIdCharsCombination(0, 1, 2, false, true);
+////console.log(comb);
+//
+//console.log(CardUtil.allCardTypes['wW'])
+//
+//var PokeCard = require('./app/domain/pokeCard');
+//var allPokes = PokeCard.getAllPokeCards();
+////console.log(allPokes);
+//
+//var pokes = PokeCard.shuffle();
+//var pp;
+//console.log('--------------shuffled------------');
+////console.log(pokes);
+//pp = pokes.slice(3, 5);
+//console.log(CardUtil.pokeCardsToIdChars(CardUtil.sortPokeCards(pp)));
+//console.log(CardUtil.getCardType(pp));
+//console.log('--------------sorted------------');
+////console.log(CardUtil.sortPokeCards(pokes))
+//CardUtil.sortPokeCards(pokes)
+//
+//pp = pokes.slice(3, 7);
+//console.log(CardUtil.pokeCardsToIdChars(pp));
+//console.log(CardUtil.getCardType(pp));
+//
+//console.log(PokeCard.allPokeCardsCharMap['A']);
+//console.log(PokeCard.pokeCardsFromChars('ABCDEF'));
+//console.log(PokeCard.pokeCardsFromChars(['A', 'B', 'C', 'D', 'E', 'F']));
+//
+//var GameRoom = require ('./app/domain/gameRoom');
+//
+//var r = new GameRoom({roomId: 5, roomName: 'starter', ante: 300, rake: 50});
+//console.log(r);
+//
+//console.log(r.toParams());
 
-//var comb = CardUtil.getValidIdCharsCombination(0, 1, 2, false, true);
-//console.log(comb);
+var mongoose = require('mongoose');
 
-console.log(CardUtil.allCardTypes['wW'])
+mongoose.connect('mongodb://192.168.0.240/test');
 
-var PokeCard = require('./app/domain/pokeCard');
-var allPokes = PokeCard.getAllPokeCards();
-//console.log(allPokes);
+var PokeGame = require('./app/domain/pokeGame');
 
-var pokes = PokeCard.shuffle();
-var pp;
-console.log('--------------shuffled------------');
-//console.log(pokes);
-pp = pokes.slice(3, 5);
-console.log(CardUtil.pokeCardsToIdChars(CardUtil.sortPokeCards(pp)));
-console.log(CardUtil.getCardType(pp));
-console.log('--------------sorted------------');
-//console.log(CardUtil.sortPokeCards(pokes))
-CardUtil.sortPokeCards(pokes)
+var p = PokeGame.newGame(1, 2, [{playerId: 1}, {playerId: 2}, {playerId: 3}]);
+//p.save();
 
-pp = pokes.slice(3, 7);
-console.log(CardUtil.pokeCardsToIdChars(pp));
-console.log(CardUtil.getCardType(pp));
+var mess = require('mess');
 
-console.log(PokeCard.allPokeCardsCharMap['A']);
-console.log(PokeCard.pokeCardsFromChars('ABCDEF'));
-console.log(PokeCard.pokeCardsFromChars(['A', 'B', 'C', 'D', 'E', 'F']));
-
-var GameRoom = require ('./app/domain/gameRoom');
-
-var r = new GameRoom({roomId: 5, roomName: 'starter', ante: 300, rake: 50});
-console.log(r);
-
-console.log(r.toParams());
+console.log(mess('abcdefg'))
