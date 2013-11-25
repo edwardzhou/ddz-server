@@ -4,7 +4,7 @@ var DomainBase = require('./domainBase');
 
 var GameTable = require('./gameTable');
 
-var roomSchema = new mongoose.Schema({
+var roomSchemaFields = {
   roomId: Number,     // 房间Id
   roomName: String,   // 房间名称
   roomDesc: String,   // 描述
@@ -14,7 +14,9 @@ var roomSchema = new mongoose.Schema({
   roomType: String,   // 房间类型
   createdAt: {type: Date, default: Date.now},
   updatedAt: {type: Date, default: Date.now}
-});
+};
+
+var roomSchema = new mongoose.Schema(roomSchemaFields);
 
 var GameRoomInfo = mongoose.model('GameRoom', roomSchema);
 
@@ -50,11 +52,27 @@ var GameRoom = function(opts) {
 
 util.inherits(GameRoom, DomainBase);
 
-module.exports = GameRoom;
+var propNames = Object.getOwnPropertyNames(roomSchemaFields);
+var defineProp = function(obj, prop) {
+  obj.__defineGetter__(prop, function(){
+    console.log('get prop: %s', prop);
+    return this.info[prop];
+  });
 
-GameRoom.prototype.getRoomId = function() {
-  return this.info.roomId;
+  obj.__defineSetter__(prop, function(_v){
+    console.log('set prop: %s  ==> ', prop, _v);
+    this.info[prop] = _v;
+  });
+
 };
+
+var GameRoomPrototype = GameRoom.prototype;
+for (var index in propNames) {
+  var propName = propNames[index];
+  defineProp(GameRoomPrototype, propName);
+}
+
+module.exports = GameRoom;
 
 GameRoom.prototype.getNextTableId = function() {
   return this.tableNextId ++;

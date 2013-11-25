@@ -129,3 +129,4 @@ var p = PokeGame.newGame(1, 2, [{playerId: 1}, {playerId: 2}, {playerId: 3}]);
 var mess = require('mess');
 
 console.log(mess('abcdefg'))
+var GameRoom = require ('./app/domain/gameRoom');
