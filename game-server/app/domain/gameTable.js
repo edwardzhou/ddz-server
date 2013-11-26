@@ -5,7 +5,11 @@ var logger = require('pomelo-logger').getLogger('pomelo', __filename);
 var utils = require('../util/utils');
 var TableState = require('../consts/consts').TableState;
 
-
+/**
+ * 游戏桌子
+ * @param opts - 初始化参数
+ * @constructor
+ */
 var GameTable = function (opts) {
   DomainBase.call(this, opts);
   this.tableId = opts.tableId;
@@ -20,15 +24,20 @@ var GameTable = function (opts) {
     }
   }
   this.state = opts.state || 0;
-  //this.jsonAttrs = {tableId: "tid", players: "players"};
 };
 
+// GameTable继承于DomainBase
 util.inherits(GameTable, DomainBase);
-
+// 导出GameTable
 module.exports = GameTable;
-
+// 设置用于toParams导出的json属性映射
 GameTable.jsonAttrs = {tableId: "tid", players: "players"};
 
+/**
+ * 添加玩家
+ * @param player
+ * @returns {*}
+ */
 GameTable.prototype.addPlayer = function (player) {
   if (!(player instanceof Player) )
     player = new Player(player);
@@ -43,6 +52,11 @@ GameTable.prototype.addPlayer = function (player) {
   return player;
 };
 
+/**
+ * 移除玩家
+ * @param playerId
+ * @returns {*}
+ */
 GameTable.prototype.removePlayer = function (playerId) {
   var index = -1;
   for (var i = 0; i < this.players.length; i++) {
@@ -65,6 +79,10 @@ GameTable.prototype.removePlayer = function (playerId) {
   return player;
 };
 
+/**
+ * 提取玩家的uid map [{uid: userId, sid: serverId}, {} ...]，用于发送消息
+ * @returns {Array}
+ */
 GameTable.prototype.getPlayerUidsMap = function() {
   var uids = [];
   for (var index=0; index<this.players.length; index++) {
@@ -77,11 +95,18 @@ GameTable.prototype.getPlayerUidsMap = function() {
   return uids;
 };
 
+/**
+ * 玩家ready事件处理
+ * @param player
+ */
 GameTable.prototype.onPlayerReady = function (player) {
   logger.info("player[%j] is ready", player);
   this.emit("playerReady", this, player);
 };
 
+/**
+ * 复位状态
+ */
 GameTable.prototype.reset = function() {
   this.nextUserId = null;
   this.lordPokeCards = [];
@@ -89,9 +114,5 @@ GameTable.prototype.reset = function() {
   for (var index=0; index<this.players.length; index++) {
     this.players[index].pokeCards = [];
   }
-
-};
-
-GameTable.prototype.setupEvents = function (service) {
 
 };

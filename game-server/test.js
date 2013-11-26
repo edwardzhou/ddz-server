@@ -130,3 +130,15 @@ var mess = require('mess');
 
 console.log(mess('abcdefg'))
 var GameRoom = require ('./app/domain/gameRoom');
+
+var s = new GameRoom({roomId:3, roomName: 'test room 3'});
+var props = s;
+for (var p in props) {
+  console.log(p);
+}
+
+console.log('s.roomId => ', s.roomId);
+console.log('s.toParams => ', s.toParams());
+s.roomId = 5;
+console.log('s.roomId => ', s.roomId);
+console.log('s.toParams => ', s.toParams());

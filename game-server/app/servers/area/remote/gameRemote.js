@@ -69,5 +69,4 @@ remoteHandler.playCard = function(msg, cb) {
 
   cardService.playCard(table, player, card);
   cb(null, {result: 0});
-
 };

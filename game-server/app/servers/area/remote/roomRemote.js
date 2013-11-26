@@ -11,6 +11,11 @@ module.exports = function(app) {
   return new RoomRemote(app);
 };
 
+/**
+ * 房间远程接口
+ * @param app
+ * @constructor
+ */
 var RoomRemote = function(app) {
   this.app = app;
   // this.tableService = app.get('tableService');
@@ -20,56 +25,46 @@ var RoomRemote = function(app) {
 
 var remoteHandler = RoomRemote.prototype;
 
+/**
+ * 玩家进入房间
+ * @param uid - 玩家id
+ * @param sid - 玩家所在的前端服务器id
+ * @param sessionId - 会话id
+ * @param room_id - 要进入的房间id
+ * @param cb - 回调
+ */
 remoteHandler.enter = function(uid, sid, sessionId, room_id, cb) {
   var self = this;
   var player = {userId: uid, nickName: "user_001", serverId: sid};
 
+  // 进入房间，并取得玩家所属桌子
   var table = roomService.enterRoom(new Player(player), room_id, -1);
-
+  // cardServer挂接table的playerReady事件
   utils.on(table, "playerReady", cardService.onPlayerReady);
 
   var thisServerId = self.app.getServerId();
-
   var msg = table.toParams()
 
-  var big_array = [];
-  for (var i=0; i< 1000; i++) {
-    big_array.push('0123456789')
-  }
-  msg.extra = big_array.join("")
-
-  logger.debug('msg length => %d', JSON.stringify(msg).length)
-
+  // 通知桌子的其他玩家，有新玩家进入
   messageService.pushTableMessage(table, "onPlayerJoin", msg, null);
 
-//  var ids = getPlayerIds(table);
-//  process.nextTick( function() {
-//    if (ids.length > 0)
-//      self.channelService.pushMessageByUids("onPlayerJoin", table.toParams(), ids, null);
-//  });
+  // 返回结果
   cb(null, thisServerId, table);
-
 };
 
+/**
+ * 玩家离开房间
+ * @param msg
+ * @param cb
+ */
 remoteHandler.leave = function(msg, cb) {
-  var self = this;
-  var channelName = msg.channelName;
-  var table_id = msg.table_id;
-  var sid = msg.sid;
   var uid = msg.uid;
   var room_id = msg.room_id;
 
-  var room = roomService.getRoom(room_id);
-  var player = room.getPlayer(uid);
   var table = roomService.leave(room_id, uid);
   table.reset();
-  // table.removePlayer(uid);
 
   messageService.pushTableMessage(table, "onPlayerJoin", table.toParams(), null);
-//  var ids = getPlayerIds(table);
-//  if (ids.length > 0)
-//    self.channelService.pushMessageByUids("onPlayerJoin", table.toParams(), ids, null);
-
 };
 
 var getPlayerIds = function(table) {
