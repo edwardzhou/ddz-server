@@ -4,6 +4,8 @@ var util = require('util');
 var logger = require('pomelo-logger').getLogger('pomelo', __filename);
 var utils = require('../util/utils');
 var TableState = require('../consts/consts').TableState;
+var GameState = require('../consts/consts').GameState;
+var PlayerState = require('../consts/consts').PlayerState;
 
 /**
  * 游戏桌子
@@ -15,6 +17,8 @@ var GameTable = function (opts) {
   this.tableId = opts.tableId;
   this.room = opts.room;
   this.players = [];
+  this.gameSate = GameState.PENDING_FOR_READY;
+
   if (!!opts.players) {
     for (var index = 0; index < opts.players.length; index++) {
       var player = opts.players[index];
@@ -111,8 +115,10 @@ GameTable.prototype.reset = function() {
   this.nextUserId = null;
   this.lordPokeCards = [];
   this.lordValue = 0;
+  this.pokeGame = null;
+  this.gameSate = GameState.PENDING_FOR_READY;
   for (var index=0; index<this.players.length; index++) {
-    this.players[index].pokeCards = [];
+    var player = this.players[index];
+    player.reset();
   }
-
 };

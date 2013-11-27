@@ -2,11 +2,21 @@ module.exports = {
   Event:{
     chat: 'onChat',
     GameEvent: {
+      // 玩家加入
       playerJoin: 'onPlayerJoin',
+      // 玩家就绪/准备
       playerReady: 'onPlayerReady',
+      // 游戏开始
       gameStart: 'onGameStart',
+      // 抢地主
       grabLord: 'onGrabLord',
+      /**
+       * @流局，无人叫地主
+       */
+      gameAbandonded: 'onGameAbandoned',
+      // 打牌
       playCard: 'onPlayCard',
+      // 游戏结束
       gameOver: 'onGameOver'
     }
   },

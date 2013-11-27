@@ -11,13 +11,19 @@ var Player = function(opts) {
   this.userId = opts.userId;
   this.nickName = opts.nickName;
   this.serverId = opts.serverId;
-  this.state = PlayerState.prepareReady;
+  this.state = opts.state || PlayerState.prepareReady;
 };
 
 util.inherits(Player, DomainBase);
 
 module.exports = Player;
 Player.jsonAttrs = {userId: "uid", nickName: "nick_name", state: "state"};
+
+Object.defineProperty(Player.prototype, 'playerId', {
+  get: function() {return this.userId},
+  set: function(_v) {this.userId = _v},
+  enumerable: true
+});
 
 Player.prototype.setPokeCards = function(pokeCards) {
   this.pokeCards = pokeCards;
@@ -42,3 +48,8 @@ Player.prototype.getUidSid = function() {
 Player.prototype.pokeCardsString = function() {
   return cardUtil.pokeCardsToString(this.pokeCards);
 };
+
+Player.prototype.reset = function() {
+  this.state = PlayerState.PREPARE_READY;
+  this.setPokeCards([]);
+}

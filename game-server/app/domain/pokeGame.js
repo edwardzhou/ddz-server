@@ -37,7 +37,7 @@ var pokeGameSchema = new mongoose.Schema({
   // 地主牌
   lordCards: String,
   // 地主Id
-  lordPlayerId: Number,
+  lordUserId: Number,
   // 牌局开始时间
   startAt: {type: Date},
   // 牌局结束时间
@@ -89,4 +89,14 @@ PokeGame.newGame = function(roomId, tableId, players) {
   var game = new PokeGame(opts);
 
   return game;
+};
+
+PokeGame.prototype.getPlayerByUserId = function(userId) {
+  for (var index in this.players) {
+    if (this.players[index].userId == userId) {
+      return this.players[index];
+    }
+  }
+
+  return null;
 };

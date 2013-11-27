@@ -9,6 +9,7 @@ var PlayerState = require('../consts/consts').PlayerState;
 var GameEvent = require('../consts/consts').Event.GameEvent;
 var messageService = require('./messageService');
 var PokeCard = require('../domain/pokeCard');
+var grabLordAction = require('./actions/grabLord');
 
 var exp = module.exports;
 
@@ -93,23 +94,28 @@ exp.startGame = function (table, cb) {
   var newPokeGame = PokeGame.newGame(table.room.getRoomId(), table.tableId, table.players);
   newPokeGame.lordPokeCards = cardUtil.pokeCardsToString(table.lordPokeCards);
 
-  table.game = newPokeGame;
+  table.pokeGame = newPokeGame;
+
+  newPokeGame.state = GameState.GRABBING_LORD;
+  newPokeGame.grabbingLord = {lastUserId: null, lordValue: 0, nextUserId: null};
 
   // 随机指定第一个叫地主的用户
   var lordUserIndex = (new Date()).getTime() % 3;
   var lordUserId = table.players[lordUserIndex].userId;
   table.nextUserId = lordUserId;
   table.lastUserId = null;
-  table.firstLordUserIndex = lordUserIndex;
+
+  newPokeGame.grabbingLord.nextUserId = lordUserId;
 
   // 通知各玩家牌局开始
   for (var index=0; index<table.players.length; index ++) {
     var player = table.players[index];
     messageService.pushMessage(GameEvent.gameStart,
       {
-        player: player.toParams(),
+//        player: player.toParams(),
         grabLord: (player.userId == lordUserId ? 1 : 0),
-        pokeCards: player.pokeCardsString()
+        pokeCards: player.pokeCardsString(),
+        gameId: newPokeGame.gameId
       },
       [player.getUidSid()],
       null);
@@ -124,57 +130,27 @@ exp.startGame = function (table, cb) {
  * @param cb
  */
 exp.grabLord = function(table, player, lordValue, cb) {
-  // 必须是轮到叫地主的玩家(table.nextUserId == player.userId)才能叫
-  if (table.nextUserId != player.userId) {
-    // 不是轮到当前玩家叫地主，返回错误
-    utils.invokeCallback(cb, {err: 1001}, null);
-    return;
-  }
-
-  // 所叫的分数必须大于当前地主分
-  if (lordValue > 0 && lordValue <= table.lordValue) {
-    utils.invokeCallback(cb, {err: 1002}, null);
-    return;
-  }
-
-  if (lordValue > 0) {
-    // 更新有效地主分
-    table.lordValue = lordValue;
-  }
-  var msgBack = {};
-
-  // 如果叫3分，则该玩家为地主，并结束抢地主环节。
-  if (lordValue == 3) {
-    // 指定玩家为地主, 并把地主牌通知个所有人
-    table.lordUserId = player.userId;
-    var pokeCards = player.pokeCards.concat(table.lordPokeCards).sort(_sortPokeCard);
-    player.setPokeCards(pokeCards);
-
-    msgBack = {
-      lordValue: lordValue,
-      lordUserId: player.userId,
-      nextUserId: player.userId,
-      lordPokeCards: cardUtil.pokeCardsToString(table.lordPokeCards)
-    };
-  } else {
-    // 未产生地主，通知
-    var index = table.players.indexOf(player);
-    var nextIndex = (index+1) % table.players.length;
-    var nextPlayer = table.players[nextIndex];
-
-    if (table.game.firstLordUserIndex != nextIndex) {
-      table.nextUserId = nextPlayer.userId;
-      msgBack = {
-        lordValue: lordValue,
-        // lordUserId: null,
-        lastUserId: player.userId,
-        nextUserId: nextPlayer.userId
-      }
+  grabLordAction.doGrabLord(table, player, lordValue, function(err, gameTable, msgBack) {
+    // 有错误
+    if (err != null) {
+      utils.invokeCallback(cb, err);
+      return;
     }
 
-  }
+    var gameEvent = GameEvent.grabLord;
+    if (gameTable.pokeGame == null) {
+      // 流局
+      gameEvent = GameEvent.gameAbandonded;
+    }
 
-  messageService.pushTableMessage(table, "onGrabLord", msgBack, null);
+    // 回调请求结果
+    utils.invokeCallback(cb, {resultCode:0});
+
+    // 通知叫地主结果
+    process.nextTick(function() {
+      messageService.pushTableMessage(gameTable, gameEvent, msgBack, null);
+    });
+  });
 
 };
 
