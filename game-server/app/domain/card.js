@@ -2,10 +2,18 @@ var CardType = require('../consts/consts').CardType;
 var CardUtil = require('../util/cardUtil');
 
 var Card = function(pokeCards) {
-  this.cardType = CardType.NONE;
   this.pokeCards = pokeCards;
-  this.maxPokeValue = 0;
-  this.cardLength = 0;
+
+  var tmpCardType = CardUtil.getCardType(pokeCards);
+  if (tmpCardType == null || tmpCardType.cardType == CardType.NONE) {
+    this.cardType = CardType.NONE;
+    this.maxPokeValue = 0;
+    this.cardLength = 0;
+  } else {
+    this.cardType = tmpCardType.cardType;
+    this.maxPokeValue = tmpCardType.maxPokeValue;
+    this.cardLength = tmpCardType.cardLength;
+  }
 
   return this;
 };

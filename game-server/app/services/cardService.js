@@ -10,6 +10,7 @@ var GameEvent = require('../consts/consts').Event.GameEvent;
 var messageService = require('./messageService');
 var PokeCard = require('../domain/pokeCard');
 var grabLordAction = require('./actions/grabLord');
+var playCardAction = require('./actions/playCard');
 
 var exp = module.exports;
 
@@ -154,15 +155,24 @@ exp.grabLord = function(table, player, lordValue, cb) {
 
 };
 
-exp.playCard = function(table, player, card) {
-  var index = table.players.indexOf(player);
-  var nextIndex = (index+1) % table.players.length;
-  var nextPlayer = table.players[nextIndex];
-  var msgBack = {
-    player_id: player.userId,
-    card: card,
-    nextUserId: nextPlayer.userId
-  };
+/**
+ * 出牌
+ * @param table
+ * @param player
+ * @param pokeChars
+ * @param cb
+ */
+exp.playCard = function(table, player, pokeChars, cb) {
 
-  messageService.pushTableMessage(table, "onPlayCard", msgBack, null);
+  playerCardAction.doPlayCard(table, player, pokeChars, function(err, gameTable, gamePlayer) {
+    if (err) {
+      utils.invokeCallback(cb, err);
+      return;
+    }
+
+    var gameEvent = GameEvent.playCard;
+    utils.invokeCallback(cb, {resultCode: 0});
+
+    messageService.pushTableMessage(table, gameEvent, {playerId: player.userId, pokeChars: pokeChars}, null);
+  });
 };

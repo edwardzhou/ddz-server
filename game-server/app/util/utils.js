@@ -87,3 +87,28 @@ utils.on = function (obj, event, listener) {
   if (listeners.indexOf(listener) < 0)
     obj.on(event, listener);
 };
+
+utils.arrayIncludes = function(arrayA, arrayB) {
+  if (arrayB.length < 1)
+    return false;
+
+  for (var index in arrayB) {
+    var elem = arrayB[index];
+    if (arrayA.indexOf(elem) < 0)
+      return false;
+  }
+
+  return true;
+};
+
+utils.arrayRemove = function(arrayA, arrayB) {
+  for (var index in arrayB) {
+    var elem = arrayB[index];
+    var i = arrayA.indexOf(elem);
+    if (i>=0) {
+      arrayA.splice(i, 1);
+    }
+  }
+
+  return true;
+};

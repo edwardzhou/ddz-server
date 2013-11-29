@@ -12,7 +12,13 @@ var GrabLordAction = function() {
 
 module.exports = GrabLordAction;
 
-
+/**
+ * 处理叫地主逻辑
+ * @param gameTable
+ * @param player
+ * @param lordValue
+ * @param cb
+ */
 GrabLordAction.doGrabLord = function(gameTable, player, lordValue, cb) {
   var pokeGame = table.pokeGame;
   // 必须是轮到叫地主的玩家(table.nextUserId == player.userId)才能叫
