@@ -10,7 +10,7 @@ var ErrorCode = {
   // 无效请求
   INVALID_REQUEST: 1001,
   // 非本轮玩家的请求
-  NOT_IN_ORDER: 1002,
+  NOT_IN_TURN: 1002,
   // 无效的叫地主分 (地主分必须>=0 <=3, 且>0时，必须大于前一个地主分)
   INVALID_GRAB_LORD_VALUE: 1003,
 

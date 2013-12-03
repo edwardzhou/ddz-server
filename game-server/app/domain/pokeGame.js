@@ -88,15 +88,34 @@ PokeGame.newGame = function(roomId, tableId, players) {
   var opts = {roomId: roomId, tableId: tableId, players: players, state: GameState.PENDING_FOR_READY};
   var game = new PokeGame(opts);
 
+  game.token = {nextUserId: '', currentSeqNo: 0};
+
   return game;
 };
 
 PokeGame.prototype.getPlayerByUserId = function(userId) {
-  for (var index in this.players) {
-    if (this.players[index].userId == userId) {
-      return this.players[index];
-    }
+  var playerIndex = this.getPlayerIndex(userId);
+  if (playerIndex >= 0) {
+    return this.players[index];
   }
 
   return null;
+};
+
+PokeGame.prototype.getPlayerIndex = function(userId) {
+  for (var index in this.players) {
+    if (this.players[index].userId == userId)
+      return index;
+  }
+
+  return -1;
+};
+
+PokeGame.prototype.getNextPlayer = function(userId) {
+  var playerIndex = this.getPlayerIndex(userId);
+  if (playerIndex < 0)
+    return null;
+
+  playerIndex = (playerIndex + 1) % this.players.length;
+  return this.players[playerIndex];
 };

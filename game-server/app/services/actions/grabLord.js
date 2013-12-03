@@ -24,7 +24,7 @@ GrabLordAction.doGrabLord = function(gameTable, player, lordValue, cb) {
   // 必须是轮到叫地主的玩家(table.nextUserId == player.userId)才能叫
   if (pokeGame.nextUserId != player.userId) {
     // 不是轮到当前玩家叫地主，返回错误
-    utils.invokeCallback(cb, {err: ErrorCode.NOT_IN_ORDER}, null);
+    utils.invokeCallback(cb, {err: ErrorCode.NOT_IN_TURN}, null);
     return;
   }
 
@@ -105,5 +105,5 @@ GrabLordAction.doGrabLord = function(gameTable, player, lordValue, cb) {
     }
   }
 
-  utils.invokeCallback(cb, null, table, msgBack);
+  utils.invokeCallback(cb, null, msgBack);
 };

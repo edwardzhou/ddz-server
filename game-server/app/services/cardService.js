@@ -31,6 +31,50 @@ var _sortPokeCard = function(p1, p2) {
   return p1.pokeIndex - p2.pokeIndex;
 };
 
+
+var runAction = function(action, params, beforeFilters, afterFilters, cb) {
+  var tasks = [];
+  tasks.push(function(callback){
+    callback(params);
+  });
+
+  if (!!beforeFilters) {
+    for (var index in beforeFilters) {
+      tasks.push(beforeFilters[index]);
+    }
+  }
+
+  tasks.push(action);
+
+  if (!!afterFilters) {
+    for (var index in afterFilters) {
+      tasks.push(afterFilters[index]);
+    }
+  }
+
+  async.waterfall(tasks, function(err, result) {
+    if (!!err) {
+      utils.invokeCallback(cb, err);
+    } else {
+      utils.invokeCallback(cb, null, result);
+    }
+  });
+};
+
+var setupNextPlayerTimeout = function (table, func, seconds) {
+  var pokeGame = table.pokeGame;
+  var nextPlayer = pokeGame.getPlayerByUserId(pokeGame.token.nextUserId);
+  var seqNo = pokeGame.token.currentSeqNo;
+  var tm = seconds;
+  if (!tm)
+    tm = (!nextPlayer.isDelegating())? 35 : 3;
+
+  pokeGame.actionTimeout = setTimeout(function(){
+      func(table, nextPlayer, seqNo);
+    }, tm * 1000);
+};
+
+
 exp.onPlayerReady = function (table, player, cb) {
   logger.info("onPlayerReady");
   messageService.pushTableMessage(table, "onPlayerJoin", table.toParams(), null );
@@ -130,28 +174,68 @@ exp.startGame = function (table, cb) {
  * @param lordValue - 地主分数 (0 - 不叫, 1 - 1分， 2 - 2分， 3 - 3分)
  * @param cb
  */
-exp.grabLord = function(table, player, lordValue, cb) {
-  grabLordAction.doGrabLord(table, player, lordValue, function(err, gameTable, msgBack) {
-    // 有错误
-    if (err != null) {
-      utils.invokeCallback(cb, err);
-      return;
-    }
+exp.grabLord = function(table, player, lordValue, seqNo, cb) {
+//  grabLordAction.doGrabLord(table, player, lordValue, function(err, gameTable, msgBack) {
+//    // 有错误
+//    if (err != null) {
+//      utils.invokeCallback(cb, err);
+//      return;
+//    }
+//
+//    var gameEvent = GameEvent.grabLord;
+//    if (gameTable.pokeGame == null) {
+//      // 流局
+//      gameEvent = GameEvent.gameAbandonded;
+//    }
+//
+//    // 回调请求结果
+//    utils.invokeCallback(cb, {resultCode:0});
+//
+//    // 通知叫地主结果
+//    process.nextTick(function() {
+//      messageService.pushTableMessage(gameTable, gameEvent, msgBack, null);
+//    });
+//  });
 
-    var gameEvent = GameEvent.grabLord;
-    if (gameTable.pokeGame == null) {
-      // 流局
-      gameEvent = GameEvent.gameAbandonded;
-    }
-
-    // 回调请求结果
-    utils.invokeCallback(cb, {resultCode:0});
-
-    // 通知叫地主结果
-    process.nextTick(function() {
-      messageService.pushTableMessage(gameTable, gameEvent, msgBack, null);
+  var params = {table: table, player: player, seqNo: seqNo};
+  var actionResult = null;
+  var action = function(params, callback) {
+    grabLordAction.doGrabLord(table, player, lordValue, function(err, result) {
+      actionResult = result;
+      callback(err, params);
     });
+  };
+
+  runAction(action, params, exp.beforeFilters, exp.afterFilters, function(err, result) {
+    if (!!err) {
+      utils.invokeCallback(cb, err);
+    } else {
+      utils.invokeCallback(cb, {resultCode:0});
+
+      var pokeGame = table.pokeGame;
+      var eventName = GameEvent.grabLord;
+      var gameAbandoned = (pokeGame == null);
+      if (gameAbandoned) {
+        eventName = GameEvent.gameAbandonded;
+      }
+
+      messageService.pushTableMessage(table,
+        eventName,
+        actionResult,
+        null );
+
+      if (!gameAbandoned) {
+        var nextPlayer = pokeGame.getPlayerByUserId(pokeGame.token.nextUserId);
+        var seqNo = pokeGame.token.currentSeqNo;
+        var tm = (!nextPlayer.isDelegating())? 35 : 3;
+
+        pokeGame.actionTimeout = setTimeout(function(){
+          exp.playCard(table, nextPlayer, '', seqNo, true, null);
+        }, tm * 1000);
+      }
+    }
   });
+
 
 };
 
@@ -162,17 +246,51 @@ exp.grabLord = function(table, player, lordValue, cb) {
  * @param pokeChars
  * @param cb
  */
-exp.playCard = function(table, player, pokeChars, cb) {
+exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, cb) {
 
-  playerCardAction.doPlayCard(table, player, pokeChars, function(err, gameTable, gamePlayer) {
-    if (err) {
+  var params = {table: table, player: player, seqNo: seqNo};
+  var actionResult = null;
+  var action = function(params, callback) {
+    playCardAction.doPlayerCard(table, player, pokeChars, function(err, result){
+      actionResult = result;
+      callback(err, params);
+    });
+  };
+
+  runAction(action, params, exp.beforeFilters, exp.afterFilters, function(err, result) {
+    if (!!err) {
       utils.invokeCallback(cb, err);
-      return;
+    } else {
+      utils.invokeCallback(cb, {resultCode:0});
+
+      var pokeGame = table.pokeGame;
+      var eventName = GameEvent.playCard;
+
+      messageService.pushTableMessage(table,
+        eventName,
+        {
+          playerId: player.userId,
+          pokeChars: pokeChars,
+          nextUserId: pokeGame.token.nextUserId,
+          currentSeqNo: pokeGame.token.currentSeqNo
+        },
+        null );
+
+      setupNextPlayerTimeout(table, function(table, player, seqNo) {
+          exp.playCard(table, player, '', seqNo, true, null);
+        });
     }
-
-    var gameEvent = GameEvent.playCard;
-    utils.invokeCallback(cb, {resultCode: 0});
-
-    messageService.pushTableMessage(table, gameEvent, {playerId: player.userId, pokeChars: pokeChars}, null);
   });
+
+//  playerCardAction.doPlayCard(table, player, pokeChars, function(err, gameTable, gamePlayer) {
+//    if (err) {
+//      utils.invokeCallback(cb, err);
+//      return;
+//    }
+//
+//    var gameEvent = GameEvent.playCard;
+//    utils.invokeCallback(cb, {resultCode: 0});
+//
+//    messageService.pushTableMessage(table, gameEvent, {playerId: player.userId, pokeChars: pokeChars}, null);
+//  });
 };

@@ -45,6 +45,7 @@ module.exports = {
   },
 
   GameAction: {
+    ALL: -1,
     NONE: 0,
     PLAYER_JOIN: 1,
     PLAYER_READY: 2,
@@ -53,6 +54,7 @@ module.exports = {
     GAME_START: 5,
     PLAY_CARD: 6,
     GAME_OVER: 7
+
   },
 
   PokeCardValue: {

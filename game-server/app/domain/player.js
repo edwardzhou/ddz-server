@@ -40,6 +40,10 @@ Player.prototype.isReady = function() {
   return this.state == PlayerState.ready;
 };
 
+Player.prototype.isDelegating = function() {
+  return this.state == PlayerState.DELEGATING;
+};
+
 Player.prototype.getUidSid = function() {
   return {uid: this.userId, sid: this.serverId};
 };
