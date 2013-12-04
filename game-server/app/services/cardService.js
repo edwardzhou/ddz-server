@@ -12,12 +12,16 @@ var PokeCard = require('../domain/pokeCard');
 var grabLordAction = require('./actions/grabLord');
 var playCardAction = require('./actions/playCard');
 
-var exp = module.exports;
+var CardService = function(app) {
+  this.theApp = app;
+};
 
-var theApp = null;
+module.exports = CardService;
+
+var exp = CardService.prototype;
 
 exp.init = function (app) {
-  theApp = app;
+  this.theApp = app;
 };
 
 /**
