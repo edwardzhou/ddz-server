@@ -3,25 +3,37 @@ var util = require('util');
 var utils = require('../util/utils');
 var cardUtil = require('../util/cardUtil');
 var GameRoom = require('../domain/gameRoom');
-var GameTable = require('../domain/gameTable');
 var Player = require('../domain/player');
 var PlayerState = require('../consts/consts').PlayerState;
 var GameEvent = require('../consts/consts').Event.GameEvent;
 var messageService = require('./messageService');
 var PokeCard = require('../domain/pokeCard');
-var grabLordAction = require('./actions/grabLord');
-var playCardAction = require('./actions/playCard');
+var GameAction = require('../consts/consts').GameAction;
 
 var CardService = function(app) {
   this.theApp = app;
+  this.actionsConfig = {}
 };
 
 module.exports = CardService;
 
 var exp = CardService.prototype;
 
-exp.init = function (app) {
-  this.theApp = app;
+exp.init = function (opts) {
+  opts = opts || {};
+  this.theApp = opts.theApp || this.theApp;
+  this.grabLordAction = opts.grabLordAction;
+  this.playerJoinAction = opts.playerJoinAction;
+  this.playerReadyAction = opts.playerReadyAction;
+  this.playCardAction = opts.playCardAction;
+};
+
+exp.configGameActionFilters = function(gameAction, beforeFilters, afterFilters) {
+  this.actionsConfig[gameAction] = {
+    gameAction: gameAction,
+    before: beforeFilters,
+    after: afterFilters
+  };
 };
 
 /**
@@ -78,6 +90,20 @@ var setupNextPlayerTimeout = function (table, func, seconds) {
     }, tm * 1000);
 };
 
+exp.getActionFilters = function(gameAction) {
+  var filterConfig = this.actionsConfig[gameAction];
+  if (filterConfig == null) {
+    logger.warning("Cannot found action filters config for %d", gameAction);
+    filterConfig = {};
+  }
+
+  return filterConfig;
+};
+
+exp.doPlayerJoin = function(table, player, next) {
+
+};
+
 
 exp.onPlayerReady = function (table, player, cb) {
   logger.info("onPlayerReady");
@@ -93,9 +119,9 @@ exp.onPlayerReady = function (table, player, cb) {
  * 执行玩家就绪动作
  * @param table - 玩家所在的桌子
  * @param player - 就绪的玩家
- * @param cb
+ * @param next
  */
-exp.doPlayerReady = function(table, player, cb) {
+exp.doPlayerReady = function(table, player, next) {
   // 玩家状态设为 READY
   player.state = PlayerState.READY;
   // 通知同桌玩家
@@ -115,60 +141,26 @@ exp.doPlayerReady = function(table, player, cb) {
 /**
  * 开始牌局
  * @param table - 要开始牌局的桌子
- * @param cb
+ * @param next
  */
-exp.startGame = function (table, cb) {
-  // 洗牌
-  var pokeCards = PokeCard.shuffle();
-  var pokeCards1 = [];
-  var pokeCards2 = [];
-  var pokeCards3 = [];
+exp.startGame = function (table, next) {
 
-  // 派牌, 保留最后3张为地主牌
-  while(pokeCards.length>3) {
-    pokeCards1.push(pokeCards.shift());
-    pokeCards2.push(pokeCards.shift());
-    pokeCards3.push(pokeCards.shift());
-  }
+  this.startGameAction.execute(table, function(err) {
+    // 通知各玩家牌局开始
+    for (var index=0; index<table.players.length; index ++) {
+      var player = table.players[index];
+      messageService.pushMessage(GameEvent.gameStart,
+        {
+          grabLord: (player.userId == lordUserId ? 1 : 0),
+          pokeCards: player.pokeCardsString(),
+          gameId: newPokeGame.gameId
+        },
+        [player.getUidSid()],
+        null);
+    }
+  });
 
-  // 把牌排序后分给各玩家
-  table.players[0].setPokeCards(pokeCards1.sort(_sortPokeCard));
-  table.players[1].setPokeCards(pokeCards2.sort(_sortPokeCard));
-  table.players[2].setPokeCards(pokeCards3.sort(_sortPokeCard));
 
-  // 保存地主牌
-  table.lordPokeCards = pokeCards.sort(_sortPokeCard);
-
-  // 创建新牌局
-  var newPokeGame = PokeGame.newGame(table.room.getRoomId(), table.tableId, table.players);
-  newPokeGame.lordPokeCards = cardUtil.pokeCardsToString(table.lordPokeCards);
-
-  table.pokeGame = newPokeGame;
-
-  newPokeGame.state = GameState.GRABBING_LORD;
-  newPokeGame.grabbingLord = {lastUserId: null, lordValue: 0, nextUserId: null};
-
-  // 随机指定第一个叫地主的用户
-  var lordUserIndex = (new Date()).getTime() % 3;
-  var lordUserId = table.players[lordUserIndex].userId;
-  table.nextUserId = lordUserId;
-  table.lastUserId = null;
-
-  newPokeGame.grabbingLord.nextUserId = lordUserId;
-
-  // 通知各玩家牌局开始
-  for (var index=0; index<table.players.length; index ++) {
-    var player = table.players[index];
-    messageService.pushMessage(GameEvent.gameStart,
-      {
-//        player: player.toParams(),
-        grabLord: (player.userId == lordUserId ? 1 : 0),
-        pokeCards: player.pokeCardsString(),
-        gameId: newPokeGame.gameId
-      },
-      [player.getUidSid()],
-      null);
-  }
 };
 
 /**
@@ -176,9 +168,9 @@ exp.startGame = function (table, cb) {
  * @param table - 玩家所在的桌子
  * @param player - 玩家
  * @param lordValue - 地主分数 (0 - 不叫, 1 - 1分， 2 - 2分， 3 - 3分)
- * @param cb
+ * @param next
  */
-exp.grabLord = function(table, player, lordValue, seqNo, cb) {
+exp.grabLord = function(table, player, lordValue, seqNo, next) {
 //  grabLordAction.doGrabLord(table, player, lordValue, function(err, gameTable, msgBack) {
 //    // 有错误
 //    if (err != null) {
@@ -203,6 +195,8 @@ exp.grabLord = function(table, player, lordValue, seqNo, cb) {
 
   var params = {table: table, player: player, seqNo: seqNo};
   var actionResult = null;
+  var actionFilter = this.getActionFilters(GameAction.GRAB_LORD);
+
   var action = function(params, callback) {
     grabLordAction.doGrabLord(table, player, lordValue, function(err, result) {
       actionResult = result;
@@ -210,11 +204,11 @@ exp.grabLord = function(table, player, lordValue, seqNo, cb) {
     });
   };
 
-  runAction(action, params, exp.beforeFilters, exp.afterFilters, function(err, result) {
+  runAction(action, params, actionFilter.before, actionFilter.after, function(err, result) {
     if (!!err) {
-      utils.invokeCallback(cb, err);
+      utils.invokeCallback(next, err);
     } else {
-      utils.invokeCallback(cb, {resultCode:0});
+      utils.invokeCallback(next, {resultCode:0});
 
       var pokeGame = table.pokeGame;
       var eventName = GameEvent.grabLord;
@@ -248,9 +242,9 @@ exp.grabLord = function(table, player, lordValue, seqNo, cb) {
  * @param table
  * @param player
  * @param pokeChars
- * @param cb
+ * @param next
  */
-exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, cb) {
+exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
 
   var params = {table: table, player: player, seqNo: seqNo};
   var actionResult = null;
@@ -263,9 +257,9 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, cb) {
 
   runAction(action, params, exp.beforeFilters, exp.afterFilters, function(err, result) {
     if (!!err) {
-      utils.invokeCallback(cb, err);
+      utils.invokeCallback(next, err);
     } else {
-      utils.invokeCallback(cb, {resultCode:0});
+      utils.invokeCallback(next, {resultCode:0});
 
       var pokeGame = table.pokeGame;
       var eventName = GameEvent.playCard;
