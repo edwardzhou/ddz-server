@@ -5,12 +5,25 @@ var utils = require('../../util/utils');
 var GameState = require('../../consts/consts').GameState;
 var ErrorCode = require('../../consts/errorCode');
 var PokeCard = require('../../domain/pokeCard');
+var PokeGame = require('../../domain/pokeGame');
+var cardUtil = require('../../util/cardUtil');
 
 var StartGameAction = function(opts) {
 
 };
 
 module.exports = StartGameAction;
+
+/**
+ * 排序比较函数
+ * @param p1
+ * @param p2
+ * @returns {number}
+ * @private
+ */
+var _sortPokeCard = function(p1, p2) {
+  return p1.pokeIndex - p2.pokeIndex;
+};
 
 StartGameAction.execute = function(table, cb) {
   // 洗牌
@@ -35,13 +48,13 @@ StartGameAction.execute = function(table, cb) {
   table.lordPokeCards = pokeCards.sort(_sortPokeCard);
 
   // 创建新牌局
-  var newPokeGame = PokeGame.newGame(table.room.getRoomId(), table.tableId, table.players);
-  newPokeGame.lordPokeCards = cardUtil.pokeCardsToString(table.lordPokeCards);
+  var newPokeGame = PokeGame.newGame(table.room.roomId, table.tableId, table.players);
+  newPokeGame.lordCards = cardUtil.pokeCardsToString(table.lordPokeCards);
 
   table.pokeGame = newPokeGame;
 
   newPokeGame.state = GameState.GRABBING_LORD;
-  newPokeGame.grabbingLord = {lastUserId: null, lordValue: 0, nextUserId: null};
+  newPokeGame.grabbingLord = {lastUserId: null, lordValue: 0, nextUserId: null, grabTimes: 0};
 
   // 随机指定第一个叫地主的用户
   var lordUserIndex = (new Date()).getTime() % 3;
@@ -50,6 +63,7 @@ StartGameAction.execute = function(table, cb) {
   table.lastUserId = null;
 
   newPokeGame.grabbingLord.nextUserId = lordUserId;
+  newPokeGame.token = {nextUserId: lordUserId, currentSeqNo: 1};
 
   utils.invokeCallback(cb, null);
 

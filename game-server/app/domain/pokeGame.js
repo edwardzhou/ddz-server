@@ -31,7 +31,7 @@ var pokeGameSchema = new mongoose.Schema({
   // 游戏状态, ref: consts.GameState
   state: Number,
   // 玩家
-  players: [gamePlayerSchema],
+  //players: [gamePlayerSchema],
   // 动作历史
   actions: [String],
   // 地主牌
@@ -88,6 +88,7 @@ PokeGame.newGame = function(roomId, tableId, players) {
   var opts = {roomId: roomId, tableId: tableId, players: players, state: GameState.PENDING_FOR_READY};
   var game = new PokeGame(opts);
 
+  game.players = players.slice(0, players.length);
   game.token = {nextUserId: '', currentSeqNo: 0};
 
   return game;
@@ -96,7 +97,7 @@ PokeGame.newGame = function(roomId, tableId, players) {
 PokeGame.prototype.getPlayerByUserId = function(userId) {
   var playerIndex = this.getPlayerIndex(userId);
   if (playerIndex >= 0) {
-    return this.players[index];
+    return this.players[playerIndex];
   }
 
   return null;

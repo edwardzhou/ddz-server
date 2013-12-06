@@ -146,6 +146,7 @@ var _randomSelect = function(tables) {
  */
 GameRoom.prototype.enter = function (player, lastTableId) {
   var self = this;
+  lastTableId = lastTableId || -1;
 
   // 安排桌子
   var table = function() {

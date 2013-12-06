@@ -13,6 +13,19 @@ var GrabLordAction = function() {
 module.exports = GrabLordAction;
 
 /**
+ * 排序比较函数
+ * @param p1
+ * @param p2
+ * @returns {number}
+ * @private
+ */
+var _sortPokeCard = function(p1, p2) {
+  return p1.pokeIndex - p2.pokeIndex;
+};
+
+
+
+/**
  * 处理叫地主逻辑
  * @param gameTable
  * @param player
@@ -20,13 +33,14 @@ module.exports = GrabLordAction;
  * @param cb
  */
 GrabLordAction.doGrabLord = function(gameTable, player, lordValue, cb) {
+  var table = gameTable;
   var pokeGame = table.pokeGame;
-  // 必须是轮到叫地主的玩家(table.nextUserId == player.userId)才能叫
-  if (pokeGame.nextUserId != player.userId) {
-    // 不是轮到当前玩家叫地主，返回错误
-    utils.invokeCallback(cb, {err: ErrorCode.NOT_IN_TURN}, null);
-    return;
-  }
+//  // 必须是轮到叫地主的玩家(table.nextUserId == player.userId)才能叫
+//  if (pokeGame.token.nextUserId != player.userId) {
+//    // 不是轮到当前玩家叫地主，返回错误
+//    utils.invokeCallback(cb, {err: ErrorCode.NOT_IN_TURN}, null);
+//    return;
+//  }
 
   // 所叫的分数必须大于当前地主分
   if (lordValue > 0 && lordValue <= pokeGame.grabbingLord.lordValue) {
@@ -99,7 +113,7 @@ GrabLordAction.doGrabLord = function(gameTable, player, lordValue, cb) {
         lordValue: pokeGame.lordValue,
         lordUserId: pokeGame.lordUserId,
         nextUserId: pokeGame.lordUserId,
-        lordPokeCards: pokeGame.lordPokeCards
+        lordPokeCards: pokeGame.lordCards
       };
 
     }

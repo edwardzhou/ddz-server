@@ -6,9 +6,10 @@ var GameRoom = require('../domain/gameRoom');
 var Player = require('../domain/player');
 var PlayerState = require('../consts/consts').PlayerState;
 var GameEvent = require('../consts/consts').Event.GameEvent;
-var messageService = require('./messageService');
-var PokeCard = require('../domain/pokeCard');
+//var messageService = require('./messageService');
+//var PokeCard = require('../domain/pokeCard');
 var GameAction = require('../consts/consts').GameAction;
+var async = require('async');
 
 var CardService = function(app) {
   this.theApp = app;
@@ -21,6 +22,7 @@ var exp = CardService.prototype;
 
 exp.init = function (opts) {
   opts = opts || {};
+  this.messageService = opts.messageService;
   this.theApp = opts.theApp || this.theApp;
   this.grabLordAction = opts.grabLordAction;
   this.playerJoinAction = opts.playerJoinAction;
@@ -36,27 +38,15 @@ exp.configGameActionFilters = function(gameAction, beforeFilters, afterFilters) 
   };
 };
 
-/**
- * 排序比较函数
- * @param p1
- * @param p2
- * @returns {number}
- * @private
- */
-var _sortPokeCard = function(p1, p2) {
-  return p1.pokeIndex - p2.pokeIndex;
-};
-
-
 var runAction = function(action, params, beforeFilters, afterFilters, cb) {
   var tasks = [];
   tasks.push(function(callback){
-    callback(params);
+    callback(null, params);
   });
 
   if (!!beforeFilters) {
     for (var index in beforeFilters) {
-      tasks.push(beforeFilters[index]);
+      tasks.push(beforeFilters[index].execute);
     }
   }
 
@@ -64,7 +54,7 @@ var runAction = function(action, params, beforeFilters, afterFilters, cb) {
 
   if (!!afterFilters) {
     for (var index in afterFilters) {
-      tasks.push(afterFilters[index]);
+      tasks.push(afterFilters[index].execute);
     }
   }
 
@@ -107,7 +97,7 @@ exp.doPlayerJoin = function(table, player, next) {
 
 exp.onPlayerReady = function (table, player, cb) {
   logger.info("onPlayerReady");
-  messageService.pushTableMessage(table, "onPlayerJoin", table.toParams(), null );
+  this.messageService.pushTableMessage(table, "onPlayerJoin", table.toParams(), null );
 
   if ( (table.players.length == 3) &&
     table.players[0].isReady() && table.players[1].isReady() && table.players[2].isReady()) {
@@ -125,16 +115,16 @@ exp.doPlayerReady = function(table, player, next) {
   // 玩家状态设为 READY
   player.state = PlayerState.READY;
   // 通知同桌玩家
-  messageService.pushTableMessage(table, GameEvent.playerReady, table.toParams(), null);
+  this.messageService.pushTableMessage(table, GameEvent.playerReady, table.toParams(), null);
 
   // 如果3个玩家都已就绪，这开始牌局
   if (table.players.length == 3 &&
     table.players[0].isReady() &&
     table.players[1].isReady() &&
     table.players[2].isReady()) {
-    process.nextTick(function() {
-      exp.startGame(table);
-    });
+    //process.nextTick(function() {
+      this.startGame(table);
+    //});
   }
 }
 
@@ -144,16 +134,19 @@ exp.doPlayerReady = function(table, player, next) {
  * @param next
  */
 exp.startGame = function (table, next) {
-
+  var self = this;
   this.startGameAction.execute(table, function(err) {
+    var newPokeGame = table.pokeGame;
+    var seqNo = newPokeGame.token.currentSeqNo;
     // 通知各玩家牌局开始
     for (var index=0; index<table.players.length; index ++) {
       var player = table.players[index];
-      messageService.pushMessage(GameEvent.gameStart,
+      self.messageService.pushMessage(GameEvent.gameStart,
         {
-          grabLord: (player.userId == lordUserId ? 1 : 0),
+          grabLord: (player.userId == newPokeGame.grabbingLord.nextUserId ? 1 : 0),
           pokeCards: player.pokeCardsString(),
-          gameId: newPokeGame.gameId
+          gameId: newPokeGame.gameId,
+          seqNo: (player.userId == newPokeGame.grabbingLord.nextUserId ? seqNo : 0)
         },
         [player.getUidSid()],
         null);
@@ -189,7 +182,7 @@ exp.grabLord = function(table, player, lordValue, seqNo, next) {
 //
 //    // 通知叫地主结果
 //    process.nextTick(function() {
-//      messageService.pushTableMessage(gameTable, gameEvent, msgBack, null);
+//      this.messageService.pushTableMessage(gameTable, gameEvent, msgBack, null);
 //    });
 //  });
 
@@ -197,8 +190,10 @@ exp.grabLord = function(table, player, lordValue, seqNo, next) {
   var actionResult = null;
   var actionFilter = this.getActionFilters(GameAction.GRAB_LORD);
 
+  var self = this;
+
   var action = function(params, callback) {
-    grabLordAction.doGrabLord(table, player, lordValue, function(err, result) {
+    self.grabLordAction.doGrabLord(table, player, lordValue, function(err, result) {
       actionResult = result;
       callback(err, params);
     });
@@ -217,7 +212,7 @@ exp.grabLord = function(table, player, lordValue, seqNo, next) {
         eventName = GameEvent.gameAbandonded;
       }
 
-      messageService.pushTableMessage(table,
+      self.messageService.pushTableMessage(table,
         eventName,
         actionResult,
         null );
@@ -264,7 +259,7 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
       var pokeGame = table.pokeGame;
       var eventName = GameEvent.playCard;
 
-      messageService.pushTableMessage(table,
+      this.messageService.pushTableMessage(table,
         eventName,
         {
           playerId: player.userId,
@@ -289,6 +284,6 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
 //    var gameEvent = GameEvent.playCard;
 //    utils.invokeCallback(cb, {resultCode: 0});
 //
-//    messageService.pushTableMessage(table, gameEvent, {playerId: player.userId, pokeChars: pokeChars}, null);
+//    this.messageService.pushTableMessage(table, gameEvent, {playerId: player.userId, pokeChars: pokeChars}, null);
 //  });
 };

@@ -6,12 +6,12 @@ var cardUtil = require('../util/cardUtil');
 
 var Player = function(opts) {
   DomainBase.call(this, opts);
-  this.pokeCards = opt.pokeCards || [];
+  this.pokeCards = opts.pokeCards || [];
   this.initPokeCards = this.pokeCardsString();
   this.userId = opts.userId;
   this.nickName = opts.nickName;
   this.serverId = opts.serverId;
-  this.state = opts.state || PlayerState.prepareReady;
+  this.state = opts.state || PlayerState.PREPARE_READY;
 };
 
 util.inherits(Player, DomainBase);
@@ -37,7 +37,7 @@ Player.prototype.ready = function(cb) {
 };
 
 Player.prototype.isReady = function() {
-  return this.state == PlayerState.ready;
+  return this.state == PlayerState.READY;
 };
 
 Player.prototype.isDelegating = function() {
