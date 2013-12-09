@@ -94,7 +94,7 @@ var setupNextPlayerTimeout = function (table, func, seconds) {
 exp.getActionFilters = function(gameAction) {
   var filterConfig = this.actionsConfig[gameAction];
   if (filterConfig == null) {
-    logger.warning("Cannot found action filters config for %d", gameAction);
+    logger.warn("Cannot found action filters config for %d", gameAction);
     filterConfig = {};
   }
 

@@ -47,23 +47,23 @@ var pokeGameSchema = new mongoose.Schema({
   // 游戏结算信息
   score: {
     // 牌局佣金 ( >1 表示固定佣金，<1  表示比例佣金; 如: 100 - 每局收100佣金， 0.05 - 每局收5%佣金)
-    rake: Number,
+    rake: {type: Number, default: 0},
     // 底数
-    ante: Number,
+    ante: {type: Number, default: 0},
     // 地主倍数
-    lordValue: Number,
+    lordValue: {type: Number, default: 0},
     // 加倍倍数 (每人可要求一次加倍，1人加倍 (x2), 两人 (x4), 三人 (x8))
-    redoubles: Number,
+    redoubles: {type: Number, default: 0},
     // 已出普通炸弹数 (每炸弹翻一倍)
-    bombs: Number,
+    bombs: {type: Number, default: 0},
     // 王炸 (0, 1) x4
-    rockets: Number,
+    rockets: {type: Number, default: 0},
     // 0 - 正常, 1 - 春天, -1 - 反春天 (春天/反春天 加倍)
-    spring: Number,
+    spring: {type: Number, default: 0},
     // 输赢总数 = ante x lordValue x (2 ^ doubles) x (2 ^ bombs) x (4 ^ rockets) x (2 ^ abs(spring))
-    total: Number,
+    total: {type: Number, default: 0},
     // 扣除佣金后的输赢总数 = total - rake, or = total * (1 - rake)
-    raked_total: Number
+    raked_total: {type: Number, default: 0}
   },
   createdAt: {type: Date, default: Date.now},
   updatedAt: {type: Date, default: Date.now}

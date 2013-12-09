@@ -2,16 +2,20 @@ var util = require('util');
 var utils = require('../util/utils');
 var DomainBase = require('./domainBase');
 var PlayerState = require('../consts/consts').PlayerState;
+var PlayerRole = require('../consts/consts').PlayerRole;
 var cardUtil = require('../util/cardUtil');
 
 var Player = function(opts) {
+  opts = opts || {};
   DomainBase.call(this, opts);
   this.pokeCards = opts.pokeCards || [];
   this.initPokeCards = this.pokeCardsString();
   this.userId = opts.userId;
   this.nickName = opts.nickName;
   this.serverId = opts.serverId;
+  this.role = opts.role || PlayerRole.NONE;
   this.state = opts.state || PlayerState.PREPARE_READY;
+  this.plays = opts.plays || 0;
 };
 
 util.inherits(Player, DomainBase);
@@ -42,6 +46,14 @@ Player.prototype.isReady = function() {
 
 Player.prototype.isDelegating = function() {
   return this.state == PlayerState.DELEGATING;
+};
+
+Player.prototype.isLord = function() {
+  return this.role == PlayerRole.LORD;
+};
+
+Player.prototype.isFarmer = function() {
+  return this.role == PlayerRole.FARMER;
 };
 
 Player.prototype.getUidSid = function() {

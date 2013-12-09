@@ -21,6 +21,12 @@ module.exports = {
     }
   },
 
+  PlayerRole: {
+    NONE: 0,
+    FARMER: 1,
+    LORD: 2
+  },
+
   PlayerState: {
     PREPARE_READY: 0,
     READY: 1,

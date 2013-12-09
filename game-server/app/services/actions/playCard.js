@@ -41,6 +41,12 @@ PlayCardAction.doPlayCard = function(table, player, pokeChars, cb) {
     pokeGame.lastUserId = player.userId;
     utils.arrayRemove(player.pokeCards, pokeCards);
 
+    if (card.isBomb()) {
+      pokeGame.score.bombs++;
+    } else if (card.isRocket()) {
+      pokeGame.score.rockets++;
+    }
+
     utils.invokeCallback(cb, null, table, player, pokeCards);
     return true;
   }
