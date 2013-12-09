@@ -67,6 +67,17 @@ var runAction = function(action, params, beforeFilters, afterFilters, cb) {
   });
 };
 
+var setupPlayerReadyTimeout = function(table, player, func, seconds) {
+  var tm = seconds;
+  if (!tm)
+    tm = 30;
+
+  table.playerTimeouts = table.playerTimeouts || [];
+  table.playerTimeouts[player.userId] = setTimeout(function() {
+    func(table, player);
+  }, tm * 1000);
+};
+
 var setupNextPlayerTimeout = function (table, func, seconds) {
   var pokeGame = table.pokeGame;
   var nextPlayer = pokeGame.getPlayerByUserId(pokeGame.token.nextUserId);
@@ -126,7 +137,11 @@ exp.doPlayerReady = function(table, player, next) {
       this.startGame(table);
     //});
   }
-}
+};
+
+exp.playerReadyTimeout = function(table, player, next) {
+
+};
 
 /**
  * 开始牌局
@@ -217,14 +232,18 @@ exp.grabLord = function(table, player, lordValue, seqNo, next) {
         actionResult,
         null );
 
-      if (!gameAbandoned) {
-        var nextPlayer = pokeGame.getPlayerByUserId(pokeGame.token.nextUserId);
-        var seqNo = pokeGame.token.currentSeqNo;
-        var tm = (!nextPlayer.isDelegating())? 35 : 3;
+      if (gameAbandoned) {
+        return;
+      }
 
-        pokeGame.actionTimeout = setTimeout(function(){
-          exp.playCard(table, nextPlayer, '', seqNo, true, null);
-        }, tm * 1000);
+      if (pokeGame.lordUserId == null) {
+        setupNextPlayerTimeout(table, function(table, player, seqNo){
+          self.grabLord(table, player, 0, seqNo, null);
+        });
+      } else {
+        setupNextPlayerTimeout(table, function(table, player, seqNo){
+          self.playCard(table, player, '', seqNo, true, null);
+        })
       }
     }
   });
@@ -241,8 +260,10 @@ exp.grabLord = function(table, player, lordValue, seqNo, next) {
  */
 exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
 
+  var self = this;
   var params = {table: table, player: player, seqNo: seqNo};
   var actionResult = null;
+  var actionFilter = this.getActionFilters(GameAction.PLAY_CARD);
   var action = function(params, callback) {
     playCardAction.doPlayerCard(table, player, pokeChars, function(err, result){
       actionResult = result;
@@ -250,7 +271,7 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
     });
   };
 
-  runAction(action, params, exp.beforeFilters, exp.afterFilters, function(err, result) {
+  runAction(action, params, actionFilter.before, actionFilter.after, function(err, result) {
     if (!!err) {
       utils.invokeCallback(next, err);
     } else {
@@ -269,21 +290,52 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
         },
         null );
 
+      if (player.pokeCards.length == 0) {
+        // won
+        process.nextTick(function() {
+          self.gameOver(table, player);
+        });
+        return;
+      }
+
       setupNextPlayerTimeout(table, function(table, player, seqNo) {
-          exp.playCard(table, player, '', seqNo, true, null);
+          self.playCard(table, player, '', seqNo, true, null);
         });
     }
   });
+};
 
-//  playerCardAction.doPlayCard(table, player, pokeChars, function(err, gameTable, gamePlayer) {
-//    if (err) {
-//      utils.invokeCallback(cb, err);
-//      return;
-//    }
-//
-//    var gameEvent = GameEvent.playCard;
-//    utils.invokeCallback(cb, {resultCode: 0});
-//
-//    this.messageService.pushTableMessage(table, gameEvent, {playerId: player.userId, pokeChars: pokeChars}, null);
-//  });
+exp.gameOver = function(table, player, cb) {
+
+  var self = this;
+  var params = {table: table, player: player, seqNo: -1};
+  var actionResult = null;
+  var actionFilter = this.getActionFilters(GameAction.GAME_OVER);
+  var action = function(params, callback) {
+    self.gameOverAction.doGameOver(table, player, function(err, result){
+      actionResult = result;
+      callback(err, params);
+    });
+  };
+
+  runAction(action, params, actionFilter.before, actionFilter.after, function(err, result) {
+    if (!!err) {
+      utils.invokeCallback(next, err);
+    } else {
+      utils.invokeCallback(next, {resultCode:0});
+
+      var pokeGame = table.pokeGame;
+      var eventName = GameEvent.gameOver;
+
+      this.messageService.pushTableMessage(table,
+        eventName,
+        actionResult,
+        null );
+
+      setupPlayerReadyTimeout(table, table.players[0], self.playerReadyTimeout.bind(self), 35);
+      setupPlayerReadyTimeout(table, table.players[1], self.playerReadyTimeout.bind(self), 35);
+      setupPlayerReadyTimeout(table, table.players[2], self.playerReadyTimeout.bind(self), 35);
+    }
+  });
+
 };

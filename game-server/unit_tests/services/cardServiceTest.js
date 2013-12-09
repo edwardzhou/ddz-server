@@ -66,13 +66,12 @@ function testStartGame() {
     console.log('[grabLord] err: ', err);
     console.log('[grabLord] result: ', result);
 
-    player = pokeGame.getPlayerByUserId(pokeGame.token.nextUserId);
-    seqNo = pokeGame.token.currentSeqNo;
-    cardService.grabLord(table, player, 0, seqNo, function(err, result) {
-      console.log('[2nd grabLord] err: ', err);
-      console.log('[2nd grabLord] result: ', result);
-    });
-
+//    player = pokeGame.getPlayerByUserId(pokeGame.token.nextUserId);
+//    seqNo = pokeGame.token.currentSeqNo;
+//    cardService.grabLord(table, player, 0, seqNo, function(err, result) {
+//      console.log('[2nd grabLord] err: ', err);
+//      console.log('[2nd grabLord] result: ', result);
+//    });
 
   });
 
