@@ -37,18 +37,33 @@ module.exports = GameTable;
 // 设置用于toParams导出的json属性映射
 GameTable.jsonAttrs = {tableId: "tid", players: "players"};
 
+GameTable.prototype.getPlayerByUserId = function(userId) {
+  for (var index in this.players) {
+    if (userId == this.players[index].playerId) {
+      return this.players[index];
+    }
+  }
+
+  return null;
+};
+
 /**
  * 添加玩家
  * @param player
  * @returns {*}
  */
 GameTable.prototype.addPlayer = function (player) {
+
+  var existPlayer = this.getPlayerByUserId(player.userId);
+  if (!!existPlayer)
+    return existPlayer;
+
   if (!(player instanceof Player) )
     player = new Player(player);
   this.players.push(player);
   player.tableId = this.tableId;
 
-  utils.on(player, "ready", this.onPlayerReady.bind(this));
+  //utils.on(player, "ready", this.onPlayerReady.bind(this));
 
   this.state = TableState.BUSY;
   this.lastAccessTime = new Date();

@@ -83,7 +83,7 @@ var setupNextPlayerTimeout = function (table, func, seconds) {
   var nextPlayer = pokeGame.getPlayerByUserId(pokeGame.token.nextUserId);
   var seqNo = pokeGame.token.currentSeqNo;
   var tm = seconds;
-  if (!tm)
+  if (typeof tm == 'undefined')
     tm = (!nextPlayer.isDelegating())? 35 : 3;
 
   pokeGame.actionTimeout = setTimeout(function(){
@@ -101,20 +101,10 @@ exp.getActionFilters = function(gameAction) {
   return filterConfig;
 };
 
-exp.doPlayerJoin = function(table, player, next) {
+exp.playerJoin = function(table, player, next) {
 
 };
 
-
-exp.onPlayerReady = function (table, player, cb) {
-  logger.info("onPlayerReady");
-  this.messageService.pushTableMessage(table, "onPlayerJoin", table.toParams(), null );
-
-  if ( (table.players.length == 3) &&
-    table.players[0].isReady() && table.players[1].isReady() && table.players[2].isReady()) {
-    exp.startGame(table);
-  }
-};
 
 /**
  * 执行玩家就绪动作
@@ -122,11 +112,13 @@ exp.onPlayerReady = function (table, player, cb) {
  * @param player - 就绪的玩家
  * @param next
  */
-exp.doPlayerReady = function(table, player, next) {
+exp.playerReady = function(table, player, next) {
   // 玩家状态设为 READY
   player.state = PlayerState.READY;
   // 通知同桌玩家
   this.messageService.pushTableMessage(table, GameEvent.playerReady, table.toParams(), null);
+
+  utils.invokeCallback(next, null, null);
 
   // 如果3个玩家都已就绪，这开始牌局
   if (table.players.length == 3 &&
@@ -242,8 +234,9 @@ exp.grabLord = function(table, player, lordValue, seqNo, next) {
         });
       } else {
         setupNextPlayerTimeout(table, function(table, player, seqNo){
-          self.playCard(table, player, '', seqNo, true, null);
-        })
+          var pokeChar = player.pokeCards[0].pokeChar;
+          self.playCard(table, player, pokeChar, seqNo, true, null);
+        }, 3)
       }
     }
   });
@@ -265,8 +258,10 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
   var actionResult = null;
   var actionFilter = this.getActionFilters(GameAction.PLAY_CARD);
   var action = function(params, callback) {
-    playCardAction.doPlayerCard(table, player, pokeChars, function(err, result){
+    self.playCardAction.doPlayCard(table, player, pokeChars, function(err, result){
       actionResult = result;
+      params.pokeChars = result.pokeChars;
+      params.pokeCards = result.pokeCards;
       callback(err, params);
     });
   };
@@ -274,34 +269,35 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
   runAction(action, params, actionFilter.before, actionFilter.after, function(err, result) {
     if (!!err) {
       utils.invokeCallback(next, err);
-    } else {
-      utils.invokeCallback(next, {resultCode:0});
-
-      var pokeGame = table.pokeGame;
-      var eventName = GameEvent.playCard;
-
-      this.messageService.pushTableMessage(table,
-        eventName,
-        {
-          playerId: player.userId,
-          pokeChars: pokeChars,
-          nextUserId: pokeGame.token.nextUserId,
-          currentSeqNo: pokeGame.token.currentSeqNo
-        },
-        null );
-
-      if (player.pokeCards.length == 0) {
-        // won
-        process.nextTick(function() {
-          self.gameOver(table, player);
-        });
-        return;
-      }
-
-      setupNextPlayerTimeout(table, function(table, player, seqNo) {
-          self.playCard(table, player, '', seqNo, true, null);
-        });
+      return;
     }
+
+    utils.invokeCallback(next, {resultCode:0});
+
+    var pokeGame = table.pokeGame;
+    var eventName = GameEvent.playCard;
+
+    self.messageService.pushTableMessage(table,
+      eventName,
+      {
+        playerId: player.userId,
+        pokeChars: actionResult.pokeChars,
+        nextUserId: pokeGame.token.nextUserId,
+        currentSeqNo: pokeGame.token.currentSeqNo
+      },
+      null );
+
+    if (player.pokeCards.length == 0) {
+      // won
+      process.nextTick(function() {
+        self.gameOver(table, player);
+      });
+      return;
+    }
+
+    setupNextPlayerTimeout(table, function(table, player, seqNo) {
+        self.playCard(table, player, '', seqNo, true, null);
+      });
   });
 };
 

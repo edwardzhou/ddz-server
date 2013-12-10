@@ -67,5 +67,7 @@ Player.prototype.pokeCardsString = function() {
 
 Player.prototype.reset = function() {
   this.state = PlayerState.PREPARE_READY;
+  this.role = PlayerRole.NONE;
   this.setPokeCards([]);
+  this.plays = 0;
 }

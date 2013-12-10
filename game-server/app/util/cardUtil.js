@@ -35,7 +35,10 @@ cardUtil.pokeCardsToIdChars = function(pokeCards) {
 cardUtil.getCardType = function (pokeCards) {
   var pokeCardIdChars = cardUtil.pokeCardsToIdChars(cardUtil.sortPokeCards(pokeCards));
 
-  return _allCardTypes[pokeCardIdChars];
+  var cardType = _allCardTypes[pokeCardIdChars];
+  console.log('cardType for %s: ', pokeCardIdChars, cardType);
+
+  return cardType;
 };
 
 cardUtil.checkCardType = function (card) {
@@ -79,6 +82,11 @@ cardUtil.compare = function(cardA, cardB) {
 };
 
 cardUtil.buildCardTypes = function() {
+
+  if (_allCardTypes['A'] != null) {
+    return;
+  }
+
   var idChars =  ['3', '4', '5', '6', '7', '8', '9', '0', 'J', 'Q', 'K', 'A', '2', 'w', 'W'];
   var idValues = {'3': 3 ,  '4': 4 , '5': 5 , '6':  6 , '7': 7 , '8': 8 , '9': 9 , '0': 10 ,
     'J': 11, 'Q': 12, 'K': 13, 'A': 14, '2': 15, 'w': 16, 'W': 17};
@@ -112,6 +120,14 @@ cardUtil.buildCardTypes = function() {
   }
 
   //cardUtil.getValidIdCharsCombination = getValidIdCharsCombination;
+
+  var buildSingleCardType = function () {
+    for (var index=0; index < idChars.length; index++) {
+      var typeId = idChars[index];
+      var cardType = {cardType: CardType.SINGLE, cardLength: 1, maxPokeValue: idValues[idChars[index]]};
+      _allCardTypes[typeId] = cardType;
+    }
+  };
 
   // 生成炸弹
   var buildBombCardType = function (){
@@ -382,6 +398,7 @@ cardUtil.buildCardTypes = function() {
     }
   };
 
+  buildSingleCardType();
   buildBombCardType();
   buildRocketCardType();
   buildStraightCardType();

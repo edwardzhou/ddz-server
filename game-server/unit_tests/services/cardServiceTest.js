@@ -8,9 +8,13 @@ var GameTable = require('../../app/domain/gameTable');
 var Player = require('../../app/domain/player');
 var StartGameAction = require('../../app/services/actions/startGame');
 var GrabGameAction = require('../../app/services/actions/grabLord');
+var PlayCardAction = require('../../app/services/actions/playCard');
 var CheckSeqNoFilter = require('../../app/services/filters/checkSeqNo');
 var IncreaseSeqNoFilter = require('../../app/services/filters/increaseSeqNo');
+var CancelActionTimeoutFilter = require('../../app/services/filters/cancelActionTimeout');
+var IncreasePlaysAfterFilter = require('../../app/services/filters/increasePlays');
 var GameAction = require('../../app/consts/consts').GameAction;
+var CardUtil = require('../../app/util/cardUtil');
 
 var cardService = new CardService();
 
@@ -21,6 +25,9 @@ cardService.init(
 );
 
 function testStartGame() {
+
+  CardUtil.buildCardTypes();
+
   var gameRoom = new GameRoom({roomId: 1, roomName: 'test room1'});
   //var table = new GameTable({tableId: 1});
 
@@ -47,17 +54,22 @@ function testStartGame() {
 //  }};
   cardService.startGameAction = StartGameAction;
 
-  cardService.doPlayerReady(table, table.players[0], function() {
-  });
-  cardService.doPlayerReady(table, table.players[1], function() {
-  });
-  cardService.doPlayerReady(table, table.players[2], function() {
-  });
-
   var beforeFilters = [CheckSeqNoFilter];
   var afterFilters = [IncreaseSeqNoFilter];
   cardService.configGameActionFilters(GameAction.GRAB_LORD, beforeFilters, afterFilters);
   cardService.grabLordAction = GrabGameAction;
+
+  beforeFilters = [CheckSeqNoFilter, CancelActionTimeoutFilter];
+  afterFilters = [IncreasePlaysAfterFilter, IncreaseSeqNoFilter]
+  cardService.configGameActionFilters(GameAction.PLAY_CARD, beforeFilters, afterFilters);
+  cardService.playCardAction = PlayCardAction;
+
+  cardService.playerReady(table, table.players[0], function() {
+  });
+  cardService.playerReady(table, table.players[1], function() {
+  });
+  cardService.playerReady(table, table.players[2], function() {
+  });
 
   var pokeGame = table.pokeGame;
   var player = pokeGame.getPlayerByUserId(pokeGame.token.nextUserId);
@@ -66,13 +78,19 @@ function testStartGame() {
     console.log('[grabLord] err: ', err);
     console.log('[grabLord] result: ', result);
 
-//    player = pokeGame.getPlayerByUserId(pokeGame.token.nextUserId);
-//    seqNo = pokeGame.token.currentSeqNo;
-//    cardService.grabLord(table, player, 0, seqNo, function(err, result) {
-//      console.log('[2nd grabLord] err: ', err);
-//      console.log('[2nd grabLord] result: ', result);
-//    });
+    player = pokeGame.getPlayerByUserId(pokeGame.token.nextUserId);
+    seqNo = pokeGame.token.currentSeqNo;
+    cardService.grabLord(table, player, 0, seqNo, function(err, result) {
+      console.log('[2nd grabLord] err: ', err);
+      console.log('[2nd grabLord] result: ', result);
 
+      player = pokeGame.getPlayerByUserId(pokeGame.token.nextUserId);
+      seqNo = pokeGame.token.currentSeqNo;
+      cardService.grabLord(table, player, 0, seqNo, function(err, result) {
+        console.log('[3rd grabLord] err: ', err);
+        console.log('[3rd grabLord] result: ', result);
+      });
+    });
   });
 
 }
