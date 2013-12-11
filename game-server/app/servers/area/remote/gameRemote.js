@@ -17,6 +17,7 @@ var GameRemote = function(app) {
   // this.tableService = app.get('tableService');
   this.channelService = app.get('channelService');
   this.sessionService = app.get('localSessionService');
+  this.cardService = app.get('cardService');
 };
 
 var remoteHandler = GameRemote.prototype;
@@ -33,10 +34,12 @@ remoteHandler.readyGame = function(msg, cb) {
   var player = room.getPlayer(uid);
   var table = room.getGameTable(player.tableId);
   // player.state = PlayerState.ready;
-  player.ready();
+  // player.ready();
 
   // messageService.pushTableMessage(this.app, table, "onPlayerJoin", table.toParams(), null);
-  utils.invokeCallback(cb, {result:0} );
+  this.cardService.playerReady(table, player, function(err, data) {
+    utils.invokeCallback(cb, err, data);
+  });
   //cb(null, {result: 0});
 };
 
@@ -46,14 +49,15 @@ remoteHandler.grabLord = function(msg, cb) {
   var room_id = msg.room_id;
   var table_id = msg.table_id;
   var lordValue = msg.lordValue;
+  var seqNo = msg.seqNo;
 
   var room = roomService.getRoom(room_id);
   var player = room.getPlayer(uid);
   var table = room.getGameTable(player.tableId);
 
-  cardService.grabLord(table, player, lordValue);
-
-  utils.invokeCallback(cb, {result:0} );
+  this.cardService.grabLord(table, player, lordValue, seqNo, function(err, result){
+    utils.invokeCallback(cb, err, result);
+  });
 };
 
 remoteHandler.playCard = function(msg, cb) {
@@ -62,11 +66,13 @@ remoteHandler.playCard = function(msg, cb) {
   var room_id = msg.room_id;
   var table_id = msg.table_id;
   var card = msg.card;
+  var seqNo = msg.seqNo;
 
   var room = roomService.getRoom(room_id);
   var table = room.getGameTable(table_id);
   var player = room.getPlayer(uid);
 
-  cardService.playCard(table, player, card);
-  cb(null, {result: 0});
+  this.cardService.playCard(table, player, card, seqNo, false, function(err, data) {
+    utils.invokeCallback(cb, err, data);
+  });
 };

@@ -17,9 +17,9 @@ Handler.prototype.ready = function(msg, session, next) {
   var uid = session.uid;
   var sid = session.frontendId;
 
-  this.app.rpc.area.gameRemote.readyGame(session, {uid: uid, serverId: sid, room_id: room_id}, function(data) {
+  this.app.rpc.area.gameRemote.readyGame(session, {uid: uid, serverId: sid, room_id: room_id}, function(err, data) {
     logger.info("[Connector.ready] area.gameRemote.readyGame returned: ", data);
-    utils.invokeCallback(next, null, data);
+    utils.invokeCallback(next, err, data);
     // next(null, data);
   });
 };
@@ -30,17 +30,19 @@ Handler.prototype.grabLord = function(msg, session, next) {
   var sid = session.frontendId;
   var table_id = session.get('table_id');
   var lordValue = msg.lordValue;
+  var seqNo = msg.seqNo;
 
   var params = {
     uid: uid,
     serverId: sid,
     room_id: room_id,
     table_id: table_id,
-    lordValue: lordValue
+    lordValue: lordValue,
+    seqNo: seqNo
   };
 
-  this.app.rpc.area.gameRemote.grabLord(session, params, function(data) {
-    utils.invokeCallback(next, null, data);
+  this.app.rpc.area.gameRemote.grabLord(session, params, function(err, data) {
+    utils.invokeCallback(next, err, data);
   });
 
 };
@@ -51,17 +53,21 @@ Handler.prototype.playCard = function(msg, session, next) {
   var sid = session.frontendId;
   var table_id = session.get('table_id');
   var card = msg.card;
+  var seqNo = msg.seqNo;
 
   var params = {
     uid: uid,
     serverId: sid,
     room_id: room_id,
     table_id: table_id,
+    seqNo: seqNo,
     card: card
   };
 
-  this.app.rpc.area.gameRemote.playCard(session, params, function(data) {
-    utils.invokeCallback(next, null, data);
+  logger.debug('[playCard] msg => %j', msg);
+
+  this.app.rpc.area.gameRemote.playCard(session, params, function(err, data) {
+    utils.invokeCallback(next, err, data);
   });
 
 };

@@ -35,7 +35,7 @@ util.inherits(GameTable, DomainBase);
 // 导出GameTable
 module.exports = GameTable;
 // 设置用于toParams导出的json属性映射
-GameTable.jsonAttrs = {tableId: "tid", players: "players"};
+GameTable.jsonAttrs = {tableId: "tableId", players: "players"};
 
 GameTable.prototype.getPlayerByUserId = function(userId) {
   for (var index in this.players) {

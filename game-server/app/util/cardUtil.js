@@ -31,12 +31,11 @@ cardUtil.pokeCardsToIdChars = function(pokeCards) {
   return pokeCards.map(_pokeCardFieldValue('idChar')).join('');
 }
 
-
 cardUtil.getCardType = function (pokeCards) {
   var pokeCardIdChars = cardUtil.pokeCardsToIdChars(cardUtil.sortPokeCards(pokeCards));
 
   var cardType = _allCardTypes[pokeCardIdChars];
-  console.log('cardType for %s: ', pokeCardIdChars, cardType);
+  //console.log('cardType for %s: ', pokeCardIdChars, cardType);
 
   return cardType;
 };

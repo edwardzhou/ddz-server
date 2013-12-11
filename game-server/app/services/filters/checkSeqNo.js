@@ -5,6 +5,7 @@ var util = require('util');
 var utils = require('../../util/utils');
 var FilterBase = require('./filterBase');
 var ErrorCode = require('../../consts/errorCode');
+var logger = require('pomelo-logger').getLogger('pomelo', __filename);
 
 var CheckSeqNoFilter = function(opts) {
   FilterBase.call(this, opts);
@@ -27,7 +28,11 @@ CheckSeqNoFilter.execute = function(params, cb) {
   var nextUserId = (!!pokeGame)? pokeGame.token.nextUserId : table.nextUserId;
   var currentSeqNo = (!!pokeGame)? pokeGame.token.currentSeqNo : table.currentSeqNo;
 
+  logger.debug("[CheckSeqNoFilter.execute] table_id: %d, player.userId: %d, seqNo: %d, pokeGame is null => %j, nextUserId: %d, currentSeqNo: %d",
+    table.tableId, player.userId, seqNo, pokeGame == null, nextUserId, currentSeqNo);
+
   if (player.userId != nextUserId || seqNo != currentSeqNo) {
+    logger.error('Player[%d] is not in turn.', player.userId);
     utils.invokeCallback(cb, {err: ErrorCode.NOT_IN_TURN});
     return false;
   }

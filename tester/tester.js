@@ -5,11 +5,14 @@ var host = "dev";
 var port = "4001";
 //var room_id = 2;
 var table_id = -1;
+//var seqNo = 0;
 
 var userId = Math.ceil(Math.random() * 1000) + 1000;
 
 var connectServer = function(room_id, userId) {
   var pomelo = newPomelo();
+  var seqNo = 0;
+  var pokeCards = "";
 
   console.log("[%d] this userId: %s", userId, userId);
 
@@ -19,17 +22,23 @@ var connectServer = function(room_id, userId) {
   pomelo.on('onPlayerLeave', function(msg){
     console.log('[%d] onPlayerLeave: ', userId, JSON.stringify(msg));
   });
+  pomelo.on('onPlayerReady', function(msg) {
+    console.log('[%d] onPlayerReady: ', userId, JSON.stringify(msg));
+  });
   pomelo.on('onGameStart', function(msg){
     console.log('[%d] onGameStart: ', userId, JSON.stringify(msg));
+    pokeCards = msg.pokeCards;
     if (msg.grabLord > 0) {
-      grabLord(3);
+      seqNo = msg.seqNo;
+      grabLord(3, 1);
     }
   });
   pomelo.on('onGrabLord', function(msg){
     console.log('[%d] onGrabLord: ', userId, JSON.stringify(msg));
     if (!!msg.lordUserId && msg.lordUserId == userId) {
+      seqNo = msg.seqNo;
       setTimeout(function() {
-        playCard('a');
+        playCard(pokeCards[0], seqNo);
       }, 1000);
       //playCard('a');
     }
@@ -37,14 +46,16 @@ var connectServer = function(room_id, userId) {
   pomelo.on('onPlayCard', function(msg) {
     console.log('[%d] onPlayCard:  ', userId, JSON.stringify(msg));
     if (msg.nextUserId == userId) {
+      seqNo = msg.seqNo;
       setTimeout(function() {
-        playCard('a');
+        playCard(pokeCards[0], seqNo);
       }, 1000);
     }
   });
 
-  function playCard(card) {
-    pomelo.request('connector.gameHandler.playCard', {card: card}, function(data) {
+  function playCard(card, seqNo) {
+    console.log('[%d] playCard: ', userId, arguments);
+    pomelo.request('connector.gameHandler.playCard', {card: card, seqNo: seqNo}, function(data) {
     });
   }
 
@@ -70,9 +81,10 @@ var connectServer = function(room_id, userId) {
     });
   }
 
-  function grabLord(lordValue) {
+  function grabLord(lordValue, seqNo) {
     pomelo.request("connector.gameHandler.grabLord", {
-      lordValue: lordValue
+      lordValue: lordValue,
+      seqNo: seqNo
     }, function(data) {
       console.log("[%s] grabLord success [lordValue: %d].", userId, lordValue);
     });
@@ -97,19 +109,19 @@ var connectServer = function(room_id, userId) {
             console.log("[%d] user: ", userId, JSON.stringify(user));
           }
 
-          table_id = table.tid;
+          table_id = table.tableId;
 
           readyGame();
 
         });
 
-        pomelo.request("connector.entryHandler.queryRooms", {}, function(data) {
-          console.log("[%d] rooms: " , userId, JSON.stringify(data));
-          for(var index in data) {
-            var room = data[index];
-            console.log("[%d] room: " , userId, JSON.stringify(room));
-          }
-        });
+//        pomelo.request("connector.entryHandler.queryRooms", {}, function(data) {
+//          console.log("[%d] rooms: " , userId, JSON.stringify(data));
+//          for(var index in data) {
+//            var room = data[index];
+//            console.log("[%d] room: " , userId, JSON.stringify(room));
+//          }
+//        });
 
       });
     });
@@ -126,7 +138,7 @@ var opts = {
   "port" : 4001,
   "start" : 1000,
   "count" : 99,
-  "room_id" : 1
+  "room_id" : -1
 };
 
 
@@ -143,9 +155,13 @@ var startId = Number(opts.start);
 var count = opts.count;
 host = opts.server;
 port = opts.port;
+room_id = opts.room_id;
 
 for(var i=0; i<count; i++) {
-  connectServer((i%3 +1), startId + i);
+  var rid = room_id;
+  if (rid < 0)
+    rid = (i%3 + 1);
+  connectServer(rid, startId + i);
 }
 
 process.stdin.resume();

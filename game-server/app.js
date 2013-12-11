@@ -38,12 +38,15 @@ app.configure('production|development', 'connector|gate', function () {
 
 // Configure for area server
 app.configure('production|development', 'area', function () {
+  require('./app/util/cardUtil').buildCardTypes();
   var servers = app.getServersByType('area');
   logger.info("app.getServerId: %s", app.getServerId());
   logger.info("server: %s", servers);
   roomService.init(app, [app.getCurServer().room_id] );
   require('./app/services/messageService').init(app);
-  require('./app/services/cardService').init(app);
+  var cardService = require('./app/services/cardServiceFactory').createNormalCardService();
+  app.set('cardService', cardService);
+  //require('./app/services/cardService').init(app);
   //app.getCurServer();
   tableService.init();
 });

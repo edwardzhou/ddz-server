@@ -11,6 +11,13 @@ var GameEvent = require('../consts/consts').Event.GameEvent;
 var GameAction = require('../consts/consts').GameAction;
 var async = require('async');
 
+var GameActionNames = {};
+GameActionNames[ GameAction.GRAB_LORD ] = 'grabLordAction';
+GameActionNames[ GameAction.GAME_START ] = 'startGameAction';
+GameActionNames[ GameAction.PLAY_CARD ] = 'playCardAction';
+
+
+
 var CardService = function(app) {
   this.theApp = app;
   this.actionsConfig = {}
@@ -36,6 +43,15 @@ exp.configGameActionFilters = function(gameAction, beforeFilters, afterFilters) 
     before: beforeFilters,
     after: afterFilters
   };
+};
+
+exp.configGameAction = function(gameAction, action, beforeFilters, afterFilters) {
+  this.actionsConfig[gameAction] = {
+    gameAction: gameAction,
+    before: beforeFilters,
+    after: afterFilters
+  };
+  this[ GameActionNames[gameAction] ] = action;
 };
 
 var runAction = function(action, params, beforeFilters, afterFilters, cb) {
@@ -113,22 +129,24 @@ exp.playerJoin = function(table, player, next) {
  * @param next
  */
 exp.playerReady = function(table, player, next) {
+  var self = this;
   // 玩家状态设为 READY
   player.state = PlayerState.READY;
   // 通知同桌玩家
   this.messageService.pushTableMessage(table, GameEvent.playerReady, table.toParams(), null);
-
-  utils.invokeCallback(next, null, null);
 
   // 如果3个玩家都已就绪，这开始牌局
   if (table.players.length == 3 &&
     table.players[0].isReady() &&
     table.players[1].isReady() &&
     table.players[2].isReady()) {
-    //process.nextTick(function() {
-      this.startGame(table);
-    //});
+    logger.info("table[%d] all players are ready, start new game.", table.tableId);
+    process.nextTick(function() {
+      self.startGame(table);
+    });
   }
+
+  utils.invokeCallback(next, null, {result: 0});
 };
 
 exp.playerReadyTimeout = function(table, player, next) {
@@ -141,6 +159,7 @@ exp.playerReadyTimeout = function(table, player, next) {
  * @param next
  */
 exp.startGame = function (table, next) {
+  logger.info("start a new game for table: ", table.tableId);
   var self = this;
   this.startGameAction.execute(table, function(err) {
     var newPokeGame = table.pokeGame;
@@ -153,6 +172,7 @@ exp.startGame = function (table, next) {
           grabLord: (player.userId == newPokeGame.grabbingLord.nextUserId ? 1 : 0),
           pokeCards: player.pokeCardsString(),
           gameId: newPokeGame.gameId,
+          player: player.toParams(),
           seqNo: (player.userId == newPokeGame.grabbingLord.nextUserId ? seqNo : 0)
         },
         [player.getUidSid()],
@@ -202,15 +222,18 @@ exp.grabLord = function(table, player, lordValue, seqNo, next) {
   var action = function(params, callback) {
     self.grabLordAction.doGrabLord(table, player, lordValue, function(err, result) {
       actionResult = result;
+      if (!!table.pokeGame && !!table.pokeGame.lordUserId) {
+        params.keepNextUserId = true;
+      }
       callback(err, params);
     });
   };
 
   runAction(action, params, actionFilter.before, actionFilter.after, function(err, result) {
     if (!!err) {
-      utils.invokeCallback(next, err);
+      utils.invokeCallback(next, err, result);
     } else {
-      utils.invokeCallback(next, {resultCode:0});
+      utils.invokeCallback(next, null, {resultCode:0});
 
       var pokeGame = table.pokeGame;
       var eventName = GameEvent.grabLord;
@@ -218,6 +241,8 @@ exp.grabLord = function(table, player, lordValue, seqNo, next) {
       if (gameAbandoned) {
         eventName = GameEvent.gameAbandonded;
       }
+
+      actionResult.seqNo = pokeGame.token.currentSeqNo;
 
       self.messageService.pushTableMessage(table,
         eventName,
@@ -233,10 +258,10 @@ exp.grabLord = function(table, player, lordValue, seqNo, next) {
           self.grabLord(table, player, 0, seqNo, null);
         });
       } else {
-        setupNextPlayerTimeout(table, function(table, player, seqNo){
-          var pokeChar = player.pokeCards[0].pokeChar;
-          self.playCard(table, player, pokeChar, seqNo, true, null);
-        }, 3)
+//        setupNextPlayerTimeout(table, function(table, player, seqNo){
+//          var pokeChar = player.pokeCards[0].pokeChar;
+//          self.playCard(table, player, pokeChar, seqNo, true, null);
+//        }, 3)
       }
     }
   });
@@ -253,6 +278,9 @@ exp.grabLord = function(table, player, lordValue, seqNo, next) {
  */
 exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
 
+  logger.debug("table: %j, player: %j, pokeChars: %j, seqNo: %j, isTimeout: %j",
+    table.tableId, player.userId, pokeChars, seqNo, isTimeout);
+
   var self = this;
   var params = {table: table, player: player, seqNo: seqNo};
   var actionResult = null;
@@ -268,11 +296,11 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
 
   runAction(action, params, actionFilter.before, actionFilter.after, function(err, result) {
     if (!!err) {
-      utils.invokeCallback(next, err);
+      utils.invokeCallback(next, err, result);
       return;
     }
 
-    utils.invokeCallback(next, {resultCode:0});
+    utils.invokeCallback(next, null, {resultCode:0});
 
     var pokeGame = table.pokeGame;
     var eventName = GameEvent.playCard;
@@ -283,7 +311,7 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
         playerId: player.userId,
         pokeChars: actionResult.pokeChars,
         nextUserId: pokeGame.token.nextUserId,
-        currentSeqNo: pokeGame.token.currentSeqNo
+        seqNo: pokeGame.token.currentSeqNo
       },
       null );
 

@@ -16,8 +16,11 @@ IncreateSeqNoFilter.execute = function(params, cb) {
   var player = params.player;
 
   if (!!pokeGame) {
-    var nextPlayer = pokeGame.getNextPlayer(player.userId);
-    pokeGame.token.nextUserId = nextPlayer.userId;
+    if (!params.keepNextUserId) {
+      var nextPlayer = pokeGame.getNextPlayer(player.userId);
+      pokeGame.token.nextUserId = nextPlayer.userId;
+    }
+
     pokeGame.token.currentSeqNo ++;
   }
 

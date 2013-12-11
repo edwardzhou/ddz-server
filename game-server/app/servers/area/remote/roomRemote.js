@@ -40,16 +40,16 @@ remoteHandler.enter = function(uid, sid, sessionId, room_id, cb) {
   // 进入房间，并取得玩家所属桌子
   var table = roomService.enterRoom(new Player(player), room_id, -1);
   // cardServer挂接table的playerReady事件
-  utils.on(table, "playerReady", cardService.onPlayerReady);
+  //utils.on(table, "playerReady", cardService.onPlayerReady);
 
   var thisServerId = self.app.getServerId();
-  var msg = table.toParams()
+  var msg = table.toParams();
 
   // 通知桌子的其他玩家，有新玩家进入
   messageService.pushTableMessage(table, "onPlayerJoin", msg, null);
 
   // 返回结果
-  cb(null, thisServerId, table);
+  cb(null, thisServerId, msg);
 };
 
 /**

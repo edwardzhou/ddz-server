@@ -6,23 +6,18 @@ var CardService = require('../../app/services/cardService');
 var GameRoom = require('../../app/domain/gameRoom');
 var GameTable = require('../../app/domain/gameTable');
 var Player = require('../../app/domain/player');
-var StartGameAction = require('../../app/services/actions/startGame');
-var GrabGameAction = require('../../app/services/actions/grabLord');
-var PlayCardAction = require('../../app/services/actions/playCard');
-var CheckSeqNoFilter = require('../../app/services/filters/checkSeqNo');
-var IncreaseSeqNoFilter = require('../../app/services/filters/increaseSeqNo');
-var CancelActionTimeoutFilter = require('../../app/services/filters/cancelActionTimeout');
-var IncreasePlaysAfterFilter = require('../../app/services/filters/increasePlays');
+//var StartGameAction = require('../../app/services/actions/startGame');
+//var GrabGameAction = require('../../app/services/actions/grabLord');
+//var PlayCardAction = require('../../app/services/actions/playCard');
+//var CheckSeqNoFilter = require('../../app/services/filters/checkSeqNo');
+//var IncreaseSeqNoFilter = require('../../app/services/filters/increaseSeqNo');
+//var CancelActionTimeoutFilter = require('../../app/services/filters/cancelActionTimeout');
+//var IncreasePlaysAfterFilter = require('../../app/services/filters/increasePlays');
 var GameAction = require('../../app/consts/consts').GameAction;
 var CardUtil = require('../../app/util/cardUtil');
+var CardServiceFactory = require('../../app/services/cardServiceFactory');
 
-var cardService = new CardService();
-
-cardService.init(
-  {
-    messageService: {pushTableMessage: function() {}}
-  }
-);
+var cardService = CardServiceFactory.createNormalCardService();
 
 function testStartGame() {
 
@@ -52,17 +47,17 @@ function testStartGame() {
 //  cardService.startGameAction = { execute: function() {
 //    console.log("startGameAction: %j", arguments);
 //  }};
-  cardService.startGameAction = StartGameAction;
-
-  var beforeFilters = [CheckSeqNoFilter];
-  var afterFilters = [IncreaseSeqNoFilter];
-  cardService.configGameActionFilters(GameAction.GRAB_LORD, beforeFilters, afterFilters);
-  cardService.grabLordAction = GrabGameAction;
-
-  beforeFilters = [CheckSeqNoFilter, CancelActionTimeoutFilter];
-  afterFilters = [IncreasePlaysAfterFilter, IncreaseSeqNoFilter]
-  cardService.configGameActionFilters(GameAction.PLAY_CARD, beforeFilters, afterFilters);
-  cardService.playCardAction = PlayCardAction;
+//  cardService.startGameAction = StartGameAction;
+//
+//  var beforeFilters = [CheckSeqNoFilter];
+//  var afterFilters = [IncreaseSeqNoFilter];
+//  cardService.configGameActionFilters(GameAction.GRAB_LORD, beforeFilters, afterFilters);
+//  cardService.grabLordAction = GrabGameAction;
+//
+//  beforeFilters = [CheckSeqNoFilter, CancelActionTimeoutFilter];
+//  afterFilters = [IncreasePlaysAfterFilter, IncreaseSeqNoFilter]
+//  cardService.configGameActionFilters(GameAction.PLAY_CARD, beforeFilters, afterFilters);
+//  cardService.playCardAction = PlayCardAction;
 
   cardService.playerReady(table, table.players[0], function() {
   });
@@ -74,7 +69,7 @@ function testStartGame() {
   var pokeGame = table.pokeGame;
   var player = pokeGame.getPlayerByUserId(pokeGame.token.nextUserId);
   var seqNo = pokeGame.token.currentSeqNo;
-  cardService.grabLord(table, player, 1, seqNo, function(err, result) {
+  cardService.grabLord(table, player, 3, seqNo, function(err, result) {
     console.log('[grabLord] err: ', err);
     console.log('[grabLord] result: ', result);
 

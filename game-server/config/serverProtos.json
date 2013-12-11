@@ -7,14 +7,16 @@
     },
     "required Player player": 1,
     "required uInt32 grabLord": 2,
-    "required string pokeCards": 3
+    "required string pokeCards": 3,
+    "required uInt32 seqNo": 4
   },
   "onGrabLord" : {
     "required uInt32 lordValue": 1,
     "required uInt32 nextUserId": 2,
-    "optional uInt32 lordUserId": 3,
-    "optional uInt32 lastUserId": 4,
-    "optional string lordPokeCards": 5
+    "required uInt32 seqNo": 3,
+    "optional uInt32 lordUserId": 4,
+    "optional uInt32 lastUserId": 5,
+    "optional string lordPokeCards": 6
 
   }
 }

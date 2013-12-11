@@ -5,6 +5,7 @@
 var utils = require('../../util/utils');
 var GameState = require('../../consts/consts').GameState;
 var ErrorCode = require('../../consts/errorCode');
+var CardUtil = require('../../util/cardUtil');
 
 var GrabLordAction = function() {
 
@@ -63,6 +64,7 @@ GrabLordAction.doGrabLord = function(gameTable, player, lordValue, cb) {
     pokeGame.lordUserId = player.userId;
     pokeGame.lordValue = pokeGame.grabbingLord.lordValue;
     pokeGame.state = GameState.PLAYING;
+    pokeGame.token.nextUserId = player.userId;
 
     var pokeCards = player.pokeCards.concat(table.lordPokeCards).sort(_sortPokeCard);
     // 玩家获得地主牌
@@ -73,7 +75,7 @@ GrabLordAction.doGrabLord = function(gameTable, player, lordValue, cb) {
       lordValue: pokeGame.lordValue,
       lordUserId: player.userId,
       nextUserId: player.userId,
-      lordPokeCards: cardUtil.pokeCardsToString(table.lordPokeCards)
+      lordPokeCards: CardUtil.pokeCardsToString(table.lordPokeCards)
     };
   } else if (pokeGame.grabbingLord.grabTimes < 3) {
     // 未产生地主，通知
@@ -82,6 +84,7 @@ GrabLordAction.doGrabLord = function(gameTable, player, lordValue, cb) {
     var nextPlayer = pokeGame.players[nextIndex];
 
     pokeGame.nextUserId = nextPlayer.userId;
+    pokeGame.token.nextUserId = nextPlayer.userId;
 
     msgBack = {
       lordValue: lordValue,
