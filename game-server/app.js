@@ -46,8 +46,6 @@ app.configure('production|development', 'area', function () {
   require('./app/services/messageService').init(app);
   var cardService = require('./app/services/cardServiceFactory').createNormalCardService();
   app.set('cardService', cardService);
-  //require('./app/services/cardService').init(app);
-  //app.getCurServer();
   tableService.init();
 });
 

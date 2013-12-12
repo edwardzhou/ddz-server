@@ -6,18 +6,21 @@ var GameRoom = require('../domain/gameRoom');
 var Player = require('../domain/player');
 var PlayerState = require('../consts/consts').PlayerState;
 var GameEvent = require('../consts/consts').Event.GameEvent;
-//var messageService = require('./messageService');
-//var PokeCard = require('../domain/pokeCard');
 var GameAction = require('../consts/consts').GameAction;
 var async = require('async');
 
+// 游戏动作值与属性名对照表，用于简化 @configGameAction 的逻辑
 var GameActionNames = {};
 GameActionNames[ GameAction.GRAB_LORD ] = 'grabLordAction';
 GameActionNames[ GameAction.GAME_START ] = 'startGameAction';
 GameActionNames[ GameAction.PLAY_CARD ] = 'playCardAction';
 
 
-
+/**
+ * 牌逻辑服务
+ * @param app
+ * @constructor
+ */
 var CardService = function(app) {
   this.theApp = app;
   this.actionsConfig = {}
@@ -27,53 +30,43 @@ module.exports = CardService;
 
 var exp = CardService.prototype;
 
-exp.init = function (opts) {
-  opts = opts || {};
-  this.messageService = opts.messageService;
-  this.theApp = opts.theApp || this.theApp;
-  this.grabLordAction = opts.grabLordAction;
-  this.playerJoinAction = opts.playerJoinAction;
-  this.playerReadyAction = opts.playerReadyAction;
-  this.playCardAction = opts.playCardAction;
-};
-
-exp.configGameActionFilters = function(gameAction, beforeFilters, afterFilters) {
-  this.actionsConfig[gameAction] = {
-    gameAction: gameAction,
-    before: beforeFilters,
-    after: afterFilters
-  };
-};
-
-exp.configGameAction = function(gameAction, action, beforeFilters, afterFilters) {
-  this.actionsConfig[gameAction] = {
-    gameAction: gameAction,
-    before: beforeFilters,
-    after: afterFilters
-  };
-  this[ GameActionNames[gameAction] ] = action;
-};
-
+/**
+ * 运行action
+ * 通过async.waterfall流程，顺序执行beforeFilters里的各个filter -> action -> afterFilters里各个filter
+ * 如果中间任意一个环境出错了，流程终止执行，并回调cb通知出错cb(err, ...)；
+ * 如果全部完成，回调cb通知结果cb(null, ...)
+ * @param action 动作类
+ * @param params 要传递个beforeFilters afterFilters的参数
+ * @param beforeFilters filter数组
+ * @param afterFilters filter数组
+ * @param cb 回调，第一个参数表示成功或失败, 成功传null, 失败回传错误信息err
+ */
 var runAction = function(action, params, beforeFilters, afterFilters, cb) {
+  // 用于async.waterfall的任务数组
   var tasks = [];
+  // 压入启动函数, 作用是将params传进filters
   tasks.push(function(callback){
     callback(null, params);
   });
 
+  // 压入beforeFilters
   if (!!beforeFilters) {
     for (var index in beforeFilters) {
       tasks.push(beforeFilters[index].execute);
     }
   }
 
+  // 压入action
   tasks.push(action);
 
+  // 压入afterFilters
   if (!!afterFilters) {
     for (var index in afterFilters) {
       tasks.push(afterFilters[index].execute);
     }
   }
 
+  // waterfall异步执行tasks
   async.waterfall(tasks, function(err, result) {
     if (!!err) {
       utils.invokeCallback(cb, err);
@@ -83,18 +76,31 @@ var runAction = function(action, params, beforeFilters, afterFilters, cb) {
   });
 };
 
-var setupPlayerReadyTimeout = function(table, player, func, seconds) {
+/**
+ * 设置玩家准备超时处理
+ * @param table 玩家所在的table
+ * @param player
+ * @param callback 超时后要执行的动作
+ * @param seconds 超时时间，单位秒, 如果不传，默认30s
+ */
+var setupPlayerReadyTimeout = function(table, player, callback, seconds) {
   var tm = seconds;
   if (!tm)
     tm = 30;
 
   table.playerTimeouts = table.playerTimeouts || [];
   table.playerTimeouts[player.userId] = setTimeout(function() {
-    func(table, player);
+    callback(table, player);
   }, tm * 1000);
 };
 
-var setupNextPlayerTimeout = function (table, func, seconds) {
+/**
+ * 设置下一玩家的超时处理
+ * @param table 需要超时处理的table
+ * @param callback 超时后的动作
+ * @param seconds 超时时间，单位秒, 如果不传，默认30s (托管时3s)
+ */
+var setupNextPlayerTimeout = function (table, callback, seconds) {
   var pokeGame = table.pokeGame;
   var nextPlayer = pokeGame.getPlayerByUserId(pokeGame.token.nextUserId);
   var seqNo = pokeGame.token.currentSeqNo;
@@ -103,10 +109,31 @@ var setupNextPlayerTimeout = function (table, func, seconds) {
     tm = (!nextPlayer.isDelegating())? 35 : 3;
 
   pokeGame.actionTimeout = setTimeout(function(){
-      func(table, nextPlayer, seqNo);
+      callback(table, nextPlayer, seqNo);
     }, tm * 1000);
 };
 
+/**
+ * 配置动作
+ * @param gameAction 动作值
+ * @param action 动作具体逻辑，参见 ./actions/xxx.js
+ * @param beforeFilters 前置过滤器，在执行动作之前被调用，主要用于各种条件检查和游戏事件触发
+ * @param afterFilters 后置过滤器，在动作成功执行后被调用，主要用于参数修改和游戏事件触发
+ */
+exp.configGameAction = function(gameAction, action, beforeFilters, afterFilters) {
+  this.actionsConfig[gameAction] = {
+    gameAction: gameAction,
+    before: beforeFilters,
+    after: afterFilters
+  };
+  this[ GameActionNames[gameAction] ] = action;
+};
+
+/**
+ * 取gameAction的配置 (beforeFilters, afterFilters)
+ * @param gameAction
+ * @returns {*}
+ */
 exp.getActionFilters = function(gameAction) {
   var filterConfig = this.actionsConfig[gameAction];
   if (filterConfig == null) {
@@ -116,6 +143,7 @@ exp.getActionFilters = function(gameAction) {
 
   return filterConfig;
 };
+
 
 exp.playerJoin = function(table, player, next) {
 
@@ -148,6 +176,7 @@ exp.playerReady = function(table, player, next) {
 
   utils.invokeCallback(next, null, {result: 0});
 };
+
 
 exp.playerReadyTimeout = function(table, player, next) {
 
@@ -191,37 +220,15 @@ exp.startGame = function (table, next) {
  * @param next
  */
 exp.grabLord = function(table, player, lordValue, seqNo, next) {
-//  grabLordAction.doGrabLord(table, player, lordValue, function(err, gameTable, msgBack) {
-//    // 有错误
-//    if (err != null) {
-//      utils.invokeCallback(cb, err);
-//      return;
-//    }
-//
-//    var gameEvent = GameEvent.grabLord;
-//    if (gameTable.pokeGame == null) {
-//      // 流局
-//      gameEvent = GameEvent.gameAbandonded;
-//    }
-//
-//    // 回调请求结果
-//    utils.invokeCallback(cb, {resultCode:0});
-//
-//    // 通知叫地主结果
-//    process.nextTick(function() {
-//      this.messageService.pushTableMessage(gameTable, gameEvent, msgBack, null);
-//    });
-//  });
-
   var params = {table: table, player: player, seqNo: seqNo};
   var actionResult = null;
   var actionFilter = this.getActionFilters(GameAction.GRAB_LORD);
-
   var self = this;
 
   var action = function(params, callback) {
     self.grabLordAction.doGrabLord(table, player, lordValue, function(err, result) {
       actionResult = result;
+      // 当地主产生时，保留叫地主过程里指定的下一玩家id , ref to ./filters/increaseSeqNo.js
       if (!!table.pokeGame && !!table.pokeGame.lordUserId) {
         params.keepNextUserId = true;
       }
@@ -232,37 +239,44 @@ exp.grabLord = function(table, player, lordValue, seqNo, next) {
   runAction(action, params, actionFilter.before, actionFilter.after, function(err, result) {
     if (!!err) {
       utils.invokeCallback(next, err, result);
+      return;
+    }
+    utils.invokeCallback(next, null, {resultCode:0});
+
+    var pokeGame = table.pokeGame;
+    var eventName = GameEvent.grabLord;
+
+    //如果pokeGame被清空了，说明流局
+    var gameAbandoned = (pokeGame == null);
+    if (gameAbandoned) {
+      eventName = GameEvent.gameAbandonded;
+    }
+    actionResult.seqNo = pokeGame.token.currentSeqNo;
+
+    // 推送叫地主结果
+    self.messageService.pushTableMessage(table,
+      eventName,
+      actionResult,
+      null );
+
+    // 流局则退出
+    if (gameAbandoned) {
+      return;
+    }
+
+    // 未产生地主？
+    if (pokeGame.lordUserId == null) {
+      // 设置下一玩家叫地主超时时，自动不叫
+      setupNextPlayerTimeout(table, function(table, player, seqNo){
+        self.grabLord(table, player, 0, seqNo, null);
+      });
     } else {
-      utils.invokeCallback(next, null, {resultCode:0});
-
-      var pokeGame = table.pokeGame;
-      var eventName = GameEvent.grabLord;
-      var gameAbandoned = (pokeGame == null);
-      if (gameAbandoned) {
-        eventName = GameEvent.gameAbandonded;
-      }
-
-      actionResult.seqNo = pokeGame.token.currentSeqNo;
-
-      self.messageService.pushTableMessage(table,
-        eventName,
-        actionResult,
-        null );
-
-      if (gameAbandoned) {
-        return;
-      }
-
-      if (pokeGame.lordUserId == null) {
-        setupNextPlayerTimeout(table, function(table, player, seqNo){
-          self.grabLord(table, player, 0, seqNo, null);
-        });
-      } else {
-//        setupNextPlayerTimeout(table, function(table, player, seqNo){
-//          var pokeChar = player.pokeCards[0].pokeChar;
-//          self.playCard(table, player, pokeChar, seqNo, true, null);
-//        }, 3)
-      }
+      // 地主超时自动出一张牌
+      // TODO: 下一步要改用AI在处理
+      setupNextPlayerTimeout(table, function(table, player, seqNo){
+        var pokeChar = player.pokeCards[0].pokeChar;
+        self.playCard(table, player, pokeChar, seqNo, true, null);
+      }, 3)
     }
   });
 

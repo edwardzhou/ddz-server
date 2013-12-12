@@ -29,3 +29,13 @@ Handler.prototype.queryEntry = function(msg, session, next) {
   next(null, {code: Code.OK, host: res.host, port: res.clientPort});
   // next(null, {code: Code.OK, host: res.pubHost, port: res.clientPort});
 };
+
+Handler.prototype.auth = function(msg, session, next) {
+  var username = msg.username;
+  var pwd = msg.pwd;
+  var handsetInfo = msg.handsetInfo;
+  var appInfo = msg.appInfo;
+
+
+
+};

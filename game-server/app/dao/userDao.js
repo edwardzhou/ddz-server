@@ -1,4 +1,4 @@
-var digest = require('digest');
+var crypto = require('crypto');
 var utils = require('../util/utils');
 var User = require('../domain/user');
 var ObjectID = require('mongodb').ObjectID;
@@ -15,11 +15,10 @@ var userDao = module.exports;
  * @param cb
  */
 userDao.createUser = function (userId, nickName, password, appid, version, cb) {
-  MongoClient.connect
-  var passwordSalt = digest.createHash('md5').update(Math.random().toString()).digest('hex');
+  var passwordSalt = crypto.createHash('md5').update(Math.random().toString()).digest('hex');
   var passwordDigest = null;
   if (!!password) {
-    passwordDigest = digest.createHash('md5').update(password + "_" + passwordSalt).digest('hex');
+    passwordDigest = crypto.createHash('md5').update(password + "_" + passwordSalt).digest('hex');
   }
   pomelo.app.get('dbclient').collection('users').insert({
     userId: userId,
@@ -41,7 +40,7 @@ userDao.createUser = function (userId, nickName, password, appid, version, cb) {
   });
 };
 
-userDao.getUserByUserId = function(userId, cb) {
+userDao.getByUserId = function(userId, cb) {
   pomelo.app.get('dbclient').collection('users').findOne({userId: userId}, function(err, document){
     if (err !== null) {
       utils.invokeCallback(cb, {code: err.number, msg: err.message}, null);
@@ -54,7 +53,7 @@ userDao.getUserByUserId = function(userId, cb) {
   });
 };
 
-UserDao.getUserById = function(id, cb) {
+userDao.getUserById = function(id, cb) {
   pomelo.app.get('dbclient').collection('users').findOne({_id: new ObjectID(id)}, function(err, document) {
     if (err !== null) {
       utils.invokeCallback(cb, {code: err.number, msg: err.message}, null);
