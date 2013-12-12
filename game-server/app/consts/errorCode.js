@@ -7,6 +7,11 @@ var ErrorCode = {
   SUCCESS: 0,
   OK: 0,
 
+  // 用户不存在
+  USER_NOT_FOUND: 100,
+  // 密码不匹配
+  PASSWORD_INCORRECT: 101,
+
   // 无效请求
   INVALID_REQUEST: 1001,
   // 非本轮玩家的请求

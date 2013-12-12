@@ -37,17 +37,28 @@ function testGetByUserId() {
 //      console.log('save: ', err, data);
 //    });
 //  });
+
   User.findOne({userId: 10001}, function(err, user) {
     console.log('getByUserId: ', err, user);
-    user.updatedAt = Date.now();
-    user.lastSignedIn.signedInTime = Date.now();
-    user.save();
+    if (!!user) {
+      user.updatedAt = Date.now();
+      user.lastSignedIn.signedInTime = Date.now();
+      user.save();
+    }
   });
 }
 
+function testLogin() {
+
+  userDao.login({userId: 10001, password: '1111111'}, function(err, user) {
+    console.log('test login', err, user);
+  });
+
+};
+
 function runTest() {
   //testCreateUser();
-  testGetByUserId();
+  testLogin();
 }
 
 //MongoClient.connect('mongodb://dev/mydb', {}, function(err, db) {
