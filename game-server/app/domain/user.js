@@ -12,8 +12,13 @@ var userSchema = new mongoose.Schema({
   passwordDigest: String,
   authToken: String,
   appid: Number,
+  appVersion: String,
+  locked: {type: Boolean, default: false},
+  lockedAt: Date,
+  comment: String,
   signedUp: {
     appid: Number,
+    appVersion: String,
     handset: {
       model: String,
       os_ver: String,
@@ -33,6 +38,7 @@ var userSchema = new mongoose.Schema({
   },
   lastSignedIn: {
     appid: Number,
+    appVersion: String,
     handset: {
       model: String,
       os_ver: String,
@@ -63,6 +69,28 @@ var generatePassword = function(password, salt) {
   return crypto.createHash('md5').update(password + "_" + salt).digest('hex');
 };
 
+var copyHandset = function(src, dst) {
+  if (src == null) {
+    return;
+  }
+
+  dst.model = src.model;
+  dst.os_ver = src.os_ver;
+  dst.fingerprint = src.fingerprint;
+  dst.brand = src.brand;
+  dst.manufacture = src.manufacture;
+  dst.cpuAbi = src.cpuAbi;
+  dst.board = src.board;
+  dst.device = src.device;
+  dst.product = src.product;
+  dst.display = src.display;
+  dst.buildId = src.buildId;
+  dst.imsi = src.imsi;
+  dst.imei = src.imei;
+  dst.mac = src.mac;
+};
+
+
 User.prototype.setPassword = function(password) {
   if (!this.passwordSalt) {
     this.passwordSalt = crypto.createHash('md5').update(Math.random().toString()).digest('hex');
@@ -77,4 +105,14 @@ User.prototype.verifyPassword = function(password) {
   return pwdDigest == this.passwordDigest;
 };
 
+User.prototype.setSignedInHandsetInfo = function(handsetInfo) {
+  copyHandset(handsetInfo, this.lastSignedIn.handset);
+};
 
+User.prototype.setSignedUpHandsetInfo = function(handsetInfo) {
+  copyHandset(handsetInfo, this.signedUp.handset);
+};
+
+User.prototype.refreshAuthToken = function() {
+
+};

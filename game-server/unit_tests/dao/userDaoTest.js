@@ -50,7 +50,7 @@ function testGetByUserId() {
 
 function testLogin() {
 
-  userDao.login({userId: 10001, password: '1111111'}, function(err, user) {
+  userDao.signIn({userId: 10001, password: '123456'}, function(err, user) {
     console.log('test login', err, user);
   });
 

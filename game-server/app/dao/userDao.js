@@ -85,7 +85,7 @@ userDao.getUserById = function(id, cb) {
   });
 };
 
-userDao.login = function(loginInfo, cb) {
+userDao.signIn = function(loginInfo, cb) {
   var loginName = loginInfo.userId;
   var password = loginInfo.password;
   User.findOne({userId: loginName}, function(err, user) {
@@ -103,6 +103,9 @@ userDao.login = function(loginInfo, cb) {
       utils.invokeCallback(cb, {err: ErrorCode.PASSWORD_INCORRECT}, null);
       return;
     }
+
+    user.refreshAuthToken();
+    user.setSignedInHandsetInfo(loginInfo.handsetInfo);
 
 
     utils.invokeCallback(cb, null, user);
