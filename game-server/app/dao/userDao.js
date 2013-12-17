@@ -3,6 +3,8 @@ var utils = require('../util/utils');
 var User = require('../domain/user');
 var ObjectID = require('mongodb').ObjectID;
 var ErrorCode = require('../consts/errorCode');
+var async = require('async');
+var SignInType = require('../consts/consts').SignInType;
 
 var userDao = module.exports;
 
@@ -15,10 +17,10 @@ var userDao = module.exports;
  * @param cb
  */
 userDao.createUser = function (userId, nickName, password, appid, version, cb) {
-  var passwordSalt = crypto.createHash('md5').update(Math.random().toString()).digest('hex');
+  var passwordSalt = md5.update(Math.random().toString()).digest('hex');
   var passwordDigest = null;
   if (!!password) {
-    passwordDigest = crypto.createHash('md5').update(password + "_" + passwordSalt).digest('hex');
+    passwordDigest = md5.update(password + "_" + passwordSalt).digest('hex');
   }
 
   var user = new User({
@@ -88,27 +90,78 @@ userDao.getUserById = function(id, cb) {
 userDao.signIn = function(loginInfo, cb) {
   var loginName = loginInfo.userId;
   var password = loginInfo.password;
-  User.findOne({userId: loginName}, function(err, user) {
+  var authToken = loginInfo.authToken;
+  var signInType = loginInfo.signInType;
+  var signInOk = false;
+
+  async.auto({
+    findUser: function(callback) {
+      User.findOne( {userId: loginName}, function(err, user) {
+        callback(null, user);
+      });
+    },
+    checkUserExists: ['findUser', function(callback, results) {
+      var user = results.findUser;
+      if (user == null) {
+        callback({err: ErrorCode.USER_NOT_FOUND}, false);
+        return;
+      }
+      callback(null, true);
+    }],
+    checkAuthToken: ['checkUserExists', function(callback, results){
+      if (signInType != SignInType.BY_AUTH_TOKEN) {
+        callback(null, false);
+        return;
+      }
+
+      signInOk = results.findUser.verifyToken(authToken);
+      var err = null;
+      if (!signInOk) {
+        err = {err: ErrorCode.PASSWORD_INCORRECT};
+      }
+      callback(err, signInOk);
+     }],
+    checkPassword: ['checkUserExists', function(callback, results) {
+      if (signInType != SignInType.BY_PASSWORD) {
+        callback();
+        return false;
+      }
+
+      signInOk = results.findUser.verifyPassword(password);
+      var err = null;
+      if (!signInOk) {
+        err = {err: ErrorCode.PASSWORD_INCORRECT};
+      }
+      callback(err, signInOk);
+    }],
+    updateAuthToken: ['checkPassword', function(callback, results) {
+      if (results.checkPassword != true) {
+        callback();
+        return;
+      }
+
+      var user = results.findUser;
+      console.log('updateAuthToken', user);
+      user.lastSignedIn.signedInTime = Date.now();
+      user.setSignedInHandsetInfo(loginInfo.handset);
+      user.updatedAt = Date.now();
+      user.save(function(err) {
+        callback(err);
+      });
+    }]
+  }, function(err, results){
+    console.log(err, results);
+
     if (!!err) {
       utils.invokeCallback(cb, err, null);
       return;
     }
 
-    if (user == null) {
-      utils.invokeCallback(cb, {err: ErrorCode.USER_NOT_FOUND}, null);
-      return;
-    }
-
-    if (!user.verifyPassword(password)) {
+    if (!signInOk) {
       utils.invokeCallback(cb, {err: ErrorCode.PASSWORD_INCORRECT}, null);
-      return;
+    } else {
+      utils.invokeCallback(cb, null, results.findUser);
     }
-
-    user.refreshAuthToken();
-    user.setSignedInHandsetInfo(loginInfo.handsetInfo);
-
-
-    utils.invokeCallback(cb, null, user);
-
   });
+
 };

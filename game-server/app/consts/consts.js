@@ -100,5 +100,10 @@ module.exports = {
     ROCKET              : 14 // 火箭(王炸)
   },
 
+  SignInType: {
+    BY_AUTH_TOKEN: 1,
+    BY_PASSWORD: 2
+  },
+
   STUB: null
 };

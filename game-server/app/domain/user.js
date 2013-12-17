@@ -61,12 +61,12 @@ var userSchema = new mongoose.Schema({
   updatedAt: {type: Date, default: Date.now}
 });
 
-var User = mongoose.model('User', userSchema);
-
-module.exports = User;
-
-var generatePassword = function(password, salt) {
-  return crypto.createHash('md5').update(password + "_" + salt).digest('hex');
+var md5 = function(password, salt) {
+  var data = password;
+  if (!!salt) {
+    data = data + "_" + salt;
+  }
+  return crypto.createHash("md5").update(data).digest('hex');
 };
 
 var copyHandset = function(src, dst) {
@@ -90,29 +90,48 @@ var copyHandset = function(src, dst) {
   dst.mac = src.mac;
 };
 
-
-User.prototype.setPassword = function(password) {
+userSchema.virtual('password').set(function(password) {
   if (!this.passwordSalt) {
-    this.passwordSalt = crypto.createHash('md5').update(Math.random().toString()).digest('hex');
+    this.passwordSalt = md5(Math.random().toString());
   }
 
-  this.passwordDigest = generatePassword(password, this.passwordSalt);
-};
+  this.passwordDigest = md5(password, this.passwordSalt);
+});
 
-User.prototype.verifyPassword = function(password) {
-  var pwdDigest = generatePassword(password, this.passwordSalt);
+//User.prototype.setPassword = function(password) {
+//  if (!this.passwordSalt) {
+//    this.passwordSalt = generatePassword(Math.random().toString(), "salt");
+//  }
+//
+//  this.passwordDigest = generatePassword(password, this.passwordSalt);
+//};
+
+userSchema.methods.verifyPassword = function(password) {
+  var pwdDigest = md5(password, this.passwordSalt);
 
   return pwdDigest == this.passwordDigest;
 };
 
-User.prototype.setSignedInHandsetInfo = function(handsetInfo) {
+userSchema.methods.setSignedInHandsetInfo = function(handsetInfo) {
   copyHandset(handsetInfo, this.lastSignedIn.handset);
 };
 
-User.prototype.setSignedUpHandsetInfo = function(handsetInfo) {
+userSchema.methods.setSignedUpHandsetInfo = function(handsetInfo) {
   copyHandset(handsetInfo, this.signedUp.handset);
 };
 
-User.prototype.refreshAuthToken = function() {
+userSchema.methods.getAuthToken = function() {
+  var imei = this.lastSignedIn.handset.imei || this.lastSignedIn.handset.mac;
+  var lastLoginTime = this.lastSignedIn.signedInTime || this.createdAt;
+  var pwdSalt = this.passwordSalt;
 
+  return md5(imei + '_' + lastLoginTime.valueOf() + '_' + pwdSalt);
 };
+
+userSchema.methods.verifyToken = function(authToken) {
+  return this.getAuthToken() == authToken;
+};
+
+var User = mongoose.model('User', userSchema);
+
+module.exports = User;

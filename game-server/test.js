@@ -117,28 +117,24 @@ var CardUtil = require('./app/util/cardUtil');
 //
 //console.log(r.toParams());
 
-var mongoose = require('mongoose');
+mongoose = require('mongoose');
 
-mongoose.connect('mongodb://192.168.0.240/test');
+mongoose.connect('mongodb://192.168.0.240/mydb');
 
-var PokeGame = require('./app/domain/pokeGame');
+User = require('./app/domain/user');
+userDao = require('./app/dao/userDao');
 
-var p = PokeGame.newGame(1, 2, [{playerId: 1}, {playerId: 2}, {playerId: 3}]);
-//p.save();
+//userDao.signIn({userId:10001, password: '123456', signInType: 2}, function(err, user) {
+//  console.log('call signIn: ', err, user)
+//  console.log(user.getAuthToken());
+//});
 
-var mess = require('mess');
+userDao.signIn({userId:10001, authToken: '77c52c96afab3e6f8327baa527a4bc11', signInType: 1}, function(err, user) {
+  console.log('call signIn: ', err, user)
+  console.log(user.getAuthToken());
 
-console.log(mess('abcdefg'))
-var GameRoom = require ('./app/domain/gameRoom');
+  process.exit();
+});
 
-var s = new GameRoom({roomId:3, roomName: 'test room 3'});
-var props = s;
-for (var p in props) {
-  console.log(p);
-}
-
-console.log('s.roomId => ', s.roomId);
-console.log('s.toParams => ', s.toParams());
-s.roomId = 5;
-console.log('s.roomId => ', s.roomId);
-console.log('s.toParams => ', s.toParams());
+process.nextTick(function() {
+});
