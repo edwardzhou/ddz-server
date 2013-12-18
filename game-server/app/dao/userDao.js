@@ -92,6 +92,7 @@ userDao.signIn = function(loginInfo, cb) {
   var password = loginInfo.password;
   var authToken = loginInfo.authToken;
   var signInType = loginInfo.signInType;
+  var imei = loginInfo.handset.imei;
   var signInOk = false;
 
   async.auto({
@@ -114,7 +115,7 @@ userDao.signIn = function(loginInfo, cb) {
         return;
       }
 
-      signInOk = results.findUser.verifyToken(authToken);
+      signInOk = results.findUser.verifyToken(authToken, imei);
       var err = null;
       if (!signInOk) {
         err = {err: ErrorCode.PASSWORD_INCORRECT};

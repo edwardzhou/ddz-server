@@ -1,5 +1,6 @@
 var Code = require('../../../../../shared/code');
 var dispatcher = require('../../../util/dispatcher');
+var logger = require('pomelo-logger').getLogger('pomelo', __filename);
 
 /**
  * Gate handler that dispatch user to connectors.
@@ -10,6 +11,13 @@ module.exports = function(app) {
 
 var Handler = function(app) {
   this.app = app;
+};
+
+Handler.prototype.authConn = function(msg, session, next) {
+  session.set('connAuthed', true);
+  session.push('connAuthed');
+  logger.info('Connection authed~');
+  next(null, {});
 };
 
 Handler.prototype.queryEntry = function(msg, session, next) {
@@ -36,6 +44,11 @@ Handler.prototype.auth = function(msg, session, next) {
   var handsetInfo = msg.handsetInfo;
   var appInfo = msg.appInfo;
 
+  var loginInfo = {};
+  loginInfo.userId = msg.username;
+  loginInfo.authToken = msg.authToken;
+  loginInfo.handset = msg.handset;
 
+  userDao.signIn()
 
 };

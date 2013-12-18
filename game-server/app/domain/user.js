@@ -121,15 +121,15 @@ userSchema.methods.setSignedUpHandsetInfo = function(handsetInfo) {
 };
 
 userSchema.methods.getAuthToken = function() {
-  var imei = this.lastSignedIn.handset.imei || this.lastSignedIn.handset.mac;
+  var imei = this.lastSignedIn.handset.imei;
   var lastLoginTime = this.lastSignedIn.signedInTime || this.createdAt;
   var pwdSalt = this.passwordSalt;
 
   return md5(imei + '_' + lastLoginTime.valueOf() + '_' + pwdSalt);
 };
 
-userSchema.methods.verifyToken = function(authToken) {
-  return this.getAuthToken() == authToken;
+userSchema.methods.verifyToken = function(authToken, imei) {
+  return (this.getAuthToken() == authToken) && (this.lastSignedIn.handset.imei == imei);
 };
 
 var User = mongoose.model('User', userSchema);

@@ -23,6 +23,9 @@ app.configure('production|development', function () {
     app.set('dbclient', mongodb);
   });
 
+  var authConnection = require('./app/filters/authConnection');
+  //app.before(authConnection());
+
 });
 
 // app configuration
@@ -32,7 +35,11 @@ app.configure('production|development', 'connector|gate', function () {
       connector: pomelo.connectors.hybridconnector,
       heartbeat: 3,
       useDict: true,
-      useProtobuf: true
+      useProtobuf: true,
+      handshake: function(msg, cb) {
+        logger.info('handshake -> msg: ', msg, "\n", this, "\n", this.socket);
+        cb(null, {authKey: 'aaaaaaaaaa'});
+      }
     });
 });
 
