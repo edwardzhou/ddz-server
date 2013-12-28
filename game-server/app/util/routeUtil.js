@@ -5,7 +5,7 @@ var exp = module.exports;
 exp.area = function(session, msg, app, cb) {
   //logger.info('[<Server: %s> routUtil.area] msg: %j', app.getServerId(), msg);
   var room_id = session.get('room_id') || msg.room_id ;
-  //logger.info('[<Server: %s> routUtil.area] room_id: %d', app.getServerId(), room_id);
+  logger.info('[<Server: %s> routUtil.area] room_id: %d', app.getServerId(), room_id);
 
   var area_servers = app.getServersByType("area");
 
@@ -16,12 +16,14 @@ exp.area = function(session, msg, app, cb) {
       serverId = area_servers[index].id;
   }
 
-  serverId = serverId || area_servers[0].id;
-
+//  serverId = serverId || area_servers[0].id;
+//
   logger.info('[<Server: %s> routUtil.area] serverId: %s', app.getServerId(), serverId);
 
   if(!serverId) {
-    cb(new Error('can not find server info for type: ' + msg.serverType + " , room_id: " + room_id));
+    var err = new Error('can not find server info for type: ' + msg.serverType + " , room_id: " + room_id);
+    err.errorCode = 10001;
+    cb(err);
     return;
   }
 

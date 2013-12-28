@@ -45,13 +45,19 @@
         pomelo.init({
           host: host,
           port: port,
-          log: true
+          log: true,
+          handshakeCallback: function(data) {
+              console.log('handshakeCallback -> data: ', data);
+          }
         }, function(){
           pomelo.request(route, {
             uid: uid
           }, function(data) {
-            pomelo.disconnect();
-            callback(data.host, data.port);
+            console.log('gate.gateHandler.queryEntry returns: ', data);
+            if (data.err == null) {
+                pomelo.disconnect();
+                callback(data.host, data.port);
+            }
           });
         });
       }
@@ -79,7 +85,7 @@
 //              pomelo.request("connector.entryHandler.entry", "hello pomelo", function( data) {
 //                  console.log(data.msg);
 
-                pomelo.request("connector.entryHandler.enterRoom", {uid: userId, room_id: 2}, function(data) {
+                pomelo.request("connector.entryHandler.enterRoom", {uid: userId, room_id: room_id}, function(data) {
                   var table = data.table;
                   var users = table.players;
                   console.log("server_id: ", data.server_id);

@@ -36,6 +36,8 @@ Handler.prototype.enterRoom = function(msg, session, next) {
   var uid = msg.uid;
   var username = msg.username;
 
+  logger.info('session ' , session.__proto__);
+
   var user = getUser(uid);
 
   session.bind(uid);
@@ -50,7 +52,13 @@ Handler.prototype.enterRoom = function(msg, session, next) {
 
   session.on('closed', onUserLeave.bind(null, self.app));
 
-  this.app.rpc.area.roomRemote.enter(session, uid, this.app.get('serverId'), session.id, room_id, function(err,room_server_id, table) {
+  this.app.rpc.area.roomRemote.enter(session, uid, this.app.get('serverId'), session.id, room_id, function(err, room_server_id, table) {
+    logger.info('enter result: ', err, room_server_id, table);
+    if (!!err) {
+      next(null, err);
+      return;
+    }
+
     table = new GameTable(table);
     session.set('table_id', table.tableId);
     session.push('table_id', null);
@@ -61,15 +69,20 @@ Handler.prototype.enterRoom = function(msg, session, next) {
       server_id: server_id
     };
 
-    var s = self.app.get('sessionService').get(session.id);
-
-    //logger.info("[enterRoom] tableChannel: %s", s.get('tableChannel'), s);
-
     next(null, resp);
   });
 
 };
 
+Handler.prototype.leave = function(msg, session, next) {
+
+  session.set('self_close', true);
+  session.push('self_close');
+
+  this.app.get('sessionService').kickBySessionId( session.id );
+
+  next(null, null);
+};
 
 var getUser = function(uid) {
 //  return {
@@ -88,8 +101,11 @@ var onUserLeave = function(app, session) {
     table_id: session.get('table_id'),
     uid: session.uid,
     sid: session.frontendId,
+    self_close: session.get('self_close') || false,
     channelName: session.get('tableChannel')
   };
+
+  logger.debug('onUserLeave: ' , msg);
 
   app.rpc.area.roomRemote.leave(session, msg, null );
 };
