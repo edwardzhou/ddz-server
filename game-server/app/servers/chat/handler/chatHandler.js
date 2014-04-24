@@ -46,7 +46,7 @@ handler.send = function(msg, session, next) {
   }
 
   next(null, {
-    route: msg.route
+    'route' : msg.route
   });
 }
 

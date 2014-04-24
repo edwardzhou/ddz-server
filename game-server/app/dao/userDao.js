@@ -92,6 +92,7 @@ userDao.signIn = function(loginInfo, cb) {
   var password = loginInfo.password;
   var authToken = loginInfo.authToken;
   var signInType = loginInfo.signInType;
+  var sessionToken = loginInfo.sid;
   var imei = loginInfo.handset.imei;
   var signInOk = false;
 

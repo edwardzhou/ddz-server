@@ -74,6 +74,11 @@ var bar = function(callback) {
 var Combinatorics = require('js-combinatorics').Combinatorics;
 
 var CardUtil = require('./app/util/cardUtil');
+CardUtil.buildCardTypes();
+var s = JSON.stringify(CardUtil.allCardTypes)
+
+var fs = require('fs');
+fs.writeFileSync('/Users/edwardzhou/temp/allCardTypes.json', s);
 
 //CardUtil.buildCardTypes();
 //var cc = 0;
@@ -117,24 +122,24 @@ var CardUtil = require('./app/util/cardUtil');
 //
 //console.log(r.toParams());
 
-mongoose = require('mongoose');
-
-mongoose.connect('mongodb://192.168.0.240/mydb');
-
-User = require('./app/domain/user');
-userDao = require('./app/dao/userDao');
-
-//userDao.signIn({userId:10001, password: '123456', signInType: 2}, function(err, user) {
+//mongoose = require('mongoose');
+//
+//mongoose.connect('mongodb://192.168.0.240/mydb');
+//
+//User = require('./app/domain/user');
+//userDao = require('./app/dao/userDao');
+//
+////userDao.signIn({userId:10001, password: '123456', signInType: 2}, function(err, user) {
+////  console.log('call signIn: ', err, user)
+////  console.log(user.getAuthToken());
+////});
+//
+//userDao.signIn({userId:10001, authToken: '77c52c96afab3e6f8327baa527a4bc11', signInType: 1}, function(err, user) {
 //  console.log('call signIn: ', err, user)
 //  console.log(user.getAuthToken());
+//
+//  process.exit();
 //});
-
-userDao.signIn({userId:10001, authToken: '77c52c96afab3e6f8327baa527a4bc11', signInType: 1}, function(err, user) {
-  console.log('call signIn: ', err, user)
-  console.log(user.getAuthToken());
-
-  process.exit();
-});
-
-process.nextTick(function() {
-});
+//
+//process.nextTick(function() {
+//});

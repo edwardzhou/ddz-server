@@ -102,7 +102,8 @@ module.exports = {
 
   SignInType: {
     BY_AUTH_TOKEN: 1,
-    BY_PASSWORD: 2
+    BY_SESSION_TOKEN: 2,
+    BY_PASSWORD: 3
   },
 
   STUB: null
