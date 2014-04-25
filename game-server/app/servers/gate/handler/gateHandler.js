@@ -49,6 +49,11 @@ Handler.prototype.auth = function(msg, session, next) {
   loginInfo.authToken = msg.authToken;
   loginInfo.handset = msg.handset;
 
-  userDao.signIn()
+  userDao.signIn();
+  next(null, {});
+};
 
+Handler.prototype.signIn = function(msg, session, next) {
+  
+  next(null, {});
 };

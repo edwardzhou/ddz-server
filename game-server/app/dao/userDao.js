@@ -17,10 +17,10 @@ var userDao = module.exports;
  * @param cb
  */
 userDao.createUser = function (userId, nickName, password, appid, version, cb) {
-  var passwordSalt = md5.update(Math.random().toString()).digest('hex');
+  var passwordSalt = crypto.createHash('md5').update(Math.random().toString()).digest('hex');
   var passwordDigest = null;
   if (!!password) {
-    passwordDigest = md5.update(password + "_" + passwordSalt).digest('hex');
+    passwordDigest = crypto.createHash('md5').update(password + "_" + passwordSalt).digest('hex');
   }
 
   var user = new User({
