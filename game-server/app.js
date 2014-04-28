@@ -28,6 +28,13 @@ app.configure('production|development', function () {
 
 });
 
+app.configure('production|development', 'userSystem', function() {
+  var mongodbCfg = app.get('mongodb');
+  var mongoose = require('mongoose');
+  mongoose.connect(mongodbCfg.url, mongodbCfg.options, function(err) {
+  });
+});
+
 // app configuration
 app.configure('production|development', 'connector|gate', function () {
   app.set('connectorConfig',

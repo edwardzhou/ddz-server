@@ -1,6 +1,7 @@
 var Code = require('../../../../../shared/code');
 var dispatcher = require('../../../util/dispatcher');
 var logger = require('pomelo-logger').getLogger('pomelo', __filename);
+var UserId = require('../../../domain/userId');
 
 /**
  * Gate handler that dispatch user to connectors.
@@ -54,6 +55,6 @@ Handler.prototype.auth = function(msg, session, next) {
 };
 
 Handler.prototype.signIn = function(msg, session, next) {
-  
+
   next(null, {});
 };

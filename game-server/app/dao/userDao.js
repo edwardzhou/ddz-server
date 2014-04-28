@@ -5,6 +5,7 @@ var ObjectID = require('mongodb').ObjectID;
 var ErrorCode = require('../consts/errorCode');
 var async = require('async');
 var SignInType = require('../consts/consts').SignInType;
+var UserId = require('../domain/userId');
 
 var userDao = module.exports;
 
@@ -16,30 +17,37 @@ var userDao = module.exports;
  * @param version
  * @param cb
  */
-userDao.createUser = function (userId, nickName, password, appid, version, cb) {
+userDao.createUser = function (nickName, password, appid, version, cb) {
   var passwordSalt = crypto.createHash('md5').update(Math.random().toString()).digest('hex');
   var passwordDigest = null;
   if (!!password) {
     passwordDigest = crypto.createHash('md5').update(password + "_" + passwordSalt).digest('hex');
   }
 
-  var user = new User({
-    userId: userId,
-    nickName: nickName,
-    passwordDigest: passwordDigest,
-    passwordSalt: passwordSalt,
-    appid: appid,
-    version: version,
-    createdAt: (new Date()),
-    updatedAt: (new Date())
+  var userId = null;
+
+  UserId.retrieveNextUserId(function(newUserId) {
+    nickName = nickName || newUserId.toString();
+    var user = new User({
+      userId: newUserId,
+      nickName: nickName,
+      passwordDigest: passwordDigest,
+      passwordSalt: passwordSalt,
+      appid: appid,
+      version: version,
+      createdAt: (new Date()),
+      updatedAt: (new Date())
+    });
+    user.save(function (err, newUser) {
+      if (err !== null) {
+        utils.invokeCallback(cb, {code: err.number, msg: err.message}, null);
+      } else {
+        utils.invokeCallback(cb, null, newUser);
+      }
+    });
+
   });
-  user.save(function (err) {
-    if (err !== null) {
-      utils.invokeCallback(cb, {code: err.number, msg: err.message}, null);
-    } else {
-      utils.invokeCallback(cb, null, user);
-    }
-  });
+
 
 //  pomelo.app.get('dbclient').collection('users').insert({
 //    userId: userId,

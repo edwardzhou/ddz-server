@@ -26,11 +26,21 @@ var bar = function(callback) {
 //  console.log(index, s[index]);
 //}
 //
-//var mongoose = require('mongoose');
-//
-//mongoose.connect('mongodb://192.168.0.240/test');
-//
-//console.log('after connected');
+
+cb = function(err, obj) {
+  console.log('err => ', err);
+  console.log('obj => ', obj);
+};
+
+mongoose = require('mongoose');
+mongoose.connect('mongodb://dev/new_ddz');
+console.log('after connected');
+
+UserId = require('./app/domain/userId');
+
+mongoose.connections[0].on('error', cb);
+
+
 //
 //var userSchema  =mongoose.Schema({
 //  name: String,
@@ -71,15 +81,15 @@ var bar = function(callback) {
 //console.log(now);
 //console.log(now - dt);
 
-var Combinatorics = require('js-combinatorics').Combinatorics;
-
-var CardUtil = require('./app/util/cardUtil');
-CardUtil.buildCardTypes();
-var s = JSON.stringify(CardUtil.allCardTypes)
-
-var fs = require('fs');
-fs.writeFileSync('/Users/edwardzhou/temp/allCardTypes.json', s);
-
+//var Combinatorics = require('js-combinatorics').Combinatorics;
+//
+//var CardUtil = require('./app/util/cardUtil');
+//CardUtil.buildCardTypes();
+//var s = JSON.stringify(CardUtil.allCardTypes)
+//
+//var fs = require('fs');
+//fs.writeFileSync('/Users/edwardzhou/temp/allCardTypes.json', s);
+//
 //CardUtil.buildCardTypes();
 //var cc = 0;
 //for( var cardId in CardUtil.allCardTypes) {
