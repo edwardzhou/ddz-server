@@ -17,27 +17,30 @@ var userDao = module.exports;
  * @param version
  * @param cb
  */
-userDao.createUser = function (nickName, password, appid, version, cb) {
+userDao.createUser = function (userInfo, cb) {
   var passwordSalt = crypto.createHash('md5').update(Math.random().toString()).digest('hex');
   var passwordDigest = null;
-  if (!!password) {
-    passwordDigest = crypto.createHash('md5').update(password + "_" + passwordSalt).digest('hex');
+  if (!!userInfo.password) {
+    passwordDigest = crypto.createHash('md5').update(userInfo.password + "_" + passwordSalt).digest('hex');
   }
 
   var userId = null;
 
   UserId.retrieveNextUserId(function(newUserId) {
-    nickName = nickName || newUserId.toString();
+    var nickName = userInfo.nickName || newUserId.toString();
     var user = new User({
       userId: newUserId,
       nickName: nickName,
       passwordDigest: passwordDigest,
       passwordSalt: passwordSalt,
-      appid: appid,
-      version: version,
+      appid: userInfo.appid,
+      appVersion: userInfo.appVersion,
+      resVersion: userInfo.resVersion,
       createdAt: (new Date()),
       updatedAt: (new Date())
     });
+    user.setSignedInHandsetInfo(userInfo.handsetInfo);
+    user.setSignedUpHandsetInfo(userInfo.handsetInfo);
     user.save(function (err, newUser) {
       if (err !== null) {
         utils.invokeCallback(cb, {code: err.number, msg: err.message}, null);

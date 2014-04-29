@@ -1,7 +1,7 @@
 var mongoose = require('mongoose');
 var crypto = require('crypto');
 
-var signUpSchema = mongoose
+//var signUpSchema = mongoose
 
 var userSchema = new mongoose.Schema({
   userId: Number,

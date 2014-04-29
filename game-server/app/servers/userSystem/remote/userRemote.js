@@ -13,6 +13,10 @@ UserRemote = function(app) {
   this.app = app;
 };
 
-UserRemote.prototype.createNewUser = function(userInfo, sessionId, next) {
-  
+remoteHandler = UserRemote.prototype;
+
+UserRemote.prototype.createNewUser = function(userInfo, sessionId, callback) {
+  userDao.createUser(userInfo, function(err, user) {
+    callback(err, user);
+  });
 };

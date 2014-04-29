@@ -2,6 +2,7 @@ var Code = require('../../../../../shared/code');
 var dispatcher = require('../../../util/dispatcher');
 var logger = require('pomelo-logger').getLogger('pomelo', __filename);
 var UserId = require('../../../domain/userId');
+var utils = require('../../../util/utils');
 
 /**
  * Gate handler that dispatch user to connectors.
@@ -36,6 +37,8 @@ Handler.prototype.queryEntry = function(msg, session, next) {
 
   var res = dispatcher.dispatch(uid, connectors);
   next(null, {code: Code.OK, host: res.host, port: res.clientPort});
+
+
   // next(null, {code: Code.OK, host: res.pubHost, port: res.clientPort});
 };
 
@@ -55,6 +58,9 @@ Handler.prototype.auth = function(msg, session, next) {
 };
 
 Handler.prototype.signIn = function(msg, session, next) {
-
-  next(null, {});
+  var userInfo = msg.userInfo;
+  this.app.rpc.userSystem.userRemote.createNewUser(session,userInfo, '', function(err, user) {
+    console.log('[userRemote.createNewUser returns] err: %j, user:\n %j', err, user);
+    utils.invokeCallback(next, err, {user: user});
+  });
 };
