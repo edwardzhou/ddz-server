@@ -58,8 +58,8 @@ Handler.prototype.auth = function(msg, session, next) {
 };
 
 Handler.prototype.signIn = function(msg, session, next) {
-  var userInfo = msg.userInfo;
-  this.app.rpc.userSystem.userRemote.createNewUser(session,userInfo, '', function(err, user) {
+  var userInfo = msg;
+  this.app.rpc.userSystem.userRemote.createNewUser(session, userInfo, '', function(err, user) {
     console.log('[userRemote.createNewUser returns] err: %j, user:\n %j', err, user);
     utils.invokeCallback(next, err, {user: user});
   });
