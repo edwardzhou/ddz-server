@@ -20,3 +20,7 @@ UserRemote.prototype.createNewUser = function(userInfo, sessionId, callback) {
     callback(err, user);
   });
 };
+
+remoteHandler.checkSignIn = function(signUpInfo, callback) {
+
+};

@@ -10,35 +10,40 @@ var UserIdSchema = new mongoose.Schema({
   updatedAt: {type: Date, default: Date.now}
 });
 
-var UserId = mongoose.model('UserId', UserIdSchema);
+var g_userId = null;
 
-module.exports = UserId;
-
-UserId.retrieveNextUserId = function(cb) {
+UserIdSchema.statics.retrieveNextUserId = function(cb) {
   var nextUserId = null;
+  var _this = this;
 
-  if (!!UserId.idObj) {
-    nextUserId = UserId.idObj.nextUserId ++;
-    UserId.idObj.updatedAt = Date.now();
-    UserId.idObj.increment();
-    UserId.idObj.save();
+  if (!!g_userId) {
+    nextUserId = g_userId.nextUserId ++;
+    g_userId.updatedAt = Date.now();
+    g_userId.increment();
+    g_userId.save(function(err, userId, affected) {
+      if (!!err || affected < 1) {
+        g_userId = null;
+        _this.retrieveNextUserId(cb);
+        return;
+      }
+    });
     cb(nextUserId);
     return nextUserId;
   }
 
-  UserId.findOne({}, function(err, userIdObj) {
+  this.findOne({}, function(err, userIdObj) {
     if (!!userIdObj) {
-      UserId.idObj = userIdObj;
-      nextUserId = UserId.idObj.nextUserId ++;
-      UserId.idObj.updatedAt = Date.now();
-      UserId.idObj.increment();
-      UserId.idObj.save();
+      g_userId = userIdObj;
+      nextUserId = g_userId.nextUserId ++;
+      g_userId.updatedAt = Date.now();
+      g_userId.increment();
+      g_userId.save();
       cb(nextUserId);
     } else {
       var idObj = new UserId();
       idObj.nextUserId = 50002;
       idObj.save(function(err, newIdObj){
-        UserId.idObj = newIdObj;
+        g_userId = newIdObj;
         cb(50001);
       });
     }
@@ -47,3 +52,8 @@ UserId.retrieveNextUserId = function(cb) {
 
   return true;
 };
+
+var UserId = mongoose.model('UserId', UserIdSchema);
+
+module.exports = UserId;
+

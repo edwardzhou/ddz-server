@@ -30,15 +30,20 @@ var bar = function(callback) {
 cb = function(err, obj) {
   console.log('err => ', err);
   console.log('obj => ', obj);
+  lastErr = err;
+  lastObj = obj;
 };
 
 mongoose = require('mongoose');
-mongoose.connect('mongodb://dev/new_ddz');
+mongoose.connect('mongodb://dev/new_ddz_dev');
 console.log('after connected');
 
 UserId = require('./app/domain/userId');
 
 mongoose.connections[0].on('error', cb);
+
+User = require('./app/domain/user');
+userDao = require('./app/dao/userDao');
 
 
 //

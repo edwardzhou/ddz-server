@@ -41,6 +41,7 @@ userDao.createUser = function (userInfo, cb) {
     });
     user.setSignedInHandsetInfo(userInfo.handsetInfo);
     user.setSignedUpHandsetInfo(userInfo.handsetInfo);
+    user.updateAuthToken();
     user.save(function (err, newUser) {
       if (err !== null) {
         utils.invokeCallback(cb, {code: err.number, msg: err.message}, null);
@@ -73,29 +74,36 @@ userDao.createUser = function (userInfo, cb) {
 };
 
 userDao.getByUserId = function(userId, cb) {
-  pomelo.app.get('dbclient').collection('users').findOne({userId: userId}, function(err, document){
-    if (err !== null) {
-      utils.invokeCallback(cb, {code: err.number, msg: err.message}, null);
-    } else {
-      var user = null;
-      if (!!document)
-        user = new User(document);
-      utils.invokeCallback(cb, null, user);
-    }
+  User.findOne({userId: userId}, function(err, user) {
+    utils.invokeCallback(cb, err, user);
   });
+//  pomelo.app.get('dbclient').collection('users').findOne({userId: userId}, function(err, document){
+//    if (err !== null) {
+//      utils.invokeCallback(cb, {code: err.number, msg: err.message}, null);
+//    } else {
+//      var user = null;
+//      if (!!document)
+//        user = new User(document);
+//      utils.invokeCallback(cb, null, user);
+//    }
+//  });
 };
 
 userDao.getUserById = function(id, cb) {
-  pomelo.app.get('dbclient').collection('users').findOne({_id: new ObjectID(id)}, function(err, document) {
-    if (err !== null) {
-      utils.invokeCallback(cb, {code: err.number, msg: err.message}, null);
-    } else {
-      var user = null;
-      if (!! document)
-        user = new User(document);
-      utils.invokeCallback(cb, null, user);
-    }
+  var objId = id;
+  User.findOne({_id: objId}, function(err, user) {
+    utils.invokeCallback(cb, err, user);
   });
+//  pomelo.app.get('dbclient').collection('users').findOne({_id: new ObjectID(id)}, function(err, document) {
+//    if (err !== null) {
+//      utils.invokeCallback(cb, {code: err.number, msg: err.message}, null);
+//    } else {
+//      var user = null;
+//      if (!! document)
+//        user = new User(document);
+//      utils.invokeCallback(cb, null, user);
+//    }
+//  });
 };
 
 userDao.signIn = function(loginInfo, cb) {

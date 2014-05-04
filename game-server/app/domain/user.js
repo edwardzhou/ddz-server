@@ -1,5 +1,6 @@
 var mongoose = require('mongoose');
 var crypto = require('crypto');
+var DomainBase = require('./domainBase');
 
 //var signUpSchema = mongoose
 
@@ -128,10 +129,21 @@ userSchema.methods.getAuthToken = function() {
   return md5(imei + '_' + lastLoginTime.valueOf() + '_' + pwdSalt);
 };
 
+userSchema.methods.updateAuthToken = function() {
+  this.authToken = this.getAuthToken();
+};
+
 userSchema.methods.verifyToken = function(authToken, imei) {
   return (this.getAuthToken() == authToken) && (this.lastSignedIn.handset.imei == imei);
 };
 
 var User = mongoose.model('User', userSchema);
+
+//User.jsonAttrs = {
+//  userId: 'uid',
+//  nickName: 'nick_name'
+//};
+
+DomainBase.defineToParams(User, User.statics, User.methods);
 
 module.exports = User;

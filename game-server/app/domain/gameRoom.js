@@ -28,6 +28,7 @@ var GameRoomInfo = mongoose.model('GameRoom', roomSchema);
  * @constructor
  */
 var GameRoom = function(opts) {
+  opts = opts || {};
   DomainBase.call(this, opts);
   // 初始化房间信息
   this.info = new GameRoomInfo(opts);
@@ -58,6 +59,8 @@ var GameRoom = function(opts) {
 
 // 令GameRoom继承于DomainBase
 util.inherits(GameRoom, DomainBase);
+
+DomainBase.defineToParams(GameRoom);
 
 // 导出GameRoom
 module.exports = GameRoom;
