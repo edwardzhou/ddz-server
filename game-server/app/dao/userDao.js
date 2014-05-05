@@ -77,33 +77,13 @@ userDao.getByUserId = function(userId, cb) {
   User.findOne({userId: userId}, function(err, user) {
     utils.invokeCallback(cb, err, user);
   });
-//  pomelo.app.get('dbclient').collection('users').findOne({userId: userId}, function(err, document){
-//    if (err !== null) {
-//      utils.invokeCallback(cb, {code: err.number, msg: err.message}, null);
-//    } else {
-//      var user = null;
-//      if (!!document)
-//        user = new User(document);
-//      utils.invokeCallback(cb, null, user);
-//    }
-//  });
 };
 
-userDao.getUserById = function(id, cb) {
+userDao.getById = function(id, cb) {
   var objId = id;
   User.findOne({_id: objId}, function(err, user) {
     utils.invokeCallback(cb, err, user);
   });
-//  pomelo.app.get('dbclient').collection('users').findOne({_id: new ObjectID(id)}, function(err, document) {
-//    if (err !== null) {
-//      utils.invokeCallback(cb, {code: err.number, msg: err.message}, null);
-//    } else {
-//      var user = null;
-//      if (!! document)
-//        user = new User(document);
-//      utils.invokeCallback(cb, null, user);
-//    }
-//  });
 };
 
 userDao.signIn = function(loginInfo, cb) {
