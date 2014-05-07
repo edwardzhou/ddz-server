@@ -47,6 +47,7 @@ exp.leave = function(roomId, playerId) {
 
 var loadRoom = function(roomId) {
   var room = new GameRoom({roomId:roomId, roomName: 'room_' + roomId});
+  room.initRoom();
 
   return room;
 };

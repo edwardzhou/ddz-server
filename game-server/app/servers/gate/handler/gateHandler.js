@@ -36,7 +36,9 @@ Handler.prototype.queryEntry = function(msg, session, next) {
   }
 
   var res = dispatcher.dispatch(uid, connectors);
-  next(null, {code: Code.OK, host: res.host, port: res.clientPort});
+  var result = {code: Code.OK, hosts:[]};
+  result.hosts.push({host: res.host, port: res.clientPort});
+  next(null, result);
 
 
   // next(null, {code: Code.OK, host: res.pubHost, port: res.clientPort});

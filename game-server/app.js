@@ -28,7 +28,7 @@ app.configure('production|development', function () {
 
 });
 
-app.configure('production|development', 'userSystem', function() {
+app.configure('production|development', 'userSystem|area', function() {
   var mongodbCfg = app.get('mongodb');
   var mongoose = require('mongoose');
   mongoose.connect(mongodbCfg.url, mongodbCfg.options, function(err) {
@@ -40,7 +40,7 @@ app.configure('production|development', 'connector|gate', function () {
   app.set('connectorConfig',
     {
       connector: pomelo.connectors.hybridconnector,
-      heartbeat: 3,
+      heartbeat: 240,
       useDict: true,
       useProtobuf: true,
       handshake: function(msg, cb) {

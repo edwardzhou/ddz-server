@@ -13,6 +13,7 @@ var roomSchemaFields = {
   state: Number,      // 状态, ref: RoomState
   ante: Number,       // 底注
   rake: Number,       // 佣金
+  maxPlayers: Number, // 最大人数
   roomType: String,   // 房间类型
   createdAt: {type: Date, default: Date.now},
   updatedAt: {type: Date, default: Date.now}
@@ -20,97 +21,6 @@ var roomSchemaFields = {
 
 // 根据字段定义创建架构，再生成房间信息模型
 var roomSchema = new mongoose.Schema(roomSchemaFields);
-var GameRoomInfo = mongoose.model('GameRoom', roomSchema);
-
-/**
- * 游戏房间
- * @param opts
- * @constructor
- */
-var GameRoom = function(opts) {
-  opts = opts || {};
-  DomainBase.call(this, opts);
-  // 初始化房间信息
-  this.info = new GameRoomInfo(opts);
-
-  // 游戏桌子对照表(tableId -> table), 用于速查
-  this.tablesMap = {};
-  // 房间里玩家对照表(playerId -> player), 用于速查
-  this.playersMap = {};
-  // 桌子列表
-  this.tables = [];
-  // 下一张新桌子的Id
-  this.tableNextId = 1;
-
-  if (!!opts.tables) {
-    for(var index in opts.tables) {
-      var table = opts.tables[index]
-      this.tables.push(table);
-      this.tablesMap[table.tableId] = table;
-      if (this.tableNextId <= table.tableId)
-        this.tableNextId = table.tableId + 1;
-    }
-  }
-
-  if(!!opts.tableNextId) {
-    this.tableNextId = Number(opts.tableNextId);
-  }
-};
-
-// 令GameRoom继承于DomainBase
-util.inherits(GameRoom, DomainBase);
-
-DomainBase.defineToParams(GameRoom);
-
-// 导出GameRoom
-module.exports = GameRoom;
-
-/**
- * 定义GameRoom的json字段对照
- * @type {{info.roomName: string, info.roomId: string}}
- */
-GameRoom.jsonAttrs = {
-  'roomId' : 'roomId',
-  'roomName' : 'roomName'
-};
-
-/**
- * 添加属性访问委托，把对this.propName委托到this.to.propName
- * @param obj
- * @param to
- * @param propName
- */
-var delegateProperty = function(obj, to, propName) {
-  Object.defineProperty(obj, propName, {
-    get: function() {
-      //console.log('get propName: %s', propName);
-      return this[to][propName];
-    },
-    set: function(_v) {
-      //console.log('set propName: %s  ==> ', propName, _v);
-      this[to][propName] = _v;
-    },
-    enumerable : true
-  });
-
-};
-
-// 把GameRoomInfo的属性导出到GameRoom上
-var propNames = Object.getOwnPropertyNames(roomSchemaFields);
-var GameRoomPrototype = GameRoom.prototype;
-for (var index in propNames) {
-  var propName = propNames[index];
-  delegateProperty(GameRoomPrototype, 'info', propName);
-}
-
-
-/**
- * 取新桌子id
- * @returns {number}
- */
-GameRoom.prototype.getNextTableId = function() {
-  return this.tableNextId ++;
-};
 
 /**
  * 找出玩家数量等于count的桌子，排除桌子id为excludeTableId的桌子
@@ -136,6 +46,45 @@ var _randomSelect = function(tables) {
   return tables[index];
 };
 
+
+
+roomSchema.methods.initRoom = function(opts) {
+  opts = opts || {};
+//  // 初始化房间信息
+//  this.info = new GameRoomInfo(opts);
+
+  // 游戏桌子对照表(tableId -> table), 用于速查
+  this.tablesMap = {};
+  // 房间里玩家对照表(playerId -> player), 用于速查
+  this.playersMap = {};
+  // 桌子列表
+  this.tables = [];
+  // 下一张新桌子的Id
+  this.tableNextId = 1;
+
+  if (!!opts.tables) {
+    for(var index in opts.tables) {
+      var table = opts.tables[index]
+      this.tables.push(table);
+      this.tablesMap[table.tableId] = table;
+      if (this.tableNextId <= table.tableId)
+        this.tableNextId = table.tableId + 1;
+    }
+  }
+
+  if(!!opts.tableNextId) {
+    this.tableNextId = Number(opts.tableNextId);
+  }
+};
+
+/**
+ * 取新桌子id
+ * @returns {number}
+ */
+roomSchema.methods.getNextTableId = function() {
+  return this.tableNextId ++;
+};
+
 /**
  * 玩家进入房间
  * 当有玩家进入房间时，自动将玩家安排到一张桌子。安排顺序为，
@@ -147,7 +96,7 @@ var _randomSelect = function(tables) {
  * @param lastTableId - 上次进入房间时，被安排的桌子编号
  * @returns {}
  */
-GameRoom.prototype.enter = function (player, lastTableId) {
+roomSchema.methods.enter = function (player, lastTableId) {
   var self = this;
   lastTableId = lastTableId || -1;
 
@@ -199,7 +148,7 @@ GameRoom.prototype.enter = function (player, lastTableId) {
  * @param tableId
  * @returns {*}
  */
-GameRoom.prototype.getGameTable = function(tableId) {
+roomSchema.methods.getGameTable = function(tableId) {
   return this.tablesMap[tableId];
 };
 
@@ -208,7 +157,7 @@ GameRoom.prototype.getGameTable = function(tableId) {
  * @param playerId
  * @returns {*}
  */
-GameRoom.prototype.getPlayer = function(playerId) {
+roomSchema.methods.getPlayer = function(playerId) {
   return this.playersMap[playerId];
 };
 
@@ -217,7 +166,7 @@ GameRoom.prototype.getPlayer = function(playerId) {
  * @param playerId
  * @returns {*}
  */
-GameRoom.prototype.leave = function(playerId) {
+roomSchema.methods.leave = function(playerId) {
   var player = this.getPlayer(playerId);
   var table = this.getGameTable(player.tableId);
   table.removePlayer(playerId);
@@ -225,3 +174,98 @@ GameRoom.prototype.leave = function(playerId) {
   player.tableId = -1;
   return table;
 };
+
+
+
+var GameRoom = mongoose.model('GameRoom', roomSchema);
+
+///**
+// * 游戏房间
+// * @param opts
+// * @constructor
+// */
+//var GameRoom = function(opts) {
+//  opts = opts || {};
+//  DomainBase.call(this, opts);
+//  // 初始化房间信息
+//  this.info = new GameRoomInfo(opts);
+//
+//  // 游戏桌子对照表(tableId -> table), 用于速查
+//  this.tablesMap = {};
+//  // 房间里玩家对照表(playerId -> player), 用于速查
+//  this.playersMap = {};
+//  // 桌子列表
+//  this.tables = [];
+//  // 下一张新桌子的Id
+//  this.tableNextId = 1;
+//
+//  if (!!opts.tables) {
+//    for(var index in opts.tables) {
+//      var table = opts.tables[index]
+//      this.tables.push(table);
+//      this.tablesMap[table.tableId] = table;
+//      if (this.tableNextId <= table.tableId)
+//        this.tableNextId = table.tableId + 1;
+//    }
+//  }
+//
+//  if(!!opts.tableNextId) {
+//    this.tableNextId = Number(opts.tableNextId);
+//  }
+//};
+//
+//// 令GameRoom继承于DomainBase
+//util.inherits(GameRoom, DomainBase);
+//
+//DomainBase.defineToParams(GameRoom);
+
+// 导出GameRoom
+module.exports = GameRoom;
+
+/**
+ * 定义GameRoom的json字段对照
+ * @type {{info.roomName: string, info.roomId: string}}
+ */
+GameRoom.jsonAttrs = {
+  'roomId'    : 'roomId',     //
+  'roomName'  : 'roomName',   //
+  'roomDesc'  : 'roomDesc',   // 描述
+  'state'     : 'state',      // 状态, ref: RoomState
+  'ante'      : 'ante',       // 底注
+  'rake'      : 'rake',       // 佣金
+  'maxPlayers': 'maxPlayers', // 最大人数
+  'roomType'  : 'roomType'    // 房间类型
+};
+
+DomainBase.defineToParams(GameRoom, GameRoom.statics, GameRoom.methods);
+
+/**
+ * 添加属性访问委托，把对this.propName委托到this.to.propName
+ * @param obj
+ * @param to
+ * @param propName
+ */
+var delegateProperty = function(obj, to, propName) {
+  Object.defineProperty(obj, propName, {
+    get: function() {
+      //console.log('get propName: %s', propName);
+      return this[to][propName];
+    },
+    set: function(_v) {
+      //console.log('set propName: %s  ==> ', propName, _v);
+      this[to][propName] = _v;
+    },
+    enumerable : true
+  });
+
+};
+
+//// 把GameRoomInfo的属性导出到GameRoom上
+//var propNames = Object.getOwnPropertyNames(roomSchemaFields);
+//var GameRoomPrototype = GameRoom.prototype;
+//for (var index in propNames) {
+//  var propName = propNames[index];
+//  delegateProperty(GameRoomPrototype, 'info', propName);
+//}
+
+
