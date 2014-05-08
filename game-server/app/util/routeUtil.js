@@ -16,7 +16,7 @@ exp.area = function(session, msg, app, cb) {
       serverId = area_servers[index].id;
   }
 
-  serverId = serverId || area_servers[0].id;
+//  serverId = serverId || area_servers[0].id;
 //
   logger.info('[<Server: %s> routUtil.area] serverId: %s', app.getServerId(), serverId);
 

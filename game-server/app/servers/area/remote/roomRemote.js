@@ -77,7 +77,7 @@ var getPlayerIds = function(table) {
 };
 
 remoteHandler.queryRooms = function(msg, cb) {
-  logger.info('[remoteHandler.queryRooms] msg => ', msg);
+  logger.info('[%s] [remoteHandler.queryRooms] msg => ', this.app.getServerId(), msg);
   roomDao.getActiveRooms(function(err, rooms) {
     cb(err, rooms);
   });

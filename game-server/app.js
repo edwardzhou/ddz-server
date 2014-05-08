@@ -24,7 +24,7 @@ app.configure('production|development', function () {
   });
 
   var authConnection = require('./app/filters/authConnection');
-  //app.before(authConnection());
+  app.before(authConnection());
 
 });
 
@@ -45,6 +45,15 @@ app.configure('production|development', 'connector|gate', function () {
       useProtobuf: true,
       handshake: function(msg, cb) {
         logger.info('handshake -> msg: ', msg, "\n", this, "\n", this.socket);
+
+        app.rpc.area.roomRemote.queryRooms.toServer('room-server', {}, function(err, rooms) {
+          logger.info('[handshake] app.rpc.area.roomRemote.queryRooms returns : ', err, rooms);
+          //next(null, rooms);
+        });
+
+//        var session = app.components.__connector__.session;
+//        logger.info('__connector__.session: ', session);
+//        logger.info('session: ', )
         cb(null, {authKey: 'aaaaaaaaaa'});
       }
     });
