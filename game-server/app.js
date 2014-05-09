@@ -29,6 +29,7 @@ app.configure('production|development', function () {
 });
 
 app.configure('production|development', 'userSystem|area', function() {
+  app.enable('rpcDebugLog');
   var mongodbCfg = app.get('mongodb');
   var mongoose = require('mongoose');
   mongoose.connect(mongodbCfg.url, mongodbCfg.options, function(err) {
@@ -46,10 +47,14 @@ app.configure('production|development', 'connector|gate', function () {
       handshake: function(msg, cb) {
         logger.info('handshake -> msg: ', msg, "\n", this, "\n", this.socket);
 
-        app.rpc.area.roomRemote.queryRooms.toServer('room-server', {}, function(err, rooms) {
-          logger.info('[handshake] app.rpc.area.roomRemote.queryRooms returns : ', err, rooms);
-          //next(null, rooms);
-        });
+//        app.rpc.area.roomRemote.queryRooms.toServer('room-server', {}, function(err, rooms) {
+//          logger.info('[handshake] app.rpc.area.roomRemote.queryRooms returns : ', err, rooms);
+//          //next(null, rooms);
+//        });
+
+//        app.rpc.userSystem.userRemote.authConn.toServer('userSystem-server-1', {}, function(err, data) {
+//          logger.info('[handshake] app.rpc.userSystem.userRemote.authConn returns : ', err, data);
+//        })
 
 //        var session = app.components.__connector__.session;
 //        logger.info('__connector__.session: ', session);

@@ -23,11 +23,20 @@ Handler.prototype.authConn = function(msg, session, next) {
 };
 
 Handler.prototype.queryEntry = function(msg, session, next) {
+  var self = this;
+
   var uid = msg.uid;
   if(!uid) {
     next(null, {code: Code.FAIL});
     return;
   }
+
+  session.set('my_uid', uid);
+  session.push('my_uid', function() {
+    self.app.rpc.userSystem.userRemote.authConn(session, {}, function(err, data){
+      logger.info('[Handler.prototype.entry] this.app.rpc.userSystem.userRemote.authConn returns : ', err, data);
+    });
+  });
 
   var connectors = this.app.getServersByType('connector');
   if(!connectors || connectors.length === 0) {

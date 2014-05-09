@@ -44,3 +44,13 @@ handler.enterRoom = function(msg, session, next) {
   });
 
 };
+
+handler.queryRooms = function(msg, session, next) {
+  logger.info('[Handler.prototype.queryRooms] msg => ', msg);
+  this.app.rpc.area.roomRemote.queryRooms(session, {}, function(err, rooms) {
+    logger.info('this.app.rpc.area.roomRemote.queryRooms returns : ', err, rooms);
+    next(null, rooms);
+  });
+
+
+};

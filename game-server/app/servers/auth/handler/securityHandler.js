@@ -14,7 +14,8 @@ var Handler = function(app) {
 
 Handler.prototype.authConn = function(msg, session, next) {
   session.set('connAuthed', true);
-  session.push('connAuthed');
-  logger.info('Connection authed~');
-  next(null, {});
+  session.push('connAuthed', function(){
+    logger.info('Connection authed~');
+    utils.invokeCallback(next, null, {});
+  });
 };

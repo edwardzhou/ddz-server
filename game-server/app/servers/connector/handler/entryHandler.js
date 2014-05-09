@@ -22,14 +22,17 @@ var Handler = function(app) {
 Handler.prototype.entry = function(msg, session, next) {
   var msgBody = format("[%s]: game server is ok.\n", this.app.getServerId());
   next(null, {code: 200, msg: msgBody});
+
 };
 
 Handler.prototype.queryRooms = function(msg, session, next) {
   logger.info('[Handler.prototype.queryRooms] msg => ', msg);
-  this.app.rpc.area.roomRemote.queryRooms.toServer('room-server', {}, function(err, rooms) {
+  this.app.rpc.area.roomRemote.queryRooms(session, {}, function(err, rooms) {
     logger.info('this.app.rpc.area.roomRemote.queryRooms returns : ', err, rooms);
      next(null, rooms);
   });
+
+
 };
 
 Handler.prototype.enterRoom = function(msg, session, next) {
