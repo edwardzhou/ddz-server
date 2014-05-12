@@ -7,10 +7,25 @@ var ErrorCode = {
   SUCCESS: 0,
   OK: 0,
 
+  // 连接未授权
+  CONNECTION_NOT_AUTHED: 10,
+  // 连接授权失败
+  CONNECTION_AUTH_FAILED: 11,
+  // 客户端版本被禁用
+  CLIENT_APP_VERSION_PROHIBITTED: 12,
+  // 客户端设备被禁用
+  CLIENT_DEVICE_PROHIBITTED: 13,
+
   // 用户不存在
   USER_NOT_FOUND: 100,
+  // 用户被禁用
+  USER_PROHIBITTED: 110,
   // 密码不匹配
   PASSWORD_INCORRECT: 101,
+  // 登录token无效
+  AUTH_TOKEN_INVALID: 102,
+  // 会话token过期
+  SESSION_TOKEN_EXPIRED: 103,
 
   // 无效请求
   INVALID_REQUEST: 1001,

@@ -139,10 +139,13 @@ userSchema.methods.verifyToken = function(authToken, imei) {
 
 var User = mongoose.model('User', userSchema);
 
-//User.jsonAttrs = {
-//  userId: 'uid',
-//  nickName: 'nick_name'
-//};
+User.jsonAttrs = {
+  userId: 'userId',
+  nickName: 'nickName',
+  mobileNo: 'mobileNo',
+  email: 'email',
+  authToken: 'authToken'
+};
 
 DomainBase.defineToParams(User, User.statics, User.methods);
 
