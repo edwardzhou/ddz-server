@@ -11,6 +11,7 @@
     "mess": "0.1.1",
     "js-combinatorics": "*",
     "xxtea": "*",
+    "node-uuid": "*",
     "crc": "0.2.0"
   }
 }

@@ -15,6 +15,8 @@ var ErrorCode = {
   CLIENT_APP_VERSION_PROHIBITTED: 12,
   // 客户端设备被禁用
   CLIENT_DEVICE_PROHIBITTED: 13,
+  // 未登录
+  CLIENT_NOT_SIGNED_YET: 14,
 
   // 用户不存在
   USER_NOT_FOUND: 100,

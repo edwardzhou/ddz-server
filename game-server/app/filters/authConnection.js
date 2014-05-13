@@ -37,7 +37,6 @@ Filter.prototype.before = function(msg, session, next) {
       err.code = ErrorCode.CONNECTION_NOT_AUTHED;
       next(err, {err: err});
       session.__sessionService__.kickBySid(session.frontendId, sid);
-      //session.__session__.closed('Connection not yet authenticated!');
       return;
     }
   }

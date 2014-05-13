@@ -25,7 +25,7 @@ app.configure('production|development', function () {
 
   var authConnection = require('./app/filters/authConnection');
   app.before(authConnection());
-
+  app.before(require('./app/filters/signedIn')());
 });
 
 app.configure('production|development', 'userSystem|area|auth', function() {
