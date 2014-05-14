@@ -3,7 +3,10 @@ var utils = require('../../../util/utils');
 var format = require('util').format;
 
 var User = require('../../../domain/user');
+var UserSession = require('../../../domain/UserSession');
 var userDao = require('../../../dao/userDao');
+
+var async = require('async');
 
 /**
  * Gate handler that dispatch user to connectors.
@@ -30,35 +33,81 @@ Handler.prototype.signIn = function(msg, session, next) {
   loginInfo.handsetInfo = msg.handsetInfo;
 
   if (!msg.authToken && !msg.password) {
+    // 参数无效
     utils.invokeCallback(next, null, {err: 501});
     return;
   }
 
-  userDao.signIn(loginInfo, function(err, user) {
-    if (err == null) {
-      session.bind(user.userId, function() {
-        utils.invokeCallback(next, null, {user: user.toParams()});
+  async.waterfall([
+    function (callback) {
+      // 1. 登录
+      userDao.signIn(loginInfo, function(err, user) {
+        callback(err, user);
       });
-
-      return;
+    }, function (user, callback) {
+      // 2. 绑定Session，并创建新的userSession
+      session.bind(user.userId);
+      UserSession.createSession(user.userId, function(err, userSession) {
+        callback(err, user, userSession);
+      });
+    }, function (user, userSession, callback) {
+      // 3. 设置session数据
+      session.set('userId', user.userId);
+      session.set('sessionToken', userSession.sessionToken);
+      session.pushAll();
+      callback(null, user, userSession);
     }
-
-    utils.invokeCallback(next, err, err);
+  ], function(err, user, userSession) {
+    if (!!err) {
+      // 登录失败
+      utils.invokeCallback(next, err, err);
+    } else {
+      // 登录成功，返回会话数据
+      var result = user.toParams();
+      result.sessionToken = userSession.sessionToken;
+      utils.invokeCallback(next, null, {user: result});
+    }
   });
+
 
 };
 
 Handler.prototype.signUp = function(msg, session, next) {
   var userInfo = msg;
-  userDao.createUser(userInfo, function(err, user) {
-    if (err == null) {
-      session.bind(user.userId, function() {
-        utils.invokeCallback(next, null, {user: user.toParams()});
-      })
-      return;
-    }
 
-    utils.invokeCallback(next, err, {err: 502});
+  async.waterfall([
+    function(callback){
+      // 1. 创建新用户
+      userDao.createUser(userInfo, function(err, user) {
+        callback(err, user);
+      });
+    }, function(user, callback) {
+      // 2. 绑定到session
+      session.bind(user.userId, function(err) {
+        callback(err, user);
+      });
+    }, function(user, callback) {
+      // 3. 创建userSession用于跨链接共享用户数据
+      UserSession.createSession(user.userId, function(err, uSession) {
+        callback(err, user, uSession);
+      });
+    }, function(user, userSession, callback) {
+      // 4. 设置session数据
+      session.set('userId', user.userId);
+      session.set('sessionToken', userSession.sessionToken);
+      session.pushAll();
+      callback(null, user, userSession);
+    }
+  ], function(err, user, userSession) {
+    if (!!err) {
+      // 创建用户失败
+      utils.invokeCallback(next, err, {err: 502});
+    } else {
+      // 成功返回用户信息
+      var result = user.toParams();
+      result.sessionToken = userSession.sessionToken;
+      utils.invokeCallback(next, null,  {user: result});
+    }
   });
 
 };

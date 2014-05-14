@@ -8,6 +8,7 @@
  */
 var logger = require('pomelo-logger').getLogger('pomelo', __filename);
 var ErrorCode = require('../consts/errorCode');
+var utils = require('../util/utils');
 
 var defaultAuthRegExpr = new RegExp("\\.authConn$");
 var defaultAuthSessionKey = 'connAuthed';
@@ -36,7 +37,8 @@ Filter.prototype.before = function(msg, session, next) {
       var err = new Error('Connection not authenticated!');
       err.code = ErrorCode.CONNECTION_NOT_AUTHED;
       next(err, {err: err});
-      session.__sessionService__.kickBySid(session.frontendId, sid);
+      //session.__sessionService__.kickBySid(session.frontendId, sid);
+      utils.kickBySession(session);
       return;
     }
   }

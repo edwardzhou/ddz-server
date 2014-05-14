@@ -19,8 +19,9 @@ var userSessionSchema = new mongoose.Schema({
 
 userSessionSchema.index({sessionToken: 1});
 
-userSessionSchema.statics.createSession = function(cb) {
+userSessionSchema.statics.createSession = function(userId, cb) {
   var newSession = new this();
+  newSession.userId = userId;
   newSession.save(function(err, session) {
     utils.invokeCallback(cb, err, session);
   });

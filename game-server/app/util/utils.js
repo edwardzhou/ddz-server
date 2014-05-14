@@ -112,3 +112,11 @@ utils.arrayRemove = function(arrayA, arrayB) {
 
   return true;
 };
+
+utils.kickBySession = function(session) {
+  if (!!session.__sessionService__.kickBySessionId) {
+    session.__sessionService__.kickBySessionId(session.id);
+  } else if (!!session.__sessionService__.kickBySid) {
+    session.__sessionService__.kickBySid(session.frontendId, session.id);
+  }
+};

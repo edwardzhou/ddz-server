@@ -8,6 +8,7 @@
  */
 var logger = require('pomelo-logger').getLogger('pomelo', __filename);
 var ErrorCode = require('../consts/errorCode');
+var utils = require('../util/utils');
 
 var defaultSignInUpRegExpr = new RegExp("\\.((authConn)|(signIn)|(signUp))$");
 var defaultUserIdSessionKey = 'userId';
@@ -43,7 +44,8 @@ Filter.prototype.before = function(msg, session, next) {
       var err = new Error('Not signed yet!');
       err.code = ErrorCode.CLIENT_NOT_SIGNED_YET;
       next(err, {err: err});
-      session.__sessionService__.kickBySid(session.frontendId, sid);
+
+      utils.kickBySession(session);
       return;
     }
   }
