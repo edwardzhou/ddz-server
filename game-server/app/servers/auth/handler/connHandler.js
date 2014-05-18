@@ -1,7 +1,7 @@
 var logger = require('pomelo-logger').getLogger('pomelo', __filename);
 var utils = require('../../../util/utils');
 
-var UserSession = require('../../../domain/UserSession');
+var UserSession = require('../../../domain/userSession');
 
 /**
  * Gate handler that dispatch user to connectors.

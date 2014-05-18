@@ -1,9 +1,11 @@
 var logger = require('pomelo-logger').getLogger('pomelo', __filename);
 var utils = require('../../../util/utils');
 var format = require('util').format;
+var Code = require('../../../../../shared/code');
+var dispatcher = require('../../../util/dispatcher');
 
 var User = require('../../../domain/user');
-var UserSession = require('../../../domain/UserSession');
+var UserSession = require('../../../domain/userSession');
 var userDao = require('../../../dao/userDao');
 
 var async = require('async');
@@ -20,6 +22,8 @@ var Handler = function(app) {
 };
 
 Handler.prototype.signIn = function(msg, session, next) {
+  var self = this;
+
   if (msg == null) {
     utils.invokeCallback(next, null, {err: 500});
     return;
@@ -63,16 +67,25 @@ Handler.prototype.signIn = function(msg, session, next) {
       utils.invokeCallback(next, err, err);
     } else {
       // 登录成功，返回会话数据
-      var result = user.toParams();
+      var result = {};
+      result.user = user.toParams();
       result.sessionToken = userSession.sessionToken;
-      utils.invokeCallback(next, null, {user: result});
+
+      var connectors = self.app.getServersByType('connector');
+      if(!connectors || connectors.length === 0) {
+        utils.invokeCallback(next, null,{err: {code: Code.GATE.NO_SERVER_AVAILABLE}});
+        return;
+      }
+
+      result.server = dispatcher.dispatch(user.userId, connectors);
+
+      utils.invokeCallback(next, null, result);
     }
   });
-
-
 };
 
 Handler.prototype.signUp = function(msg, session, next) {
+  var self = this;
   var userInfo = msg;
 
   async.waterfall([
@@ -104,9 +117,18 @@ Handler.prototype.signUp = function(msg, session, next) {
       utils.invokeCallback(next, err, {err: 502});
     } else {
       // 成功返回用户信息
-      var result = user.toParams();
+      var result = {};
+      result.user = user.toParams();
       result.sessionToken = userSession.sessionToken;
-      utils.invokeCallback(next, null,  {user: result});
+
+      var connectors = self.app.getServersByType('connector');
+      if(!connectors || connectors.length === 0) {
+        utils.invokeCallback(next, null,{err: {code: Code.GATE.NO_SERVER_AVAILABLE}});
+        return;
+      }
+
+      result.server = dispatcher.dispatch(user.userId, connectors);
+      utils.invokeCallback(next, null, result);
     }
   });
 
