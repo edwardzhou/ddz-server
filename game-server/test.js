@@ -47,6 +47,9 @@ userDao = require('./app/dao/userDao');
 UserSession = require('./app/domain/userSession');
 GameRoom = require('./app/domain/gameRoom');
 
+syscmd = "ifconfig | grep 192.168 | awk '{print $2}' | sed -r 's/.*\:(.*)/\1/'";
+
+
 //
 //var userSchema  =mongoose.Schema({
 //  name: String,
