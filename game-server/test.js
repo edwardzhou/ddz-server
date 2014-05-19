@@ -45,6 +45,7 @@ mongoose.connections[0].on('error', cb);
 User = require('./app/domain/user');
 userDao = require('./app/dao/userDao');
 UserSession = require('./app/domain/userSession');
+GameRoom = require('./app/domain/gameRoom');
 
 //
 //var userSchema  =mongoose.Schema({

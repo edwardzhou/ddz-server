@@ -14,7 +14,10 @@ var roomSchemaFields = {
   ante: Number,       // 底注
   rake: Number,       // 佣金
   maxPlayers: Number, // 最大人数
+  minCoinsQty: {type: Number, default: 0}, // 准入资格, 最小金币数, 0 代表无限制
+  maxCoinsQty: {type: Number, default: 0}, // 准入资格, 最大金币数, 0 代表无限制
   roomType: String,   // 房间类型
+  sortIndex: Number,  // 排序
   createdAt: {type: Date, default: Date.now},
   updatedAt: {type: Date, default: Date.now}
 };
@@ -175,52 +178,7 @@ roomSchema.methods.leave = function(playerId) {
   return table;
 };
 
-
-
 var GameRoom = mongoose.model('GameRoom', roomSchema);
-
-///**
-// * 游戏房间
-// * @param opts
-// * @constructor
-// */
-//var GameRoom = function(opts) {
-//  opts = opts || {};
-//  DomainBase.call(this, opts);
-//  // 初始化房间信息
-//  this.info = new GameRoomInfo(opts);
-//
-//  // 游戏桌子对照表(tableId -> table), 用于速查
-//  this.tablesMap = {};
-//  // 房间里玩家对照表(playerId -> player), 用于速查
-//  this.playersMap = {};
-//  // 桌子列表
-//  this.tables = [];
-//  // 下一张新桌子的Id
-//  this.tableNextId = 1;
-//
-//  if (!!opts.tables) {
-//    for(var index in opts.tables) {
-//      var table = opts.tables[index]
-//      this.tables.push(table);
-//      this.tablesMap[table.tableId] = table;
-//      if (this.tableNextId <= table.tableId)
-//        this.tableNextId = table.tableId + 1;
-//    }
-//  }
-//
-//  if(!!opts.tableNextId) {
-//    this.tableNextId = Number(opts.tableNextId);
-//  }
-//};
-//
-//// 令GameRoom继承于DomainBase
-//util.inherits(GameRoom, DomainBase);
-//
-//DomainBase.defineToParams(GameRoom);
-
-// 导出GameRoom
-module.exports = GameRoom;
 
 /**
  * 定义GameRoom的json字段对照
@@ -234,38 +192,12 @@ GameRoom.jsonAttrs = {
   'ante'      : 'ante',       // 底注
   'rake'      : 'rake',       // 佣金
   'maxPlayers': 'maxPlayers', // 最大人数
+  'minCoinsQty': 'minCoinsQty', // 准入资格, 最小金币数, 0 代表无限制
+  'maxCoinsQty': 'maxCoinsQty', // 准入资格, 最大金币数, 0 代表无限制
   'roomType'  : 'roomType'    // 房间类型
 };
 
 DomainBase.defineToParams(GameRoom, GameRoom.statics, GameRoom.methods);
 
-/**
- * 添加属性访问委托，把对this.propName委托到this.to.propName
- * @param obj
- * @param to
- * @param propName
- */
-var delegateProperty = function(obj, to, propName) {
-  Object.defineProperty(obj, propName, {
-    get: function() {
-      //console.log('get propName: %s', propName);
-      return this[to][propName];
-    },
-    set: function(_v) {
-      //console.log('set propName: %s  ==> ', propName, _v);
-      this[to][propName] = _v;
-    },
-    enumerable : true
-  });
-
-};
-
-//// 把GameRoomInfo的属性导出到GameRoom上
-//var propNames = Object.getOwnPropertyNames(roomSchemaFields);
-//var GameRoomPrototype = GameRoom.prototype;
-//for (var index in propNames) {
-//  var propName = propNames[index];
-//  delegateProperty(GameRoomPrototype, 'info', propName);
-//}
-
-
+// 导出GameRoom
+module.exports = GameRoom;
