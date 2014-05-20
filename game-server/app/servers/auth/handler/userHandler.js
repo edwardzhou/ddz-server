@@ -72,6 +72,7 @@ Handler.prototype.signIn = function(msg, session, next) {
       result.sessionToken = userSession.sessionToken;
 
       var connectors = self.app.getServersByType('connector');
+      //logger.debug('connectors: ', connectors);
       if(!connectors || connectors.length === 0) {
         utils.invokeCallback(next, null,{err: {code: Code.GATE.NO_SERVER_AVAILABLE}});
         return;

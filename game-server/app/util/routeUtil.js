@@ -12,8 +12,22 @@ exp.area = function(session, msg, app, cb) {
   var serverId = null;
   for (var index in area_servers) {
     //logger.info("<Server: %s> area_servers[%d]: %j", app.getServerId(), index, area_servers[index]);
-    if (area_servers[index].room_id == room_id)
+    if (area_servers[index].room_id == room_id) {
       serverId = area_servers[index].id;
+    } else if(typeof(area_servers[index].room_id) == 'string') {
+      var rid = area_servers[index].room_id;
+      var room_ids = rid.substring(1, rid.length-1).split(',')
+      for (var room_index in room_ids) {
+        if (parseInt(room_ids[room_index]) == room_id) {
+          serverId = area_servers[index].id;
+          break;
+        }
+      }
+    }
+
+    if (!!serverId) {
+      break;
+    }
   }
 
   serverId = serverId || area_servers[0].id;

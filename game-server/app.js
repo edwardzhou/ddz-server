@@ -23,6 +23,22 @@ app.configure('production|development', function () {
 //    app.set('dbclient', mongodb);
 //  });
 
+//  logger.info('parse room_id for area servers...')
+//  var servers = app.getServersByType('area');
+//  for (var index in servers) {
+//    var areaServer = servers[index];
+//    var room_id = areaServer.room_id;
+//    var room_ids = [room_id];
+//    if (typeof room_id == 'string') {
+//      room_id = room_id.substring(1, room_id.length-1);
+//      room_ids = room_id.split(',');
+//      for (var index in room_ids) {
+//        room_ids[index] = parseInt(room_ids[index]);
+//      }
+//    }
+//    areaServer.room_ids = room_ids;
+//  }
+
   var authConnection = require('./app/filters/authConnection');
   app.before(authConnection());
   app.before(require('./app/filters/signedIn')());
@@ -67,8 +83,7 @@ app.configure('production|development', 'area', function () {
       room_ids[index] = parseInt(room_ids[index]);
     }
   }
-  logger.info('room_ids => ', room_ids)
-  roomService.init(app, room_ids );
+  roomService.init(app, room_ids);
   require('./app/services/messageService').init(app);
   var cardService = require('./app/services/cardServiceFactory').createNormalCardService();
   app.set('cardService', cardService);

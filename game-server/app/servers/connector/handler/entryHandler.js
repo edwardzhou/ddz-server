@@ -38,14 +38,14 @@ Handler.prototype.queryRooms = function(msg, session, next) {
 Handler.prototype.enterRoom = function(msg, session, next) {
   var self = this;
   var room_id = msg.room_id;
-  var uid = msg.uid;
+  var uid = session.uid;
   var username = msg.username;
 
   logger.info('session ' , session.__proto__);
 
   var user = getUser(uid);
 
-  session.bind(uid);
+  //session.bind(uid);
   session.set("room_id", room_id);
   session.pushAll( function(err) {
      if (err) {
@@ -60,7 +60,7 @@ Handler.prototype.enterRoom = function(msg, session, next) {
   this.app.rpc.area.roomRemote.enter(session, uid, this.app.get('serverId'), session.id, room_id, function(err, room_server_id, table) {
     logger.info('enter result: ', err, room_server_id, table);
     if (!!err) {
-      next(null, err);
+      next(null, {err: err});
       return;
     }
 

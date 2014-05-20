@@ -46,7 +46,9 @@ remoteHandler.enter = function(uid, sid, sessionId, room_id, cb) {
   var msg = table.toParams();
 
   // 通知桌子的其他玩家，有新玩家进入
-  messageService.pushTableMessage(table, "onPlayerJoin", msg, null);
+  process.nextTick(function() {
+    messageService.pushTableMessage(table, "onPlayerJoin", msg, null);
+  });
 
   // 返回结果
   cb(null, thisServerId, msg);
