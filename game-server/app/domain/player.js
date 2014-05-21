@@ -21,7 +21,7 @@ var Player = function(opts) {
 util.inherits(Player, DomainBase);
 
 module.exports = Player;
-Player.jsonAttrs = {userId: "uid", nickName: "nick_name", state: "state"};
+Player.jsonAttrs = {userId: "userId", nickName: "nickName", state: "state", role: 'role'};
 
 Object.defineProperty(Player.prototype, 'playerId', {
   get: function() {return this.userId},

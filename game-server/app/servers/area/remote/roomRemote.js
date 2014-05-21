@@ -6,6 +6,8 @@ var Player = require('../../../domain/player');
 var format = require('util').format;
 var utils = require('../../../util/utils');
 var cardService = require('../../../services/cardService');
+var ErrorCode = require('../../../consts/errorCode');
+var userDao = require('../../../dao/userDao');
 
 module.exports = function(app) {
   return new RoomRemote(app);
@@ -25,6 +27,12 @@ var RoomRemote = function(app) {
 
 var remoteHandler = RoomRemote.prototype;
 
+remoteHandler.tryEnter = function(uid, sid, sessionId, room_id, cb) {
+  var self = this;
+  var thisServerId = self.app.getServerId();
+  utils.invokeCallback(cb, null, thisServerId, {ret: ErrorCode.SUCCESS});
+};
+
 /**
  * 玩家进入房间
  * @param uid - 玩家id
@@ -35,23 +43,32 @@ var remoteHandler = RoomRemote.prototype;
  */
 remoteHandler.enter = function(uid, sid, sessionId, room_id, cb) {
   var self = this;
-  var player = {userId: uid, nickName: "user_001", serverId: sid};
-
-  // 进入房间，并取得玩家所属桌子
-  var table = roomService.enterRoom(new Player(player), room_id, -1);
-  // cardServer挂接table的playerReady事件
-  //utils.on(table, "playerReady", cardService.onPlayerReady);
-
   var thisServerId = self.app.getServerId();
-  var msg = table.toParams();
 
-  // 通知桌子的其他玩家，有新玩家进入
-  process.nextTick(function() {
-    messageService.pushTableMessage(table, "onPlayerJoin", msg, null);
+  userDao.getByUserId(uid, function(err, user) {
+    if (err) {
+      utils.invokeCallback(cb, null, thisServeId, {ret: ErrorCode.USER_NOT_FOUND});
+    }
+
+    var player = user;
+    player.serverId = sid;
+
+    // 进入房间，并取得玩家所属桌子
+    var table = roomService.enterRoom(new Player(player), room_id, -1);
+    // cardServer挂接table的playerReady事件
+    //utils.on(table, "playerReady", cardService.onPlayerReady);
+
+    var msg = table.toParams();
+
+    // 通知桌子的其他玩家，有新玩家进入
+    process.nextTick(function() {
+      messageService.pushTableMessage(table, "onPlayerJoin", msg, null);
+    });
+
+    // 返回结果
+    cb(null, thisServerId, msg);
   });
 
-  // 返回结果
-  cb(null, thisServerId, msg);
 };
 
 /**

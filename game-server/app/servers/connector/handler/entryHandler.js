@@ -35,6 +35,39 @@ Handler.prototype.queryRooms = function(msg, session, next) {
 
 };
 
+/**
+ * New client entry chat server.
+ *
+ * @param  {Object}   msg     request message
+ * @param  {Object}   session current session object
+ * @param  {Function} next    next stemp callback
+ * @return {Void}
+ */
+Handler.prototype.tryEnterRoom = function(msg, session, next) {
+  var self = this;
+  var room_id = msg.room_id;
+  var uid = session.uid;
+
+  session.set("room_id", room_id);
+  session.pushAll( function(err) {
+    if (err) {
+      console.error('set room_id for session service failed! error is : %j', err.stack);
+    }
+  });
+
+  this.app.rpc.area.roomRemote.tryEnter(session, uid, this.app.get('serverId'), session.id, room_id, function(err, room_server_id, result) {
+    logger.info('enter result: ', err, room_server_id, result);
+    if (!!err) {
+      next(null, {err: err});
+      return;
+    }
+
+    next(null, result);
+  });
+};
+
+
+
 Handler.prototype.enterRoom = function(msg, session, next) {
   var self = this;
   var room_id = msg.room_id;
