@@ -53,7 +53,7 @@ app.configure('production|development', 'userSystem|area|auth', function() {
 });
 
 // app configuration
-app.configure('production|development', 'connector|gate', function () {
+app.configure('production|development', 'ddz|gate', function () {
   app.set('connectorConfig',
     {
       connector: pomelo.connectors.hybridconnector,

@@ -38,9 +38,9 @@ Handler.prototype.queryEntry = function(msg, session, next) {
 //    });
 //  });
 
-  var connectors = this.app.getServersByType('connector');
+  var connectors = this.app.getServersByType('ddz');
   if(!connectors || connectors.length === 0) {
-    next(null, {code: Code.GATE.NO_SERVER_AVAILABLE});
+    next(null, {err: Code.GATE.NO_SERVER_AVAILABLE});
     return;
   }
 

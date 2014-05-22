@@ -115,7 +115,7 @@ var connectServer = function(room_id, userId) {
 
         });
 
-//        pomelo.request("connector.entryHandler.queryRooms", {}, function(data) {
+//        pomelo.request("ddz.entryHandler.queryRooms", {}, function(data) {
 //          console.log("[%d] rooms: " , userId, JSON.stringify(data));
 //          for(var index in data) {
 //            var room = data[index];
