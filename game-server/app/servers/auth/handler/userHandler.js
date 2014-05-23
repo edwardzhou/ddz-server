@@ -122,9 +122,9 @@ Handler.prototype.signUp = function(msg, session, next) {
       result.user = user.toParams();
       result.sessionToken = userSession.sessionToken;
 
-      var connectors = self.app.getServersByType('connector');
+      var connectors = self.app.getServersByType('ddz');
       if(!connectors || connectors.length === 0) {
-        utils.invokeCallback(next, null,{err: {code: Code.GATE.NO_SERVER_AVAILABLE}});
+        utils.invokeCallback(next, null, {err:Code.GATE.NO_SERVER_AVAILABLE} );
         return;
       }
 

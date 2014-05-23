@@ -88,7 +88,11 @@ Handler.prototype.enterRoom = function(msg, session, next) {
 
   var server_id = self.app.getServerId();
 
-  session.on('closed', onUserLeave.bind(null, self.app));
+  if (!session.get('closed_binded')) {
+    session.on('closed', onUserLeave.bind(null, self.app));
+    session.set('closed_bound', true);
+    session.push('closed_bound');
+  }
 
   this.app.rpc.area.roomRemote.enter(session, uid, this.app.get('serverId'), session.id, room_id, function(err, room_server_id, table) {
     logger.info('enter result: ', err, room_server_id, table);
@@ -117,7 +121,8 @@ Handler.prototype.leave = function(msg, session, next) {
   session.set('self_close', true);
   session.push('self_close');
 
-  this.app.get('sessionService').kickBySessionId( session.id );
+  onUserLeave(this.app, session);
+  //this.app.get('sessionService').kickBySessionId( session.id );
 
   next(null, null);
 };
@@ -134,6 +139,12 @@ var onUserLeave = function(app, session) {
     return;
   }
 
+  var roomId = session.get('room_id');
+  var tableId = session.get('table_id');
+  if (!roomId || !tableId) {
+    return;
+  }
+
   var msg = {
     room_id: session.get('room_id'),
     table_id: session.get('table_id'),
@@ -145,7 +156,11 @@ var onUserLeave = function(app, session) {
 
   logger.debug('onUserLeave: ' , msg);
 
-  app.rpc.area.roomRemote.leave(session, msg, null );
+  app.rpc.area.roomRemote.leave(session, msg, function() {
+    session.set('room_id', null);
+    session.set('table_id', null);
+    session.pushAll();
+  });
 };
 
 

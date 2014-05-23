@@ -8,6 +8,7 @@ var utils = require('../../../util/utils');
 var cardService = require('../../../services/cardService');
 var ErrorCode = require('../../../consts/errorCode');
 var userDao = require('../../../dao/userDao');
+var GameState = require('../../../consts/consts').GameState;
 
 module.exports = function(app) {
   return new RoomRemote(app);
@@ -81,9 +82,15 @@ remoteHandler.leave = function(msg, cb) {
   var room_id = msg.room_id;
 
   var table = roomService.leave(room_id, uid);
-  table.reset();
+  if (table.gameSate != GameState.PENDING_FOR_READY) {
+    table.reset();
+  }
 
-  messageService.pushTableMessage(table, "onPlayerJoin", table.toParams(), null);
+  process.nextTick(function() {
+    messageService.pushTableMessage(table, "onPlayerJoin", table.toParams(), null);
+  });
+
+  utils.invokeCallback(cb, null, null);
 };
 
 var getPlayerIds = function(table) {

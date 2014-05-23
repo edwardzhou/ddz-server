@@ -160,19 +160,22 @@ exp.playerReady = function(table, player, next) {
   var self = this;
   // 玩家状态设为 READY
   player.state = PlayerState.READY;
-  // 通知同桌玩家
-  this.messageService.pushTableMessage(table, GameEvent.playerReady, table.toParams(), null);
 
-  // 如果3个玩家都已就绪，这开始牌局
-  if (table.players.length == 3 &&
-    table.players[0].isReady() &&
-    table.players[1].isReady() &&
-    table.players[2].isReady()) {
-    logger.info("table[%d] all players are ready, start new game.", table.tableId);
-    process.nextTick(function() {
-      self.startGame(table);
-    });
-  }
+  process.nextTick(function() {
+    // 通知同桌玩家
+    self.messageService.pushTableMessage(table, GameEvent.playerReady, table.toParams(), null);
+
+    // 如果3个玩家都已就绪，这开始牌局
+    if (table.players.length == 3 &&
+      table.players[0].isReady() &&
+      table.players[1].isReady() &&
+      table.players[2].isReady()) {
+      logger.info("table[%d] all players are ready, start new game.", table.tableId);
+      process.nextTick(function() {
+        self.startGame(table);
+      });
+    }
+  });
 
   utils.invokeCallback(next, null, {result: 0});
 };
