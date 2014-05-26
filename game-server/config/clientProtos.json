@@ -1,1 +1,29 @@
-{}
+{
+  "message HandsetInfo": {
+    "optional string id": 1,
+    "optional string brand": 2,
+    "optional string board": 3,
+    "optional string model": 4,
+    "optional string os_ver": 5,
+    "optional string manufacture": 6,
+    "optional string product": 7,
+    "optional string mac": 8,
+    "optional string imei": 9,
+    "optional string imsi": 10,
+    "optional string cpu_abi": 11,
+    "optional string network": 12,
+    "optional string device": 13,
+    "optional string display": 14,
+    "optional string fingerprint": 15
+  },
+  "auth.userHandler.signIn": {
+    "required string appVersion": 1,
+    "required string resVersion": 2,
+    "required uInt32 signInType": 3,
+    "required uInt32 userId": 4,
+    "optional string authToken": 5,
+    "optional string sessionToken": 6,
+    "optional string password": 7,
+    "required HandsetInfo handsetInfo": 8
+  }
+}
