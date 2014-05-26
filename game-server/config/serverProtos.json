@@ -17,6 +17,19 @@
     "optional uInt32 lordUserId": 4,
     "optional uInt32 lastUserId": 5,
     "optional string lordPokeCards": 6
-
+  },
+  "ddz.entryHandler.queryRooms": {
+    "message GameRoom": {
+      "required uInt32 roomId": 1,
+      "required string roomName": 2,
+      "required string roomDesc": 3,
+      "required string roomType": 4,
+      "required uInt32 state": 5,
+      "required uInt32 ante": 6,
+      "required float rake": 7,
+      "required uInt32 minCoinsQty": 8,
+      "required uInt32 maxCoinsQty": 9
+    },
+    "repeated GameRoom rooms": 1
   }
 }
