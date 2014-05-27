@@ -30,10 +30,10 @@ var _sortPokeCard = function(p1, p2) {
  * 处理叫地主逻辑
  * @param gameTable
  * @param player
- * @param lordValue
+ * @param lordAction
  * @param cb
  */
-GrabLordAction.doGrabLord = function(gameTable, player, lordValue, cb) {
+GrabLordAction.doGrabLord = function(gameTable, player, lordAction, cb) {
   var table = gameTable;
   var pokeGame = table.pokeGame;
 //  // 必须是轮到叫地主的玩家(table.nextUserId == player.userId)才能叫
@@ -44,22 +44,26 @@ GrabLordAction.doGrabLord = function(gameTable, player, lordValue, cb) {
 //  }
 
   // 所叫的分数必须大于当前地主分
-  if (lordValue > 0 && lordValue <= pokeGame.grabbingLord.lordValue) {
-    utils.invokeCallback(cb, {err: ErrorCode.INVALID_GRAB_LORD_VALUE}, null);
-    return;
-  }
+//  if (lordAction > 0 && lordAction <= pokeGame.grabbingLord.lordValue) {
+//    utils.invokeCallback(cb, {err: ErrorCode.INVALID_GRAB_LORD_VALUE}, null);
+//    return;
+//  }
 
   pokeGame.grabbingLord.grabTimes ++;
 
-  if (lordValue > 0) {
+  if (lordAction > 0) {
     // 更新有效地主分
-    pokeGame.grabbingLord.lordValue = lordValue;
+    if (pokeGame.grabbingLord.lordValue == 0) {
+      pokeGame.grabbingLord
+    }
+
+    pokeGame.grabbingLord.lordValue = pokeGame.grabbingLord.lordValue * 2;
     pokeGame.grabbingLord.lastUserId = player.userId;
   }
   var msgBack = {};
 
   // 如果叫3分，则该玩家为地主，并结束抢地主环节。
-  if (lordValue == 3) {
+  if (lordAction == 3) {
     // 指定玩家为地主, 并把地主牌通知个所有人
     pokeGame.lordUserId = player.userId;
     pokeGame.lordValue = pokeGame.grabbingLord.lordValue;
@@ -87,7 +91,7 @@ GrabLordAction.doGrabLord = function(gameTable, player, lordValue, cb) {
     pokeGame.token.nextUserId = nextPlayer.userId;
 
     msgBack = {
-      lordValue: lordValue,
+      lordValue: lordAction,
       lastUserId: player.userId,
       nextUserId: pokeGame.nextUserId
     };

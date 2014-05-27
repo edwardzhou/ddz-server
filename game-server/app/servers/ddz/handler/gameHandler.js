@@ -29,7 +29,7 @@ Handler.prototype.grabLord = function(msg, session, next) {
   var uid = session.uid;
   var sid = session.frontendId;
   var table_id = session.get('table_id');
-  var lordValue = msg.lordValue;
+  var lordAction = msg.lordAction;
   var seqNo = msg.seqNo;
 
   var params = {
@@ -37,7 +37,7 @@ Handler.prototype.grabLord = function(msg, session, next) {
     serverId: sid,
     room_id: room_id,
     table_id: table_id,
-    lordValue: lordValue,
+    lordAction: lordAction,
     seqNo: seqNo
   };
 

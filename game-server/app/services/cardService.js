@@ -203,8 +203,9 @@ exp.startGame = function (table, next) {
         {
           grabLord: (player.userId == newPokeGame.grabbingLord.nextUserId ? 1 : 0),
           pokeCards: player.pokeCardsString(),
-          gameId: newPokeGame.gameId,
+          pokeGame: newPokeGame.toParams(),
           player: player.toParams(),
+          nextUserId: newPokeGame.grabbingLord.nextUserId,
           seqNo: (player.userId == newPokeGame.grabbingLord.nextUserId ? seqNo : 0)
         },
         [player.getUidSid()],
@@ -219,17 +220,17 @@ exp.startGame = function (table, next) {
  * 玩家叫地主
  * @param table - 玩家所在的桌子
  * @param player - 玩家
- * @param lordValue - 地主分数 (0 - 不叫, 1 - 1分， 2 - 2分， 3 - 3分)
+ * @param lordAction - 地主分数 (0 - 不叫, 1 - 叫地主/抢地主)
  * @param next
  */
-exp.grabLord = function(table, player, lordValue, seqNo, next) {
+exp.grabLord = function(table, player, lordAction, seqNo, next) {
   var params = {table: table, player: player, seqNo: seqNo};
   var actionResult = null;
   var actionFilter = this.getActionFilters(GameAction.GRAB_LORD);
   var self = this;
 
   var action = function(params, callback) {
-    self.grabLordAction.doGrabLord(table, player, lordValue, function(err, result) {
+    self.grabLordAction.doGrabLord(table, player, lordAction, function(err, result) {
       actionResult = result;
       // 当地主产生时，保留叫地主过程里指定的下一玩家id , ref to ./filters/increaseSeqNo.js
       if (!!table.pokeGame && !!table.pokeGame.lordUserId) {

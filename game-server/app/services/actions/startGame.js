@@ -48,13 +48,14 @@ StartGameAction.execute = function(table, cb) {
   table.lordPokeCards = pokeCards.sort(_sortPokeCard);
 
   // 创建新牌局
-  var newPokeGame = PokeGame.newGame(table.room.roomId, table.tableId, table.players);
+  //var newPokeGame = PokeGame.newGame(table.room.roomId, table.tableId, table.players);
+  var newPokeGame = PokeGame.newGame(table);
   newPokeGame.lordCards = cardUtil.pokeCardsToString(table.lordPokeCards);
 
   table.pokeGame = newPokeGame;
 
   newPokeGame.state = GameState.GRABBING_LORD;
-  newPokeGame.grabbingLord = {lastUserId: null, lordValue: 0, nextUserId: null, grabTimes: 0};
+  newPokeGame.grabbingLord = {lastUserId: 0, lordValue: 0, nextUserId: 0, grabTimes: 0};
 
   // 随机指定第一个叫地主的用户
   var lordUserIndex = (new Date()).getTime() % 3;

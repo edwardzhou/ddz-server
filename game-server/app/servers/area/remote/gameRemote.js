@@ -48,14 +48,14 @@ remoteHandler.grabLord = function(msg, cb) {
   var sid = msg.serverId;
   var room_id = msg.room_id;
   var table_id = msg.table_id;
-  var lordValue = msg.lordValue;
+  var lordAction = msg.lordAction;
   var seqNo = msg.seqNo;
 
   var room = roomService.getRoom(room_id);
   var player = room.getPlayer(uid);
   var table = room.getGameTable(player.tableId);
 
-  this.cardService.grabLord(table, player, lordValue, seqNo, function(err, result){
+  this.cardService.grabLord(table, player, lordAction, seqNo, function(err, result){
     utils.invokeCallback(cb, err, result);
   });
 };

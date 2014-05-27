@@ -30,11 +30,14 @@ module.exports = {
   PlayerState: {
     PREPARE_READY: 0,
     READY: 1,
-    GRABBING_LORD: 2,
-    PLAYING: 3,
-    DELEGATING: 4,
-    GAME_OVER: 5,
-    LEAVE_GAME: 6
+    NoGrabLord: 2,
+    GrabLord: 3,
+    PassGrabLord: 4,
+    ReGrabLord: 5,
+    PLAYING: 6,
+    DELEGATING: 7,
+    GAME_OVER: 8,
+    LEAVE_GAME: 9
   },
 
   TableState: {

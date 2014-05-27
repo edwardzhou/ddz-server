@@ -1,5 +1,6 @@
 var GameState = require('../consts/consts').GameState;
 var PokeCard = require('./pokeCard');
+var DomainBase = require('./domainBase');
 var mongoose = require('mongoose');
 
 /**
@@ -44,6 +45,9 @@ var pokeGameSchema = new mongoose.Schema({
   endAt: {type: Date},
   // 牌局时长(单位秒)
   duration: Number,
+  gameRake: Number,
+  gameAnte: Number,
+  gameLordValue: Number,
   // 游戏结算信息
   score: {
     // 牌局佣金 ( >1 表示固定佣金，<1  表示比例佣金; 如: 100 - 每局收100佣金， 0.05 - 每局收5%佣金)
@@ -77,6 +81,20 @@ var PokeGame = mongoose.model('PokeGame', pokeGameSchema);
 
 module.exports = PokeGame;
 
+PokeGame.jsonAttrs = {
+  gameId: 'gameId',
+  roomId: 'roomId',
+  tableId: 'tableId',
+  gameRake: 'gameRake',
+  gameAnte: 'gameAnte',
+  gameLordValue: 'gameLordValue',
+  state: 'state',
+  players: 'players',
+  grabbingLord: 'grabbingLord'
+};
+
+DomainBase.defineToParams(PokeGame, PokeGame.statics, PokeGame.methods);
+
 /**
  *
  * @param roomId
@@ -84,11 +102,20 @@ module.exports = PokeGame;
  * @param players
  * @returns {PokeGame}
  */
-PokeGame.newGame = function(roomId, tableId, players) {
-  var opts = {roomId: roomId, tableId: tableId, players: players, state: GameState.PENDING_FOR_READY};
+PokeGame.newGame = function(table) {
+  var gameRoom = table.room;
+  var opts = {
+    gameId: 1,
+    roomId: gameRoom.roomId,
+    gameRake: gameRoom.rake || 0,
+    gameAnte: gameRoom.ante || 0,
+    gameLordValue: 0,
+    tableId: table.tableId,
+    players: table.players,
+    state: GameState.PENDING_FOR_READY};
   var game = new PokeGame(opts);
 
-  game.players = players.slice(0, players.length);
+  game.players = table.players.slice(0, table.players.length);
   game.token = {nextUserId: '', currentSeqNo: 0};
 
   return game;
