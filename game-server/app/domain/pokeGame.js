@@ -38,7 +38,7 @@ var pokeGameSchema = new mongoose.Schema({
   // 地主牌
   lordCards: String,
   // 地主Id
-  lordUserId: Number,
+  lordPlayerId: Number,
   // 牌局开始时间
   startAt: {type: Date},
   // 牌局结束时间
@@ -118,6 +118,13 @@ PokeGame.newGame = function(table) {
   game.players = table.players.slice(0, table.players.length);
   game.token = {nextUserId: '', currentSeqNo: 0};
 
+//  game.players[0].prevPlayer = game.players[2];
+//  game.players[0].nextPlayer = game.players[1];
+//  game.players[1].prevPlayer = game.players[0];
+//  game.players[1].nextPlayer = game.players[2];
+//  game.players[2].prevPlayer = game.players[1];
+//  game.players[2].nextPlayer = game.players[0];
+
   return game;
 };
 
@@ -145,5 +152,14 @@ PokeGame.prototype.getNextPlayer = function(userId) {
     return null;
 
   playerIndex = (playerIndex + 1) % this.players.length;
+  return this.players[playerIndex];
+};
+
+PokeGame.prototype.getPrevPlayer = function(userId) {
+  var playerIndex = this.getPlayerIndex(userId);
+  if (playerIndex < 0)
+    return null;
+
+  playerIndex = (playerIndex + 2) % this.players.length;
   return this.players[playerIndex];
 };

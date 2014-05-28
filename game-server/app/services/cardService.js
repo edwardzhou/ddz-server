@@ -233,7 +233,7 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
     self.grabLordAction.doGrabLord(table, player, lordAction, function(err, result) {
       actionResult = result;
       // 当地主产生时，保留叫地主过程里指定的下一玩家id , ref to ./filters/increaseSeqNo.js
-      if (!!table.pokeGame && !!table.pokeGame.lordUserId) {
+      if (!!table.pokeGame && !!table.pokeGame.lordPlayerId) {
         params.keepNextUserId = true;
       }
       callback(err, params);
@@ -269,7 +269,7 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
     }
 
     // 未产生地主？
-    if (pokeGame.lordUserId == null) {
+    if (pokeGame.lordPlayerId == null) {
       // 设置下一玩家叫地主超时时，自动不叫
       setupNextPlayerTimeout(table, function(table, player, seqNo){
         self.grabLord(table, player, 0, seqNo, null);

@@ -46,7 +46,8 @@
     "required uInt32 seqNo": 3,
     "optional uInt32 lordUserId": 4,
     "optional uInt32 lastUserId": 5,
-    "optional string lordPokeCards": 6
+    "optional string lordPokeCards": 6,
+    "repeated Player players": 7
   },
   "ddz.entryHandler.queryRooms": {
     "message GameRoom": {

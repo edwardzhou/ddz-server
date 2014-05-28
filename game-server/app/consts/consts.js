@@ -30,10 +30,10 @@ module.exports = {
   PlayerState: {
     PREPARE_READY: 0,
     READY: 1,
-    NoGrabLord: 2,
-    GrabLord: 3,
-    PassGrabLord: 4,
-    ReGrabLord: 5,
+    NO_GRAB_LORD: 2,
+    GRAB_LORD: 3,
+    PASS_GRAB_LORD: 4,
+    RE_GRAB_LORD: 5,
     PLAYING: 6,
     DELEGATING: 7,
     GAME_OVER: 8,
@@ -51,6 +51,11 @@ module.exports = {
     GRABBING_LORD: 2,
     PLAYING: 3,
     GAME_OVER: 4
+  },
+
+  GrabLordType: {
+    NONE: 0,
+    GRAB: 1
   },
 
   GameAction: {

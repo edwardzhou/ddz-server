@@ -16,6 +16,8 @@ var Player = function(opts) {
   this.role = opts.role || PlayerRole.NONE;
   this.state = opts.state || PlayerState.PREPARE_READY;
   this.plays = opts.plays || 0;
+  this.prevPlayer = opts.prevPlayer || null;
+  this.nextPlayer = opts.nextPlayer || null;
 };
 
 util.inherits(Player, DomainBase);

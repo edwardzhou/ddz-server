@@ -55,13 +55,20 @@ StartGameAction.execute = function(table, cb) {
   table.pokeGame = newPokeGame;
 
   newPokeGame.state = GameState.GRABBING_LORD;
-  newPokeGame.grabbingLord = {lastUserId: 0, lordValue: 0, nextUserId: 0, grabTimes: 0};
+  newPokeGame.grabbingLord = {
+    lastUserId: 0,
+    lordValue: 0,
+    nextUserId: 0,
+    grabTimes: 0
+  };
 
   // 随机指定第一个叫地主的用户
   var lordUserIndex = (new Date()).getTime() % 3;
   var lordUserId = table.players[lordUserIndex].userId;
   table.nextUserId = lordUserId;
   table.lastUserId = null;
+  newPokeGame.grabbingLord.firstPlayer = table.players[lordUserIndex];
+  newPokeGame.grabbingLord.firstPlayerId = lordUserId;
 
   newPokeGame.grabbingLord.nextUserId = lordUserId;
   newPokeGame.token = {nextUserId: lordUserId, currentSeqNo: 1};
