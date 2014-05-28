@@ -4,7 +4,8 @@
     "optional string nickName": 2,
     "required uInt32 state": 3,
     "required uInt32 role": 4,
-    "optional string headIcon": 5
+    "optional string headIcon": 5,
+    "optional uInt32 pokeCount": 6
   },
   "message GrabbingLord": {
     "optional uInt32 userId": 1,
