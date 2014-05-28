@@ -86,7 +86,7 @@ GrabLordAction.doGrabLord = function(gameTable, player, lordAction, cb) {
   if (pokeGame.grabbingLord.lordValue == 3) {
     isGrabLordFinish = pokeGame.grabbingLord.firstPlayer == nextPlayer;
   } else if (pokeGame.grabbingLord.lordValue > 3) {
-    isGrabLordFinish = pokeGame.firstLordPlayer == player;
+    isGrabLordFinish = pokeGame.grabbingLord.firstLordPlayer == player;
   }
 
   if (isGrabLordFinish) {
@@ -111,6 +111,7 @@ GrabLordAction.doGrabLord = function(gameTable, player, lordAction, cb) {
   }
 
   var msgBack = {};
+  var excludedPlayerAttrs = ['nickName', 'headIcon'];
   if (isGiveUp) {
     // 流局
   } else if (isGrabLordFinish) {
@@ -120,8 +121,13 @@ GrabLordAction.doGrabLord = function(gameTable, player, lordAction, cb) {
       lordValue: pokeGame.lordValue,
       lordUserId: pokeGame.lordPlayerId,
       nextUserId: pokeGame.lordPlayerId,
+      userId: player.userId,
       lordPokeCards: CardUtil.pokeCardsToString(table.lordPokeCards),
-      players: [pokeGame.players[0].toParams(), pokeGame.players[1].toParams(), pokeGame.players[2].toParams()]
+      players: [
+        pokeGame.players[0].toParams(excludedPlayerAttrs),
+        pokeGame.players[1].toParams(excludedPlayerAttrs),
+        pokeGame.players[2].toParams(excludedPlayerAttrs)
+      ]
     };
   } else {
     // 叫地主环节未结束，继续由下一玩家叫地主
@@ -129,8 +135,13 @@ GrabLordAction.doGrabLord = function(gameTable, player, lordAction, cb) {
     msgBack = {
       lordValue: pokeGame.grabbingLord.lordValue,
       lordUserId: 0,
+      userId: player.userId,
       nextUserId: nextPlayer.userId,
-      players: [pokeGame.players[0].toParams(), pokeGame.players[1].toParams(), pokeGame.players[2].toParams()]
+      players: [
+        pokeGame.players[0].toParams(excludedPlayerAttrs),
+        pokeGame.players[1].toParams(excludedPlayerAttrs),
+        pokeGame.players[2].toParams(excludedPlayerAttrs)
+      ]
     }
   }
 

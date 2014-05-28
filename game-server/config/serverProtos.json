@@ -1,13 +1,13 @@
 {
   "message Player": {
     "required uInt32 userId": 1,
-    "required string nickName": 2,
+    "optional string nickName": 2,
     "required uInt32 state": 3,
     "required uInt32 role": 4,
     "optional string headIcon": 5
   },
   "message GrabbingLord": {
-    "optional uInt32 lastUserId": 1,
+    "optional uInt32 userId": 1,
     "required uInt32 lordValue": 2,
     "required uInt32 nextUserId": 3,
     "optional uInt32 grabTimes": 4
@@ -45,7 +45,7 @@
     "required uInt32 nextUserId": 2,
     "required uInt32 seqNo": 3,
     "optional uInt32 lordUserId": 4,
-    "optional uInt32 lastUserId": 5,
+    "optional uInt32 userId": 5,
     "optional string lordPokeCards": 6,
     "repeated Player players": 7
   },
