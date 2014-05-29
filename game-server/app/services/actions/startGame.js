@@ -50,7 +50,8 @@ StartGameAction.execute = function(table, cb) {
   // 创建新牌局
   //var newPokeGame = PokeGame.newGame(table.room.roomId, table.tableId, table.players);
   var newPokeGame = PokeGame.newGame(table);
-  newPokeGame.lordCards = cardUtil.pokeCardsToString(table.lordPokeCards);
+  newPokeGame.lordCardChars = cardUtil.pokeCardsToString(table.lordPokeCards);
+  newPokeGame.lordCards = table.lordPokeCards;
 
   table.pokeGame = newPokeGame;
 

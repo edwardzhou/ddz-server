@@ -94,6 +94,14 @@ var setupPlayerReadyTimeout = function(table, player, callback, seconds) {
   }, tm * 1000);
 };
 
+var clearNextPlayerTimeout = function (table) {
+  var pokeGame = table.pokeGame;
+  if (!!pokeGame.actionTimeout) {
+    clearTimeout(pokeGame.actionTimeout);
+    pokeGame.actionTimeout = null;
+  }
+};
+
 /**
  * 设置下一玩家的超时处理
  * @param table 需要超时处理的table
@@ -101,12 +109,13 @@ var setupPlayerReadyTimeout = function(table, player, callback, seconds) {
  * @param seconds 超时时间，单位秒, 如果不传，默认30s (托管时3s)
  */
 var setupNextPlayerTimeout = function (table, callback, seconds) {
+  clearNextPlayerTimeout(table);
   var pokeGame = table.pokeGame;
   var nextPlayer = pokeGame.getPlayerByUserId(pokeGame.token.nextUserId);
   var seqNo = pokeGame.token.currentSeqNo;
   var tm = seconds;
   if (typeof tm == 'undefined')
-    tm = (!nextPlayer.isDelegating())? 35 : 3;
+    tm = (!nextPlayer.isDelegating())? 35 : 35;
 
   pokeGame.actionTimeout = setTimeout(function(){
       callback(table, nextPlayer, seqNo);
@@ -268,20 +277,20 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
       return;
     }
 
-    // 未产生地主？
-    if (pokeGame.lordPlayerId == null) {
-      // 设置下一玩家叫地主超时时，自动不叫
-      setupNextPlayerTimeout(table, function(table, player, seqNo){
-        self.grabLord(table, player, 0, seqNo, null);
-      });
-    } else {
-      // 地主超时自动出一张牌
-      // TODO: 下一步要改用AI在处理
-      setupNextPlayerTimeout(table, function(table, player, seqNo){
-        var pokeChar = player.pokeCards[0].pokeChar;
-        self.playCard(table, player, pokeChar, seqNo, true, null);
-      }, 3)
-    }
+//    // 未产生地主？
+//    if (pokeGame.lordPlayerId == null) {
+//      // 设置下一玩家叫地主超时时，自动不叫
+//      setupNextPlayerTimeout(table, function(table, player, seqNo){
+//        self.grabLord(table, player, 0, seqNo, null);
+//      });
+//    } else {
+//      // 地主超时自动出一张牌
+//      // TODO: 下一步要改用AI在处理
+//      setupNextPlayerTimeout(table, function(table, player, seqNo){
+//        var pokeChar = player.pokeCards[0].pokeChar;
+//        self.playCard(table, player, pokeChar, seqNo, true, null);
+//      }, 3)
+//    }
   });
 
 
@@ -298,6 +307,8 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
 
   logger.debug("table: %j, player: %j, pokeChars: %j, seqNo: %j, isTimeout: %j",
     table.tableId, player.userId, pokeChars, seqNo, isTimeout);
+
+  clearNextPlayerTimeout(table);
 
   var self = this;
   var params = {table: table, player: player, seqNo: seqNo};
@@ -326,7 +337,10 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
     self.messageService.pushTableMessage(table,
       eventName,
       {
-        playerId: player.userId,
+        player: {
+          userId: player.userId,
+          pokeCount: player.pokeCount
+        },
         pokeChars: actionResult.pokeChars,
         nextUserId: pokeGame.token.nextUserId,
         seqNo: pokeGame.token.currentSeqNo
@@ -341,9 +355,9 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
       return;
     }
 
-    setupNextPlayerTimeout(table, function(table, player, seqNo) {
-        self.playCard(table, player, '', seqNo, true, null);
-      });
+//    setupNextPlayerTimeout(table, function(table, player, seqNo) {
+//        self.playCard(table, player, '', seqNo, true, null);
+//      });
   });
 };
 

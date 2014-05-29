@@ -40,7 +40,7 @@ Object.defineProperty(Player.prototype, 'playerId', {
 });
 
 Object.defineProperty(Player.prototype, 'pokeCount', {
-  get: function() { return (!!this.pokeCards)? this.pkoeCards.length : 0 },
+  get: function() { return (!!this.pokeCards)? this.pokeCards.length : 0 },
 //  set: function(_v) {this.userId = _v},
   enumerable: true
 });

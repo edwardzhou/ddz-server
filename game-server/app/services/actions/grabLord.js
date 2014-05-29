@@ -76,11 +76,6 @@ GrabLordAction.doGrabLord = function(gameTable, player, lordAction, cb) {
   var nextPlayer = null;
   var prevPlayer = null;
   nextPlayer = pokeGame.getNextPlayer(player.userId);
-  if (nextPlayer.state == PlayerState.NO_GRAB_LORD) {
-    nextPlayer = pokeGame.getNextPlayer(nextPlayer.userId);
-  }
-
-  var isGiveUp = (pokeGame.grabbingLord.firstPlayer == nextPlayer) && (pokeGame.grabbingLord.lordValue == 0);
 
   var isGrabLordFinish = false;
   if (pokeGame.grabbingLord.lordValue == 3) {
@@ -88,6 +83,15 @@ GrabLordAction.doGrabLord = function(gameTable, player, lordAction, cb) {
   } else if (pokeGame.grabbingLord.lordValue > 3) {
     isGrabLordFinish = pokeGame.grabbingLord.firstLordPlayer == player;
   }
+
+  var isGiveUp = (pokeGame.grabbingLord.firstPlayer == nextPlayer) && (pokeGame.grabbingLord.lordValue == 0);
+//
+//  var isGrabLordFinish = false;
+//  if (pokeGame.grabbingLord.lordValue == 3) {
+//    isGrabLordFinish = pokeGame.grabbingLord.firstPlayer == nextPlayer;
+//  } else if (pokeGame.grabbingLord.lordValue > 3) {
+//    isGrabLordFinish = pokeGame.grabbingLord.firstLordPlayer == player;
+//  }
 
   if (isGrabLordFinish) {
     pokeGame.lordValue = pokeGame.grabbingLord.lordValue;
@@ -132,6 +136,10 @@ GrabLordAction.doGrabLord = function(gameTable, player, lordAction, cb) {
   } else {
     // 叫地主环节未结束，继续由下一玩家叫地主
     nextPlayer = pokeGame.getNextPlayer(player.userId);
+    if (nextPlayer.state == PlayerState.NO_GRAB_LORD) {
+      nextPlayer = pokeGame.getNextPlayer(nextPlayer.userId);
+    }
+
     msgBack = {
       lordValue: pokeGame.grabbingLord.lordValue,
       lordUserId: 0,

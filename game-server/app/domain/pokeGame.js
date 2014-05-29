@@ -36,7 +36,7 @@ var pokeGameSchema = new mongoose.Schema({
   // 动作历史
   actions: [String],
   // 地主牌
-  lordCards: String,
+  lordCardChars: String,
   // 地主Id
   lordPlayerId: Number,
   // 牌局开始时间
