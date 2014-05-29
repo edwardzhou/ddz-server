@@ -14,6 +14,7 @@ var GameActionNames = {};
 GameActionNames[ GameAction.GRAB_LORD ] = 'grabLordAction';
 GameActionNames[ GameAction.GAME_START ] = 'startGameAction';
 GameActionNames[ GameAction.PLAY_CARD ] = 'playCardAction';
+GameActionNames[ GameAction.GAME_OVER] = 'gameOverAction';
 
 
 /**
@@ -388,9 +389,9 @@ exp.gameOver = function(table, player, cb) {
         actionResult,
         null );
 
-      setupPlayerReadyTimeout(table, table.players[0], self.playerReadyTimeout.bind(self), 35);
-      setupPlayerReadyTimeout(table, table.players[1], self.playerReadyTimeout.bind(self), 35);
-      setupPlayerReadyTimeout(table, table.players[2], self.playerReadyTimeout.bind(self), 35);
+//      setupPlayerReadyTimeout(table, table.players[0], self.playerReadyTimeout.bind(self), 35);
+//      setupPlayerReadyTimeout(table, table.players[1], self.playerReadyTimeout.bind(self), 35);
+//      setupPlayerReadyTimeout(table, table.players[2], self.playerReadyTimeout.bind(self), 35);
     }
   });
 

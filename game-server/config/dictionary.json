@@ -1,5 +1,6 @@
 [
   "onGameStart",
   "onPlayerJoin",
-  "onPlayerReady"
+  "onPlayerReady",
+  "onPlayCard"
 ]

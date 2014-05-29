@@ -46,6 +46,8 @@ PlayCardAction.doPlayCard = function(table, player, pokeChars, cb) {
     return false;
   }
 
+
+
   var pokeGame = table.pokeGame;
   var lastCard = pokeGame.lastCard;
 
@@ -54,7 +56,7 @@ PlayCardAction.doPlayCard = function(table, player, pokeChars, cb) {
   if (true) {
     pokeGame.lastCard = card;
     pokeGame.lastUserId = player.userId;
-    //utils.arrayRemove(player.pokeCards, pokeCards);
+    utils.arrayRemove(player.pokeCards, pokeCards);
 
     if (card.isBomb()) {
       pokeGame.score.bombs++;

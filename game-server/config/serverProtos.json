@@ -2,8 +2,8 @@
   "message Player": {
     "required uInt32 userId": 1,
     "optional string nickName": 2,
-    "required uInt32 state": 3,
-    "required uInt32 role": 4,
+    "optional uInt32 state": 3,
+    "optional uInt32 role": 4,
     "optional string headIcon": 5,
     "optional uInt32 pokeCount": 6
   },
@@ -49,6 +49,12 @@
     "optional uInt32 userId": 5,
     "optional string lordPokeCards": 6,
     "repeated Player players": 7
+  },
+  "onPlayCard" : {
+    "required Player player": 1,
+    "required string pokeChars": 2,
+    "required uInt32 nextUserId": 3,
+    "required uInt32 seqNo": 4
   },
   "ddz.entryHandler.queryRooms": {
     "message GameRoom": {

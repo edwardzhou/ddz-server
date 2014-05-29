@@ -11,6 +11,7 @@ var IncreasePlaysAfterFilter = require('./filters/increasePlays');
 var GrabLordAction = require('./actions/grabLord');
 var StartGameAction = require('./actions/startGame');
 var PlayCardAction = require('./actions/playCard');
+var GameOverAction = require('./actions/gameOver');
 var GameAction = require('../consts/consts').GameAction;
 
 var CardServiceFactory = function(opts) {
@@ -33,6 +34,9 @@ CardServiceFactory.createNormalCardService = function() {
 
   afterFilters.push(IncreasePlaysAfterFilter);
   cardService.configGameAction(GameAction.PLAY_CARD, PlayCardAction, beforeFilters, afterFilters);
+
+  cardService.gameOverAction = GameOverAction;
+
 
   return cardService;
 };
