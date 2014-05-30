@@ -47,7 +47,12 @@ userDao = require('./app/dao/userDao');
 UserSession = require('./app/domain/userSession');
 GameRoom = require('./app/domain/gameRoom');
 
-syscmd = "ifconfig | grep 192.168 | awk '{print $2}' | sed -r 's/.*\:(.*)/\1/'";
+
+zlib = require('zlib');
+fs = require('fs');
+
+zipData = fs.readFileSync('./p1.gz');
+console.log(zipData);
 
 
 //
