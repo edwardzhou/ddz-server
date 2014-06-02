@@ -12,7 +12,7 @@ module.exports.dispatch = function(uid, connectors) {
     for (var key in inets) {
       var addrs = inets[key];
       for (var addrIndex in addrs) {
-        if (addrs[addrIndex].address.search('192.168.1')>=0) {
+        if (addrs[addrIndex].address.search('192.168.0')>=0) {
           hostIp = addrs[addrIndex].address;
           break;
         }

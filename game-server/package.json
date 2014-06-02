@@ -12,6 +12,8 @@
     "js-combinatorics": "*",
     "xxtea": "*",
     "node-uuid": "*",
+    "webkit-devtools-agent": "*",
+    "heapdump": "*",
     "crc": "0.2.0"
   }
 }

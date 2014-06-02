@@ -16,14 +16,14 @@
     "optional string display": 14,
     "optional string fingerprint": 15
   },
-  "auth.userHandler.signIn": {
+  "auth.userHandler.signIn3": {
     "required string appVersion": 1,
     "required string resVersion": 2,
     "required uInt32 signInType": 3,
     "required uInt32 userId": 4,
-    "optional string authToken": 5,
-    "optional string sessionToken": 6,
-    "optional string password": 7,
-    "required HandsetInfo handsetInfo": 8
+    "required HandsetInfo handsetInfo": 5,
+    "optional string authToken": 6,
+    "optional string sessionToken": 7,
+    "optional string password": 8
   }
 }
