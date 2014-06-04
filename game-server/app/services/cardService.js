@@ -261,9 +261,10 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
     var eventName = GameEvent.grabLord;
 
     //如果pokeGame被清空了，说明流局
-    var gameAbandoned = (pokeGame == null);
+    var gameAbandoned = actionResult.abandoned == true;
     if (gameAbandoned) {
-      eventName = GameEvent.gameAbandonded;
+      // eventName = GameEvent.gameAbandonded;
+      actionResult.nextUserId = 0;
     }
     actionResult.seqNo = pokeGame.token.currentSeqNo;
 
@@ -273,8 +274,14 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
       actionResult,
       null );
 
+    logger.info('[cardService.grabLord] game abandoned => ', gameAbandoned);
     // 流局则退出
     if (gameAbandoned) {
+      // params.keepNextUserId = true;
+      logger.info('[cardService.grabLord] about to start new game');
+      process.nextTick(function() {
+        self.startGame(table);
+      });
       return;
     }
 

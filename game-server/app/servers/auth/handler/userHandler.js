@@ -78,6 +78,8 @@ Handler.prototype.signIn = function(msg, session, next) {
         return;
       }
 
+      logger.info('[Handler.signIn] clientIp : ', session.get('clientIp'));
+
       result.server = dispatcher.dispatch(user.userId, connectors);
 
       utils.invokeCallback(next, null, result);

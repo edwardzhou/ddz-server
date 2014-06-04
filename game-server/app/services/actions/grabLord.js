@@ -118,6 +118,18 @@ GrabLordAction.doGrabLord = function(gameTable, player, lordAction, cb) {
   var excludedPlayerAttrs = ['nickName', 'headIcon'];
   if (isGiveUp) {
     // 流局
+    msgBack = {
+      lordValue: 0,
+      lordUserId: 0,
+      userId: player.userId,
+      nextUserId: 0,
+      abandoned: true,
+      players: [
+        pokeGame.players[0].toParams(excludedPlayerAttrs),
+        pokeGame.players[1].toParams(excludedPlayerAttrs),
+        pokeGame.players[2].toParams(excludedPlayerAttrs)
+      ]
+    }
   } else if (isGrabLordFinish) {
     // 叫地主结束
     // 返回信息

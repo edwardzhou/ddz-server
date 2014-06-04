@@ -17,29 +17,7 @@ app.set('name', 'ddz_server');
 app.configure('production|development', function () {
   app.enable('systemMonitor');
 
-  //app.enable('rpcDebugLog');
-
   app.loadConfig('mongodb', app.getBase() + "/config/mongodb.json");
-//
-//  require('./app/dao/mongodb/mongodb').init(app, function(err, mongodb) {
-//    app.set('dbclient', mongodb);
-//  });
-
-//  logger.info('parse room_id for area servers...')
-//  var servers = app.getServersByType('area');
-//  for (var index in servers) {
-//    var areaServer = servers[index];
-//    var room_id = areaServer.room_id;
-//    var room_ids = [room_id];
-//    if (typeof room_id == 'string') {
-//      room_id = room_id.substring(1, room_id.length-1);
-//      room_ids = room_id.split(',');
-//      for (var index in room_ids) {
-//        room_ids[index] = parseInt(room_ids[index]);
-//      }
-//    }
-//    areaServer.room_ids = room_ids;
-//  }
 
   var authConnection = require('./app/filters/authConnection');
   app.before(authConnection());
@@ -67,6 +45,10 @@ app.configure('production|development', 'ddz|gate', function () {
         cb(null, {authKey: 'aaaaaaaaaa'});
       }
     });
+
+  var clientIp = require('./app/filters/clientIp');
+  app.before(clientIp());
+
 });
 
 // Configure for area server

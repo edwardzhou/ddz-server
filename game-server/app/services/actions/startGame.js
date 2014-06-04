@@ -3,6 +3,7 @@
  */
 var utils = require('../../util/utils');
 var GameState = require('../../consts/consts').GameState;
+var PlayerState = require('../../consts/consts').PlayerState;
 var ErrorCode = require('../../consts/errorCode');
 var PokeCard = require('../../domain/pokeCard');
 var PokeGame = require('../../domain/pokeGame');
@@ -43,6 +44,10 @@ StartGameAction.execute = function(table, cb) {
   table.players[0].setPokeCards(pokeCards1.sort(_sortPokeCard));
   table.players[1].setPokeCards(pokeCards2.sort(_sortPokeCard));
   table.players[2].setPokeCards(pokeCards3.sort(_sortPokeCard));
+
+  table.players[0].state = PlayerState.NEW_GAME;
+  table.players[1].state = PlayerState.NEW_GAME;
+  table.players[2].state = PlayerState.NEW_GAME;
 
   // 保存地主牌
   table.lordPokeCards = pokeCards.sort(_sortPokeCard);

@@ -37,7 +37,8 @@ module.exports = {
     PLAYING: 6,
     DELEGATING: 7,
     GAME_OVER: 8,
-    LEAVE_GAME: 9
+    LEAVE_GAME: 9,
+    NEW_GAME: 10
   },
 
   TableState: {
