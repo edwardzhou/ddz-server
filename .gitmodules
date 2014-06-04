@@ -1,3 +1,6 @@
 [submodule "ddz_robot"]
 	path = ddz_robot
 	url = https://edwardzhou@github.com/edwardzhou/demos.git
+[submodule "pomelo-admin-web"]
+	path = pomelo-admin-web
+	url = https://github.com/NetEase/pomelo-admin-web.git
