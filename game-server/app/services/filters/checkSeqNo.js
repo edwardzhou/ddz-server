@@ -33,7 +33,7 @@ CheckSeqNoFilter.execute = function(params, cb) {
 
   if (player.userId != nextUserId || seqNo != currentSeqNo) {
     logger.error('Player[%d] is not in turn.', player.userId);
-    utils.invokeCallback(cb, {err: ErrorCode.NOT_IN_TURN});
+    utils.invokeCallback(cb, {err: ErrorCode.NOT_IN_TURN}, null);
     return false;
   }
 

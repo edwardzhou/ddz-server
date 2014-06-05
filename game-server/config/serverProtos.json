@@ -56,6 +56,9 @@
     "required uInt32 nextUserId": 3,
     "required uInt32 seqNo": 4
   },
+  "onLordValueUpgrade" : {
+    "required uInt32 lordValue": 1
+  },
   "ddz.entryHandler.queryRooms": {
     "message GameRoom": {
       "required uInt32 roomId": 1,

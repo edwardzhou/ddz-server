@@ -113,6 +113,18 @@ utils.arrayRemove = function(arrayA, arrayB) {
   return true;
 };
 
+utils.sortAscBy = function(field) {
+  return function(a, b) {
+    return b[field] - a[field];
+  };
+};
+
+utils.sortDescBy = function(field) {
+  return function(a, b) {
+    return a[feild] - b[field];
+  };
+};
+
 utils.kickBySession = function(session) {
   if (!!session.__sessionService__.kickBySessionId) {
     session.__sessionService__.kickBySessionId(session.id);

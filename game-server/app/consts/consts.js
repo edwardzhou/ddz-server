@@ -1,4 +1,4 @@
-module.exports = {
+var CONSTS = {
   Event:{
     chat: 'onChat',
     GameEvent: {
@@ -10,6 +10,8 @@ module.exports = {
       gameStart: 'onGameStart',
       // 抢地主
       grabLord: 'onGrabLord',
+      // 倍数提升, 原因：抢地主，炸弹，春天/反春天
+      lordValueUpgrade: 'onLordValueUpgrade',
       /**
        * @流局，无人叫地主
        */
@@ -72,6 +74,12 @@ module.exports = {
 
   },
 
+  SignInType: {
+    BY_AUTH_TOKEN: 1,
+    BY_SESSION_TOKEN: 2,
+    BY_PASSWORD: 3
+  },
+
   PokeCardValue: {
     NONE: 0,    // 无效
     THREE: 3,   // 3
@@ -109,11 +117,46 @@ module.exports = {
     ROCKET              : 14 // 火箭(王炸)
   },
 
-  SignInType: {
-    BY_AUTH_TOKEN: 1,
-    BY_SESSION_TOKEN: 2,
-    BY_PASSWORD: 3
-  },
+  PokeCardString: {},
+  PokeCardTypeString: {},
+  CardTypeString: {},
 
   STUB: null
 };
+
+CONSTS.PokeCardString[CONSTS.PokeCardValue.NONE] = " "
+CONSTS.PokeCardString[CONSTS.PokeCardValue.THREE] = "3"
+CONSTS.PokeCardString[CONSTS.PokeCardValue.FOUR] = "4"
+CONSTS.PokeCardString[CONSTS.PokeCardValue.FIVE] = "5"
+CONSTS.PokeCardString[CONSTS.PokeCardValue.SIX] = "6"
+CONSTS.PokeCardString[CONSTS.PokeCardValue.SEVEN] = "7"
+CONSTS.PokeCardString[CONSTS.PokeCardValue.EIGHT] = "8"
+CONSTS.PokeCardString[CONSTS.PokeCardValue.NINE] = "9"
+CONSTS.PokeCardString[CONSTS.PokeCardValue.TEN] = "0"
+CONSTS.PokeCardString[CONSTS.PokeCardValue.JACK] = "J"
+CONSTS.PokeCardString[CONSTS.PokeCardValue.QUEEN] = "Q"
+CONSTS.PokeCardString[CONSTS.PokeCardValue.KING] = "K"
+CONSTS.PokeCardString[CONSTS.PokeCardValue.ACE] = "A"
+CONSTS.PokeCardString[CONSTS.PokeCardValue.TWO] = "2"
+CONSTS.PokeCardString[CONSTS.PokeCardValue.SMALL_JOKER] = "w"
+CONSTS.PokeCardString[CONSTS.PokeCardValue.BIG_JOKER] = "W"
+
+
+CONSTS.CardTypeString[ CONSTS.CardType.NONE ]                  = "无效"
+CONSTS.CardTypeString[ CONSTS.CardType.SINGLE ]                = "单张"
+CONSTS.CardTypeString[ CONSTS.CardType.PAIRS ]                 = "一对"
+CONSTS.CardTypeString[ CONSTS.CardType.PAIRS_STRAIGHT ]        = "连对"
+CONSTS.CardTypeString[ CONSTS.CardType.THREE ]                 = "三张"
+CONSTS.CardTypeString[ CONSTS.CardType.THREE_WITH_ONE ]        = "三带一"
+CONSTS.CardTypeString[ CONSTS.CardType.THREE_WITH_PAIRS ]      = "三带一对"
+CONSTS.CardTypeString[ CONSTS.CardType.THREE_STRAIGHT]         = "三张的顺子"
+CONSTS.CardTypeString[ CONSTS.CardType.FOUR_WITH_TWO]          = "四带二"
+CONSTS.CardTypeString[ CONSTS.CardType.FOUR_WITH_TWO_PAIRS ]   = "四带二对"
+CONSTS.CardTypeString[ CONSTS.CardType.PLANE ]                 = "飞机"
+CONSTS.CardTypeString[ CONSTS.CardType.PLANE_WITH_WING ]       = "飞机带翅膀"
+CONSTS.CardTypeString[ CONSTS.CardType.STRAIGHT ]              = "顺子"
+CONSTS.CardTypeString[ CONSTS.CardType.BOMB ]                  = "炸弹"
+CONSTS.CardTypeString[ CONSTS.CardType.ROCKET ]                = "火箭"
+
+
+module.exports = CONSTS;

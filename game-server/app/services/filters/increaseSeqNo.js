@@ -21,7 +21,9 @@ IncreateSeqNoFilter.execute = function(params, cb) {
       pokeGame.token.nextUserId = nextPlayer.userId;
     }
 
-    pokeGame.token.currentSeqNo ++;
+    if (!params.keepSeqNo) {
+      pokeGame.token.currentSeqNo ++;
+    }
   }
 
   utils.invokeCallback(cb, null, params);

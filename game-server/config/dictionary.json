@@ -2,5 +2,7 @@
   "onGameStart",
   "onPlayerJoin",
   "onPlayerReady",
-  "onPlayCard"
+  "onPlayCard",
+  "onGrabLord",
+  "onLordValueUpgrade"
 ]

@@ -1,5 +1,7 @@
 var CardType = require('../consts/consts').CardType;
+var CardTypeString = require('../consts/consts').CardTypeString;
 var CardUtil = require('../util/cardUtil');
+var PokeCard = require('./pokeCard');
 
 var Card = function(pokeCards) {
   this.pokeCards = pokeCards;
@@ -42,6 +44,16 @@ Card.prototype.getPokeCardIds = function() {
 
 Card.prototype.getPokeCardString = function() {
   return CardUtil.pokeCardsToString(this.pokeCards);
+};
+
+Card.prototype.toString = function() {
+  return "Card[ " + PokeCard.getPokeValuesChars(this.pokeCards, true)
+    + ", cardType: " + CardTypeString[this.cardType]
+    + ", cardLen: " + this.cardLength
+    + ", pokeLen: " + this.pokeCards.length
+    + ", maxVal: " + this.maxPokeValue
+//    + ", minVal: " + this.minPokeValue
+    + " ]";
 };
 
 module.exports = Card;

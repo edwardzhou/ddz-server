@@ -16,7 +16,7 @@
     "optional string display": 14,
     "optional string fingerprint": 15
   },
-  "auth.userHandler.signIn3": {
+  "auth.userHandler.signIn": {
     "required string appVersion": 1,
     "required string resVersion": 2,
     "required uInt32 signInType": 3,

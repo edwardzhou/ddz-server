@@ -1,7 +1,8 @@
 var format = require('util').format;
 var mess = require('mess');
-
+var utils = require('../util/utils');
 var PokeCardValue = require('../consts/consts').PokeCardValue;
+var PokeCardString = require('../consts/consts').PokeCardString;
 
 var allPokeCards = [];
 var allPokeCardsMap = {};
@@ -15,6 +16,7 @@ var PokeCard = function(opts) {
   this.pokeChar = opts.pokeChar;
   this.pokeIndex = opts.pokeIndex;
   this.idChar = opts.idChar;
+  this.valueChar = opts.valueChar;
 };
 
 module.exports = PokeCard;
@@ -34,7 +36,14 @@ PokeCard.init = function() {
       var pi = ((indexes[i]<10) ? '0' : '') + indexes[i];
       var pokeId = types[typeIndex] + pi;
       var pokeChar = String.fromCharCode(pokeIndex + 64);
-      var pokeCard = new PokeCard({id:pokeId, value: pokeValue, pokeChar: pokeChar, pokeIndex: pokeIndex, idChar: idChars[i]});
+      var pokeCard = new PokeCard({
+        id:pokeId,
+        value: pokeValue,
+        pokeChar: pokeChar,
+        pokeIndex: pokeIndex,
+        valueChar: PokeCardString[pokeValue],
+        idChar: idChars[i]});
+
       allPokeCards.push(pokeCard);
 //      allPokeCardsMap[pokeCard.id] = pokeCard;
 //      allPokeCardsCharMap[pokeChar] = pokeCard;
@@ -106,5 +115,21 @@ PokeCard.pokeCardsFromChars = function(pokeChars) {
 
   return pokeCards;
 };
+
+PokeCard.getPokeValuesChars = function(pokeCards, sorted) {
+  var tmpPokeCards = pokeCards;
+
+  if (!sorted) {
+    tmpPokeCards = pokeCards.slice(0).sort(utils.sortAscBy('index'));
+  }
+
+  var s = '';
+  for (var index in tmpPokeCards) {
+    s = s + tmpPokeCards[index].valueChar;
+  }
+
+  return s;
+};
+
 
 PokeCard.allPokeCardsCharMap = allPokeCardsCharMap;

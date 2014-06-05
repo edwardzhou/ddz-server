@@ -70,7 +70,7 @@ var runAction = function(action, params, beforeFilters, afterFilters, cb) {
   // waterfall异步执行tasks
   async.waterfall(tasks, function(err, result) {
     if (!!err) {
-      utils.invokeCallback(cb, err);
+      utils.invokeCallback(cb, err, result);
     } else {
       utils.invokeCallback(cb, null, result);
     }
@@ -239,6 +239,8 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
   var actionFilter = this.getActionFilters(GameAction.GRAB_LORD);
   var self = this;
 
+  var lordValue = table.pokeGame.grabbingLord.lordValue || 0;
+
   var action = function(params, callback) {
     self.grabLordAction.doGrabLord(table, player, lordAction, function(err, result) {
       actionResult = result;
@@ -252,7 +254,7 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
 
   runAction(action, params, actionFilter.before, actionFilter.after, function(err, result) {
     if (!!err) {
-      utils.invokeCallback(next, err, result);
+      utils.invokeCallback(next, null, err);
       return;
     }
     utils.invokeCallback(next, null, {resultCode:0});
@@ -273,6 +275,18 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
       eventName,
       actionResult,
       null );
+
+    if (pokeGame.grabbingLord.lordValue > lordValue) {
+      self.messageService.pushTableMessage(
+        table,
+        GameEvent.lordValueUpgrade,
+        {
+          lordValue: pokeGame.grabbingLord.lordValue
+        },
+        null
+      );
+    }
+
 
     logger.info('[cardService.grabLord] game abandoned => ', gameAbandoned);
     // 流局则退出
@@ -333,7 +347,7 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
 
   runAction(action, params, actionFilter.before, actionFilter.after, function(err, result) {
     if (!!err) {
-      utils.invokeCallback(next, err, result);
+      utils.invokeCallback(next, null, err);
       return;
     }
 
@@ -354,6 +368,17 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
         seqNo: pokeGame.token.currentSeqNo
       },
       null );
+
+    if (!!actionResult.lordValueUpgrade) {
+      self.messageService.pushTableMessage(
+        table,
+        GameEvent.lordValueUpgrade,
+        {
+          lordValue: pokeGame.lordValue
+        },
+        null
+       );
+    }
 
     if (player.pokeCards.length == 0) {
       // won

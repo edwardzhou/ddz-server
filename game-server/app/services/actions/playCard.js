@@ -12,9 +12,14 @@ var PlayCardAction = function() {
 module.exports = PlayCardAction;
 
 PlayCardAction.doPlayCard = function(table, player, pokeChars, cb) {
+  var pokeGame = table.pokeGame;
+  var lastCard = pokeGame.lastCard;
+  var lastPlay = pokeGame.lastPlay;
+
   logger.debug('pokeChars: ', pokeChars);
+
   // 不出?
-  if (pokeChars == '') {
+  if ( pokeChars == '' && (!lastPlay || lastPlay.userId != player.userId) ) {
     var result = {table: table, player: player, pokeCards: [], pokeChars: ''};
 
     utils.invokeCallback(cb, null, result);
@@ -26,14 +31,14 @@ PlayCardAction.doPlayCard = function(table, player, pokeChars, cb) {
   // 无效扑克牌
   if (pokeCards == null) {
     logger.error('invalid poke cards for: ', pokeChars);
-    utils.invokeCallback(cb, {err: ErrorCode.INVALID_CARD_TYPE}, null);
+    utils.invokeCallback(cb, {err: ErrorCode.INVALID_CARD_TYPE}, {});
     return false;
   }
 
   // 不是玩家手中的牌
   if (! utils.arrayIncludes(player.pokeCards, pokeCards)) {
     logger.error('%s is not owned by player [%d]', pokeChars, player.userId);
-    utils.invokeCallback(cb, {err: ErrorCode.INVALID_CARD_TYPE}, null);
+    utils.invokeCallback(cb, {err: ErrorCode.INVALID_CARD_TYPE}, {});
     return false;
   }
 
@@ -42,26 +47,31 @@ PlayCardAction.doPlayCard = function(table, player, pokeChars, cb) {
   // 无效牌型
   if (!card.isValid()) {
     logger.error('%s is not valid card type', pokeChars);
-    utils.invokeCallback(cb, {err: ErrorCode.INVALID_CARD_TYPE}, null);
+    utils.invokeCallback(cb, {err: ErrorCode.INVALID_CARD_TYPE}, {});
     return false;
   }
 
-
-
-  var pokeGame = table.pokeGame;
-  var lastCard = pokeGame.lastCard;
+  if ((!!lastPlay && lastPlay.userId != player.userId) && !card.isBiggerThan(lastPlay.card)) {
+    logger.error('%s is not bigger than the last card %s', card.toString(), lastPlay.card.toString());
+    utils.invokeCallback(cb, {err: ErrorCode.INVALID_CARD_TYPE}, {});
+    return false;
+  }
 
   // 当前玩家为上轮最后出牌玩家(其他两人不出)，或牌必须大于上一手出牌
   //if (pokeGame.lastUserId == null || player.userId == pokeGame.lastUserId || card.isBiggerThan(lastCard)) {
   if (true) {
-    pokeGame.lastCard = card;
-    pokeGame.lastUserId = player.userId;
+    pokeGame.lastPlay = {card: card, userId: player.userId};
+//    pokeGame.lastCard = card;
+//    pokeGame.lastUserId = player.userId;
     utils.arrayRemove(player.pokeCards, pokeCards);
 
-    if (card.isBomb()) {
+    if (card.isBomb() || card.isRocket()) {
       pokeGame.score.bombs++;
-    } else if (card.isRocket()) {
-      pokeGame.score.rockets++;
+      pokeGame.lordValue *= 2;
+      result.lordValueUpgrade = true;
+
+//    } else if (card.isRocket()) {
+//      pokeGame.score.rockets++;
     }
 
     var result = {table: table, player: player, pokeCards: pokeCards, pokeChars: pokeChars};
@@ -71,5 +81,5 @@ PlayCardAction.doPlayCard = function(table, player, pokeChars, cb) {
   }
 
   // 返回失败
-  utils.invokeCallback(cb, {err: ErrorCode.INVALID_PLAY_CARD}, null);
+  utils.invokeCallback(cb, {err: ErrorCode.INVALID_PLAY_CARD}, {});
 };
