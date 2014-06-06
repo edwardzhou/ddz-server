@@ -8,6 +8,8 @@ var PlayerState = require('../consts/consts').PlayerState;
 var GameEvent = require('../consts/consts').Event.GameEvent;
 var GameAction = require('../consts/consts').GameAction;
 var async = require('async');
+var ErrorCode = require('../consts/errorCode');
+var Result = require('../domain/result');
 
 // 游戏动作值与属性名对照表，用于简化 @configGameAction 的逻辑
 var GameActionNames = {};
@@ -347,11 +349,11 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
 
   runAction(action, params, actionFilter.before, actionFilter.after, function(err, result) {
     if (!!err) {
-      utils.invokeCallback(next, null, err);
+      utils.invokeCallback(next, null, {result: err});
       return;
     }
 
-    utils.invokeCallback(next, null, {resultCode:0});
+    utils.invokeCallback(next, null, {result: new Result(ErrorCode.SUCCESS)});
 
     var pokeGame = table.pokeGame;
     var eventName = GameEvent.playCard;

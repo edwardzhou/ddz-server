@@ -56,6 +56,7 @@ PokeCard.init = function() {
     value: PokeCardValue.SMALL_JOKER,
     pokeChar: String.fromCharCode(ci + 64),
     pokeIndex: ci,
+    valueChar: PokeCardString[PokeCardValue.SMALL_JOKER],
     idChar: idChars[13]
   });
   allPokeCards.push(pokeCard);
@@ -69,6 +70,7 @@ PokeCard.init = function() {
     value: PokeCardValue.BIG_JOKER,
     pokeChar: String.fromCharCode(ci + 64),
     pokeIndex: ci,
+    valueChar: PokeCardString[PokeCardValue.BIG_JOKER],
     idChar: idChars[14]
   });
   allPokeCards.push(pokeCard);

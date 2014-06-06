@@ -13,7 +13,7 @@
       {"id": "room-server", "host": "127.0.0.1", "port": 3200},
       {"id": "area-server-1", "host": "127.0.0.1", "port": 3201, "room_id": 1, "args": " --debug=32312 ", "instance": true},
       {"id": "area-server-2", "host": "127.0.0.1", "port": 3202, "room_id": 2, "instance": true},
-      {"id": "area-server-3", "host": "127.0.0.1", "port": 3203, "room_id": "[3,4,5]", "instance": true}
+      {"id": "area-server-3", "host": "127.0.0.1", "port": 3203, "room_id": "[3,4]", "instance": true}
     ],
     "userSystem": [
       {"id": "userSystem-server-1", "host": "127.0.0.1", "port": 3301}

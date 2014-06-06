@@ -58,7 +58,7 @@ app.configure('production|development', 'area', function () {
   logger.info("app.getServerId: %s", app.getServerId());
   logger.info("servers: %s", servers);
   var room_id = app.getCurServer().room_id;
-  var room_ids = [room_id];
+  var room_ids = [];
   logger.info('room_id: %s , typeof => %s', room_id, typeof room_id);
   if (typeof room_id == 'string') {
     room_id = room_id.substring(1, room_id.length-1);
@@ -66,7 +66,10 @@ app.configure('production|development', 'area', function () {
     for (var index in room_ids) {
       room_ids[index] = parseInt(room_ids[index]);
     }
+  } else if(!!room_id && parseInt(room_id) > 0) {
+    room_ids.push(room_id);
   }
+
   roomService.init(app, room_ids);
   require('./app/services/messageService').init(app);
   var cardService = require('./app/services/cardServiceFactory').createNormalCardService();

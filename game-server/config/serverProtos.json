@@ -1,4 +1,9 @@
 {
+  "message Result": {
+    "required uInt32 retCode": 1,
+    "optional uInt32 subCode": 2,
+    "optional string message": 3
+  },
   "message Player": {
     "required uInt32 userId": 1,
     "optional string nickName": 2,
@@ -72,5 +77,8 @@
       "required uInt32 maxCoinsQty": 9
     },
     "repeated GameRoom rooms": 1
+  },
+  "ddz.gameHandler.playCard": {
+    "required Result result": 1
   }
 }

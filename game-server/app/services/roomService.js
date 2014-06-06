@@ -1,17 +1,25 @@
 var logger = require('pomelo-logger').getLogger('pomelo', __filename);
 var util = require('util');
 var GameRoom = require('../domain/gameRoom');
+var utils = require('../util/utils');
 
 var exp = module.exports;
 
 var roomsMap = {};
+var pomeloApp = null;
 
 exp.init = function(app, roomIds) {
   logger.info("roomIds: ", roomIds);
-
+  pomeloApp = app;
   for (var index=0; index<roomIds.length; index++) {
     var roomId = roomIds[index];
-    roomsMap[roomId] = loadRoom(roomId);
+    loadRoom(roomId, function(err, room) {
+      if (!!room) {
+        roomsMap[room.roomId] = room;
+      } else {
+        logger.error('[%s] [RoomService.init] failed to load room[id = %d] error:', pomeloApp.getServerId(), roomId, err );
+      }
+    });
   }
 
   return exp;
@@ -45,9 +53,19 @@ exp.leave = function(roomId, playerId) {
   return room.leave(playerId);
 };
 
-var loadRoom = function(roomId) {
-  var room = new GameRoom({roomId:roomId, roomName: 'room_' + roomId});
-  room.initRoom();
+var loadRoom = function(roomId, callback) {
 
-  return room;
+  GameRoom.findOne({roomId:roomId}, function(err, room) {
+    if (!!room) {
+      room.initRoom();
+    } else {
+      logger.error('[RoomService.init] failed to load room[id = %d] error:', roomId, err );
+    }
+    utils.invokeCallback(callback, err, room);
+  });
+//
+//  var room = new GameRoom({roomId:roomId, roomName: 'room_' + roomId});
+//  room.initRoom();
+//
+//  return room;
 };
