@@ -49,18 +49,18 @@ GameOverAction.doGameOver = function(table, player, cb) {
     score.players.push({
       userId: player.userId,
       score: score.raked_total,
-      pokeCards: CardUtil.pokeCardsToIdChars(player.pokeCards)
+      pokeCards: CardUtil.pokeCardsToString(player.pokeCards)
     });
     score.players.push({
       userId: player1.userId,
       score: score.total / -2,
-      pokeCards: CardUtil.pokeCardsToIdChars(player1.pokeCards)
+      pokeCards: CardUtil.pokeCardsToString(player1.pokeCards)
 
     });
     score.players.push({
       userId: player2.userId,
       score: score.total / -2,
-      pokeCards: CardUtil.pokeCardsToIdChars(player2.pokeCards)
+      pokeCards: CardUtil.pokeCardsToString(player2.pokeCards)
     });
   } else {
     var lordUser, farmerUser;
@@ -76,19 +76,19 @@ GameOverAction.doGameOver = function(table, player, cb) {
     score.players.push({
       userId: lordUser.userId,
       score:  -1 * score.total,
-      pokeCards: CardUtil.pokeCardsToIdChars(lordUser.pokeCards)
+      pokeCards: CardUtil.pokeCardsToString(lordUser.pokeCards)
 
     });
     score.players.push({
       userId: player.userId,
       score: winScore,
-      pokeCards: CardUtil.pokeCardsToIdChars(player.pokeCards)
+      pokeCards: CardUtil.pokeCardsToString(player.pokeCards)
 
     });
     score.players.push({
       userId: farmerUser.userId,
       score: winScore,
-      pokeCards: CardUtil.pokeCardsToIdChars(farmerUser.pokeCards)
+      pokeCards: CardUtil.pokeCardsToString(farmerUser.pokeCards)
 
     });
   }
@@ -103,8 +103,8 @@ GameOverAction.doGameOver = function(table, player, cb) {
   result.score.bombs = pokeGame.score.bombs;
   result.score.spring = pokeGame.score.spring;
   result.score.total = pokeGame.score.total;
-  result.score.raked_total = pokeGame.score.raked_total;
-  result.score.rake_value = result.score.total - result.score.raked_total;
+  result.score.rakedTotal = pokeGame.score.raked_total;
+  result.score.rakeValue = result.score.total - result.score.rakedTotal;
   result.score.players = pokeGame.score.players.slice(0);
 
   utils.invokeCallback(cb, null, result.score);

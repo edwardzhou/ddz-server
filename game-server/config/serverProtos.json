@@ -74,9 +74,9 @@
     "required uInt32 ante": 2,
     "required uInt32 lordValue": 3,
     "required uInt32 total": 4,
-    "required uInt32 raked_total": 5,
+    "required uInt32 rakedTotal": 5,
     "required uInt32 spring": 6,
-    "required uInt32 rake_value": 7,
+    "required uInt32 rakeValue": 7,
     "required uInt32 lordWon": 8,
     "required uInt32 bombs": 9,
     "repeated Player players": 10
