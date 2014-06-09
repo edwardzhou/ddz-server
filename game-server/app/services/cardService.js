@@ -247,7 +247,9 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
     self.grabLordAction.doGrabLord(table, player, lordAction, function(err, result) {
       actionResult = result;
       // 当地主产生时，保留叫地主过程里指定的下一玩家id , ref to ./filters/increaseSeqNo.js
-      if (!!table.pokeGame && !!table.pokeGame.lordPlayerId) {
+//      if (!!table.pokeGame && !!table.pokeGame.lordPlayerId) {
+      if (!!table.pokeGame) {
+        table.pokeGame.token.nextUserId = result.nextUserId;
         params.keepNextUserId = true;
       }
       callback(err, params);
@@ -411,14 +413,14 @@ exp.gameOver = function(table, player, cb) {
 
   runAction(action, params, actionFilter.before, actionFilter.after, function(err, result) {
     if (!!err) {
-      utils.invokeCallback(next, err);
+      utils.invokeCallback(cb, err);
     } else {
-      utils.invokeCallback(next, {resultCode:0});
+      utils.invokeCallback(cb, {resultCode:0});
 
       var pokeGame = table.pokeGame;
       var eventName = GameEvent.gameOver;
 
-      this.messageService.pushTableMessage(table,
+      self.messageService.pushTableMessage(table,
         eventName,
         actionResult,
         null );

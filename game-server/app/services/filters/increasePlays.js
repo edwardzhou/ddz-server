@@ -17,8 +17,11 @@ IncreasePlaysAfterFilter.execute = function(params, cb) {
   var pokeChars = params.pokeChars;
 
   // 有效出牌
-  if (pokeGame.lastUserId == player.userId && pokeChars.length > 0) {
-    player.plays ++;
+//  if (pokeGame.lastUserId == player.userId && pokeChars.length > 0) {
+//    player.plays ++;
+//  }
+  if (!!pokeGame && !!pokeGame.lastPlay && pokeGame.lastPlay.userId == player.userId  && pokeChars.length > 0) {
+    player.plays++;
   }
 
   utils.invokeCallback(cb, null, params);

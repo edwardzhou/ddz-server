@@ -64,6 +64,24 @@
   "onLordValueUpgrade" : {
     "required uInt32 lordValue": 1
   },
+  "onGameOver": {
+    "message Player": {
+      "required uInt32 userId": 1,
+      "required int32 score": 2,
+      "optional string pokeCards": 3
+    },
+    "required float rake": 1,
+    "required uInt32 ante": 2,
+    "required uInt32 lordValue": 3,
+    "required uInt32 total": 4,
+    "required uInt32 raked_total": 5,
+    "required uInt32 spring": 6,
+    "required uInt32 rake_value": 7,
+    "required uInt32 lordWon": 8,
+    "required uInt32 bombs": 9,
+    "repeated Player players": 10
+  },
+
   "ddz.entryHandler.queryRooms": {
     "message GameRoom": {
       "required uInt32 roomId": 1,
