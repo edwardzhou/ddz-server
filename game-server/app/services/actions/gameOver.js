@@ -23,6 +23,7 @@ GameOverAction.doGameOver = function(table, player, cb) {
     // 两家农民都没有出过牌,春天
     if (player1.plays == 0 && player2.plays ==0) {
       pokeGame.score.spring = 1;
+      pokeGame.lordValue *= 2;
     }
     lordWon = true;
   } else {
@@ -30,6 +31,7 @@ GameOverAction.doGameOver = function(table, player, cb) {
     // 如果地主只出过一手牌,反春天
     if (lord.plays == 1) {
       pokeGame.score.spring = -1;
+      pokeGame.lordValue *= 2;
     }
   }
 

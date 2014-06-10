@@ -49,6 +49,11 @@ StartGameAction.execute = function(table, cb) {
   table.players[1].state = PlayerState.NEW_GAME;
   table.players[2].state = PlayerState.NEW_GAME;
 
+  // 重置出牌手数
+  table.players[0].plays = 0;
+  table.players[1].plays = 0;
+  table.players[2].plays = 0;
+
   // 保存地主牌
   table.lordPokeCards = pokeCards.sort(_sortPokeCard);
 

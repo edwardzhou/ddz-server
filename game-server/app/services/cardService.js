@@ -403,6 +403,7 @@ exp.gameOver = function(table, player, cb) {
   var self = this;
   var params = {table: table, player: player, seqNo: -1};
   var actionResult = null;
+  var pokeGame = table.pokeGame;
   var actionFilter = this.getActionFilters(GameAction.GAME_OVER);
   var action = function(params, callback) {
     self.gameOverAction.doGameOver(table, player, function(err, result){
@@ -417,7 +418,18 @@ exp.gameOver = function(table, player, cb) {
     } else {
       utils.invokeCallback(cb, {resultCode:0});
 
-      var pokeGame = table.pokeGame;
+      if (actionResult.spring != 0) {
+        self.messageService.pushTableMessage(
+          table,
+          GameEvent.lordValueUpgrade,
+          {
+            lordValue: pokeGame.lordValue
+          },
+          null
+        );
+      }
+
+      //var pokeGame = table.pokeGame;
       var eventName = GameEvent.gameOver;
 
       self.messageService.pushTableMessage(table,
