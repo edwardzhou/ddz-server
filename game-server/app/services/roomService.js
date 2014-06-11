@@ -2,6 +2,7 @@ var logger = require('pomelo-logger').getLogger('pomelo', __filename);
 var util = require('util');
 var GameRoom = require('../domain/gameRoom');
 var utils = require('../util/utils');
+var cardService = require('./cardService');
 
 var exp = module.exports;
 
@@ -48,9 +49,18 @@ exp.getTable = function(roomId, tableId) {
   return room.tablesMap[tableId];
 };
 
-exp.leave = function(roomId, playerId) {
+exp.leave = function(roomId, playerId, cb) {
   var room = roomsMap[roomId];
-  return room.leave(playerId);
+  var player = room.getPlayer(playerId);
+  var table = room.getGameTable(player.tableId);
+  if (!!table.pokeGame) {
+    pomeloApp.get('cardService').gameOver(table, player, function() {
+      utils.invokeCallback(cb, room.leave(playerId));
+    });
+  } else {
+    utils.invokeCallback(cb, room.leave(playerId));
+  }
+
 };
 
 var loadRoom = function(roomId, callback) {

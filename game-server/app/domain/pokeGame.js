@@ -44,10 +44,11 @@ var pokeGameSchema = new mongoose.Schema({
   // 牌局结束时间
   endAt: {type: Date},
   // 牌局时长(单位秒)
-  duration: Number,
-  gameRake: Number,
-  gameAnte: Number,
-  gameLordValue: Number,
+  duration: {type: Number, default: 0},
+  gameRake: {type: Number, default: 0},
+  gameAnte: {type: Number, default: 0},
+  lordValue: {type: Number, default: 0},
+  lordWon: Boolean,
   // 游戏结算信息
   score: {
     // 牌局佣金 ( >1 表示固定佣金，<1  表示比例佣金; 如: 100 - 每局收100佣金， 0.05 - 每局收5%佣金)
@@ -87,7 +88,7 @@ PokeGame.jsonAttrs = {
   tableId: 'tableId',
   gameRake: 'gameRake',
   gameAnte: 'gameAnte',
-  gameLordValue: 'gameLordValue',
+  lordValue: 'lordValue',
   state: 'state',
   players: 'players',
   grabbingLord: 'grabbingLord'
@@ -109,7 +110,7 @@ PokeGame.newGame = function(table) {
     roomId: gameRoom.roomId,
     gameRake: gameRoom.rake || 0,
     gameAnte: gameRoom.ante || 0,
-    gameLordValue: 0,
+    lordValue: 0,
     tableId: table.tableId,
     players: table.players,
     state: GameState.PENDING_FOR_READY};

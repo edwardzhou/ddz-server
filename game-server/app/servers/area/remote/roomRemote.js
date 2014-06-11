@@ -81,16 +81,18 @@ remoteHandler.leave = function(msg, cb) {
   var uid = msg.uid;
   var room_id = msg.room_id;
 
-  var table = roomService.leave(room_id, uid);
-  if (table.gameSate != GameState.PENDING_FOR_READY) {
-    table.reset();
-  }
+  roomService.leave(room_id, uid, function(table) {
+    if (table.gameSate != GameState.PENDING_FOR_READY) {
+      table.reset();
+    }
 
-  process.nextTick(function() {
-    messageService.pushTableMessage(table, "onPlayerJoin", table.toParams(), null);
+    //setTimeout(table, "")
+    process.nextTick(function() {
+      messageService.pushTableMessage(table, "onPlayerJoin", table.toParams(), null);
+    });
+
+    utils.invokeCallback(cb, null, null);
   });
-
-  utils.invokeCallback(cb, null, null);
 };
 
 var getPlayerIds = function(table) {

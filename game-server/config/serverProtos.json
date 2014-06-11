@@ -24,7 +24,7 @@
     "required uInt32 tableId": 3,
     "required uInt32 state": 4,
     "required uInt32 gameAnte": 5,
-    "required uInt32 gameLordValue": 6,
+    "required uInt32 lordValue": 6,
     "required float gameRake": 7,
     "repeated Player players": 8,
     "optional uInt32 lordUserId": 9,
@@ -67,15 +67,16 @@
   "onGameOver": {
     "message Player": {
       "required uInt32 userId": 1,
-      "required int32 score": 2,
-      "optional string pokeCards": 3
+      "required string nickName": 2,
+      "required int32 score": 3,
+      "optional string pokeCards": 4
     },
     "required float rake": 1,
     "required uInt32 ante": 2,
     "required uInt32 lordValue": 3,
     "required uInt32 total": 4,
     "required uInt32 rakedTotal": 5,
-    "required uInt32 spring": 6,
+    "required int32 spring": 6,
     "required uInt32 rakeValue": 7,
     "required uInt32 lordWon": 8,
     "required uInt32 bombs": 9,
