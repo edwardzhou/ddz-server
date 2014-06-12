@@ -208,18 +208,25 @@ exp.startGame = function (table, next) {
   this.startGameAction.execute(table, function(err) {
     var newPokeGame = table.pokeGame;
     var seqNo = newPokeGame.token.currentSeqNo;
+    var msgNo = newPokeGame.msgNo++;
     // 通知各玩家牌局开始
     for (var index=0; index<table.players.length; index ++) {
       var player = table.players[index];
-      self.messageService.pushMessage(GameEvent.gameStart,
-        {
-          grabLord: (player.userId == newPokeGame.grabbingLord.nextUserId ? 1 : 0),
-          pokeCards: player.pokeCardsString(),
-          pokeGame: newPokeGame.toParams(),
-          player: player.toParams(),
-          nextUserId: newPokeGame.grabbingLord.nextUserId,
-          seqNo: (player.userId == newPokeGame.grabbingLord.nextUserId ? seqNo : 0)
-        },
+      var eventName = GameEvent.gameStart;
+      var eventData = {
+        grabLord: (player.userId == newPokeGame.grabbingLord.nextUserId ? 1 : 0),
+        pokeCards: player.pokeCardsString(),
+        pokeGame: newPokeGame.toParams(),
+        player: player.toParams(),
+        nextUserId: newPokeGame.grabbingLord.nextUserId,
+        seqNo: (player.userId == newPokeGame.grabbingLord.nextUserId ? seqNo : 0),
+        msgNo: msgNo
+      };
+      //newPokeGame.playerMsgs[player.userId] = [];
+      newPokeGame.playerMsgs[player.userId].push([eventName, eventData]);
+
+      self.messageService.pushMessage(eventName,
+        eventData,
         [player.getUidSid()],
         null);
     }
@@ -265,6 +272,7 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
 
     var pokeGame = table.pokeGame;
     var eventName = GameEvent.grabLord;
+    var msgNo = pokeGame.msgNo++;
 
     //如果pokeGame被清空了，说明流局
     var gameAbandoned = actionResult.abandoned == true;
@@ -273,6 +281,11 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
       actionResult.nextUserId = 0;
     }
     actionResult.seqNo = pokeGame.token.currentSeqNo;
+    actionResult.msgNo = msgNo;
+
+    pokeGame.playerMsgs[pokeGame.players[0].userId].push([eventName, actionResult]);
+    pokeGame.playerMsgs[pokeGame.players[1].userId].push([eventName, actionResult]);
+    pokeGame.playerMsgs[pokeGame.players[2].userId].push([eventName, actionResult]);
 
     // 推送叫地主结果
     self.messageService.pushTableMessage(table,
@@ -281,14 +294,21 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
       null );
 
     if (pokeGame.grabbingLord.lordValue > lordValue) {
+      eventName = GameEvent.lordValueUpgrade;
+      msgNo = pokeGame.msgNo++;
+      var eventData = {
+        lordValue: pokeGame.grabbingLord.lordValue,
+        msgNo: msgNo
+      };
       self.messageService.pushTableMessage(
         table,
-        GameEvent.lordValueUpgrade,
-        {
-          lordValue: pokeGame.grabbingLord.lordValue
-        },
+        eventName,
+        eventData,
         null
       );
+      pokeGame.playerMsgs[pokeGame.players[0].userId].push([eventName, eventData]);
+      pokeGame.playerMsgs[pokeGame.players[1].userId].push([eventName, eventData]);
+      pokeGame.playerMsgs[pokeGame.players[2].userId].push([eventName, eventData]);
     }
 
 
@@ -359,29 +379,45 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
 
     var pokeGame = table.pokeGame;
     var eventName = GameEvent.playCard;
+    var msgNo = pokeGame.msgNo++;
+
+    var eventData = {
+      player: {
+        userId: player.userId,
+        pokeCount: player.pokeCount
+      },
+      pokeChars: actionResult.pokeChars,
+      nextUserId: pokeGame.token.nextUserId,
+      seqNo: pokeGame.token.currentSeqNo,
+      msgNo: msgNo
+    };
 
     self.messageService.pushTableMessage(table,
       eventName,
-      {
-        player: {
-          userId: player.userId,
-          pokeCount: player.pokeCount
-        },
-        pokeChars: actionResult.pokeChars,
-        nextUserId: pokeGame.token.nextUserId,
-        seqNo: pokeGame.token.currentSeqNo
-      },
+      eventData,
       null );
 
+    pokeGame.playerMsgs[pokeGame.players[0].userId].push([eventName, eventData]);
+    pokeGame.playerMsgs[pokeGame.players[1].userId].push([eventName, eventData]);
+    pokeGame.playerMsgs[pokeGame.players[2].userId].push([eventName, eventData]);
+
     if (!!actionResult.lordValueUpgrade) {
+      eventName = GameEvent.lordValueUpgrade;
+      msgNo = pokeGame.msgNo++;
+      eventData = {
+        lordValue: pokeGame.lordValue,
+        msgNo: msgNo
+      };
       self.messageService.pushTableMessage(
         table,
-        GameEvent.lordValueUpgrade,
-        {
-          lordValue: pokeGame.lordValue
-        },
+        eventName,
+        eventData,
         null
        );
+
+      pokeGame.playerMsgs[pokeGame.players[0].userId].push([eventName, eventData]);
+      pokeGame.playerMsgs[pokeGame.players[1].userId].push([eventName, eventData]);
+      pokeGame.playerMsgs[pokeGame.players[2].userId].push([eventName, eventData]);
     }
 
     if (player.pokeCards.length == 0) {
@@ -436,6 +472,10 @@ exp.gameOver = function(table, player, cb) {
         eventName,
         actionResult,
         null );
+
+      process.nextTick(function() {
+        table.pokeGame = null;
+      });
 
 //      setupPlayerReadyTimeout(table, table.players[0], self.playerReadyTimeout.bind(self), 35);
 //      setupPlayerReadyTimeout(table, table.players[1], self.playerReadyTimeout.bind(self), 35);

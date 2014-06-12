@@ -116,8 +116,13 @@ PokeGame.newGame = function(table) {
     state: GameState.PENDING_FOR_READY};
   var game = new PokeGame(opts);
 
+  game.msgNo = 0;
   game.players = table.players.slice(0, table.players.length);
   game.token = {nextUserId: '', currentSeqNo: 0};
+  game.playerMsgs = {};
+  game.playerMsgs[game.players[0].userId] = [];
+  game.playerMsgs[game.players[1].userId] = [];
+  game.playerMsgs[game.players[2].userId] = [];
 
 //  game.players[0].prevPlayer = game.players[2];
 //  game.players[0].nextPlayer = game.players[1];
