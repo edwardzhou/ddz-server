@@ -58,8 +58,9 @@ Handler.prototype.signIn = function(msg, session, next) {
       // 3. 设置session数据
       session.set('userId', user.userId);
       session.set('sessionToken', userSession.sessionToken);
-      session.pushAll();
-      callback(null, user, userSession);
+      session.pushAll(function() {
+        callback(null, user, userSession);
+      });
     }
   ], function(err, user, userSession) {
     if (!!err) {

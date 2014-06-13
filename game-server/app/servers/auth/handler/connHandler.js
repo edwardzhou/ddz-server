@@ -19,7 +19,6 @@ var Handler = function(app) {
 
 Handler.prototype.authConn = function(msg, session, next) {
   var self = this;
-  session.set('connAuthed', true);
 
   var userId = msg.userId;
   var sessionToken = msg.sessionToken;
@@ -30,7 +29,13 @@ Handler.prototype.authConn = function(msg, session, next) {
   async.waterfall([
     function(callback) {
       if (!!userId) {
-        userDao.getByUserId(userId, callback);
+        userDao.getByUserId(userId, function(err, user) {
+          if (!err && !!user) {
+            callback(null, user);
+          } else {
+            callback({}, {needSignUp: true});
+          }
+        });
       } else {
         callback({}, {needSignUp: true});
       }
@@ -44,7 +49,7 @@ Handler.prototype.authConn = function(msg, session, next) {
       }
     },
     function(userSession, callback) {
-      if(userSession.userId == userId) {
+      if(!!userSession && userSession.userId == userId) {
         results.userSession = userSession;
         var result = {
           user: results.user.toParams(),
@@ -59,11 +64,18 @@ Handler.prototype.authConn = function(msg, session, next) {
 
         result.server = dispatcher.dispatch(results.user.userId, connectors);
         utils.invokeCallback(callback, null, result);
+      } else {
+        utils.invokeCallback(callback, {}, {needSignIn: true});
       }
     }
   ], function(err, result) {
-
-    session.push('connAuthed', function(){
+    if (!err) {
+      session.set('userId', results.user.userId);
+      session.set('sessionToken', results.userSession.sessionToken);
+      session.bind(results.user.userId);
+    }
+    session.set('connAuthed', true);
+    session.pushAll( function(){
       logger.info('Connection authed~', err, result);
       if (!!err && !result) {
         utils.invokeCallback(next, null, {needSignUp:true});
