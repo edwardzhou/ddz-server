@@ -3,6 +3,7 @@ var roomDao = require('../../../dao/roomDao');
 var roomService = require('../../../services/roomService');
 var messageService = require('../../../services/messageService');
 var Player = require('../../../domain/player');
+var PlayerState = require('../consts/consts').PlayerState;
 var UserSession = require('../../../domain/userSession');
 var format = require('util').format;
 var utils = require('../../../util/utils');
@@ -81,6 +82,23 @@ remoteHandler.enter = function(uid, sid, sessionId, room_id, cb) {
 
 };
 
+RemoteHandler.reenter = function(uid, sid, sessionId, room_id, table_id, cb) {
+  var player = roomService.getRoom(room_id).getPlayer(uid);
+  var table = roomService.getTable(room_id, table_id);
+
+  if (!!player) {
+    if (!!player.connectionRestoreTimeout) {
+      clearTimeout(player.connectionRestoreTimeout);
+      player.connectionRestoreTimeout = null;
+    }
+    player.connBroken = false;
+    player.serverId = sid;
+    cb(null, !!table.pokeGame? table.pokeGame.playerMsgs[uid] : []);
+  } else {
+    cb(null, []);
+  }
+};
+
 /**
  * 玩家离开房间
  * @param msg
@@ -90,18 +108,31 @@ remoteHandler.leave = function(msg, cb) {
   var uid = msg.uid;
   var room_id = msg.room_id;
 
-  roomService.leave(room_id, uid, function(table) {
-    if (table.gameSate != GameState.PENDING_FOR_READY) {
-      table.reset();
-    }
+  var player = roomService.getRoom(room_id).getPlayer(uid);
+  var self_close = msg.self_close;
 
-    //setTimeout(table, "")
-    process.nextTick(function() {
-      messageService.pushTableMessage(table, "onPlayerJoin", table.toParams(), null);
+  var leaveFunc = function() {
+    roomService.leave(room_id, uid, function(table) {
+      if (table.gameSate != GameState.PENDING_FOR_READY) {
+        table.reset();
+      }
+
+      //setTimeout(table, "")
+      process.nextTick(function() {
+        messageService.pushTableMessage(table, "onPlayerJoin", table.toParams(), null);
+      });
+
+      utils.invokeCallback(cb, null, null);
     });
+  };
 
-    utils.invokeCallback(cb, null, null);
-  });
+  if (!self_close) {
+    player.connBroken = true;
+    player.connectionRestoreTimeout = setTimeout(leaveFunc, 120 * 1000);
+  } else {
+    leaveFunc();
+  }
+
 };
 
 var getPlayerIds = function(table) {
