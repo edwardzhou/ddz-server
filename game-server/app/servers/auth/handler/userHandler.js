@@ -48,6 +48,11 @@ Handler.prototype.signIn = function(msg, session, next) {
       userDao.signIn(loginInfo, function(err, user) {
         callback(err, user);
       });
+    }, function(user, callback) {
+      // 1.1 清除旧userSession
+      UserSession.removeAllByUserId(user.userId, function() {
+        callback(null, user);
+      });
     }, function (user, callback) {
       // 2. 绑定Session，并创建新的userSession
       session.bind(user.userId);

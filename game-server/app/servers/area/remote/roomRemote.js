@@ -3,6 +3,7 @@ var roomDao = require('../../../dao/roomDao');
 var roomService = require('../../../services/roomService');
 var messageService = require('../../../services/messageService');
 var Player = require('../../../domain/player');
+var UserSession = require('../../../domain/userSession');
 var format = require('util').format;
 var utils = require('../../../util/utils');
 var cardService = require('../../../services/cardService');
@@ -54,20 +55,28 @@ remoteHandler.enter = function(uid, sid, sessionId, room_id, cb) {
     var player = user;
     player.serverId = sid;
 
-    // 进入房间，并取得玩家所属桌子
-    var table = roomService.enterRoom(new Player(player), room_id, -1);
-    // cardServer挂接table的playerReady事件
-    //utils.on(table, "playerReady", cardService.onPlayerReady);
+    UserSession.getByUserId(player.userId, function(err, userSession) {
+      player.userSession = userSession;
 
-    var msg = table.toParams();
+      // 进入房间，并取得玩家所属桌子
+      var table = roomService.enterRoom(new Player(player), room_id, -1);
+      // cardServer挂接table的playerReady事件
+      //utils.on(table, "playerReady", cardService.onPlayerReady);
 
-    // 通知桌子的其他玩家，有新玩家进入
-    process.nextTick(function() {
-      messageService.pushTableMessage(table, "onPlayerJoin", msg, null);
+      player.userSession.sset('roomId', table.room.roomId);
+      player.userSession.sset('tableId', table.tableId);
+
+      var msg = table.toParams();
+
+      // 通知桌子的其他玩家，有新玩家进入
+      process.nextTick(function() {
+        messageService.pushTableMessage(table, "onPlayerJoin", msg, null);
+      });
+
+      // 返回结果
+      cb(null, thisServerId, msg);
+
     });
-
-    // 返回结果
-    cb(null, thisServerId, msg);
   });
 
 };

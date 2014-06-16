@@ -33,6 +33,16 @@ userSessionSchema.statics.getByToken = function(token, cb) {
   });
 };
 
+userSessionSchema.statics.getByUserId = function(userId, cb) {
+  this.findOne({userId: userId}, function(err, userSession) {
+    utils.invokeCallback(cb, err, userSession);
+  });
+};
+
+userSessionSchema.statics.removeAllByUserId = function(userId, cb) {
+  this.remove({userId: userId}, cb);
+};
+
 userSessionSchema.methods.sget = function(key) {
   return this.sessionData[key];
 };

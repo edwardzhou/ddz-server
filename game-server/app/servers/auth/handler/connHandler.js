@@ -56,6 +56,9 @@ Handler.prototype.authConn = function(msg, session, next) {
           sessionToken: userSession.sessionToken
         };
 
+        result.roomId = userSession.sget('roomId');
+        result.tableId = userSession.sget('tableId');
+
         var connectors = self.app.getServersByType('ddz');
         if(!connectors || connectors.length === 0) {
           utils.invokeCallback(callback, null, {err:Code.GATE.NO_SERVER_AVAILABLE} );
@@ -72,6 +75,8 @@ Handler.prototype.authConn = function(msg, session, next) {
     if (!err) {
       session.set('userId', results.user.userId);
       session.set('sessionToken', results.userSession.sessionToken);
+      session.set('room_id', result.roomId);
+      session.set('table_id', result.tableId);
       session.bind(results.user.userId);
     }
     session.set('connAuthed', true);
