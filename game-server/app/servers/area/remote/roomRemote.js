@@ -3,7 +3,7 @@ var roomDao = require('../../../dao/roomDao');
 var roomService = require('../../../services/roomService');
 var messageService = require('../../../services/messageService');
 var Player = require('../../../domain/player');
-var PlayerState = require('../consts/consts').PlayerState;
+var PlayerState = require('../../../consts/consts').PlayerState;
 var UserSession = require('../../../domain/userSession');
 var format = require('util').format;
 var utils = require('../../../util/utils');
@@ -82,7 +82,7 @@ remoteHandler.enter = function(uid, sid, sessionId, room_id, cb) {
 
 };
 
-RemoteHandler.reenter = function(uid, sid, sessionId, room_id, table_id, cb) {
+remoteHandler.reenter = function(uid, sid, sessionId, room_id, table_id, cb) {
   var player = roomService.getRoom(room_id).getPlayer(uid);
   var table = roomService.getTable(room_id, table_id);
 

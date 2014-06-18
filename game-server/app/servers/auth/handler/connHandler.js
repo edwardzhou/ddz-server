@@ -59,13 +59,15 @@ Handler.prototype.authConn = function(msg, session, next) {
         result.roomId = userSession.sget('roomId');
         result.tableId = userSession.sget('tableId');
 
-        var connectors = self.app.getServersByType('ddz');
-        if(!connectors || connectors.length === 0) {
-          utils.invokeCallback(callback, null, {err:Code.GATE.NO_SERVER_AVAILABLE} );
-          return;
-        }
+        if (session.frontendId.indexOf('gate')>=0) {
+          var connectors = self.app.getServersByType('ddz');
+          if(!connectors || connectors.length === 0) {
+            utils.invokeCallback(callback, null, {err:Code.GATE.NO_SERVER_AVAILABLE} );
+            return;
+          }
 
-        result.server = dispatcher.dispatch(results.user.userId, connectors);
+          result.server = dispatcher.dispatch(results.user.userId, connectors);
+        }
         utils.invokeCallback(callback, null, result);
       } else {
         utils.invokeCallback(callback, {}, {needSignIn: true});
