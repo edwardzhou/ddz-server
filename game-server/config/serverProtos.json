@@ -44,7 +44,8 @@
     "required string pokeCards": 3,
     "required PokeGame pokeGame": 4,
     "required uInt32 nextUserId": 5,
-    "required uInt32 seqNo": 6
+    "required uInt32 seqNo": 6,
+    "required uInt32 msgNo": 7
   },
   "onGrabLord" : {
     "required uInt32 lordValue": 1,
@@ -53,16 +54,19 @@
     "optional uInt32 lordUserId": 4,
     "optional uInt32 userId": 5,
     "optional string lordPokeCards": 6,
-    "repeated Player players": 7
+    "repeated Player players": 7,
+    "required uInt32 msgNo": 8
   },
   "onPlayCard" : {
     "required Player player": 1,
     "required string pokeChars": 2,
     "required uInt32 nextUserId": 3,
-    "required uInt32 seqNo": 4
+    "required uInt32 seqNo": 4,
+    "required uInt32 msgNo": 5
   },
   "onLordValueUpgrade" : {
-    "required uInt32 lordValue": 1
+    "required uInt32 lordValue": 1,
+    "required uInt32 msgNo": 2
   },
   "onGameOver": {
     "message Player": {

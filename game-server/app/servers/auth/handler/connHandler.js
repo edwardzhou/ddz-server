@@ -77,8 +77,10 @@ Handler.prototype.authConn = function(msg, session, next) {
     if (!err) {
       session.set('userId', results.user.userId);
       session.set('sessionToken', results.userSession.sessionToken);
-      session.set('room_id', result.roomId);
-      session.set('table_id', result.tableId);
+      if (!!result.roomId)
+        session.set('room_id', result.roomId);
+      if (!!result.tableId)
+        session.set('table_id', result.tableId);
       session.bind(results.user.userId);
     }
     session.set('connAuthed', true);

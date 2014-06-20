@@ -82,10 +82,11 @@ remoteHandler.enter = function(uid, sid, sessionId, room_id, cb) {
 
 };
 
-remoteHandler.reenter = function(uid, sid, sessionId, room_id, table_id, cb) {
+remoteHandler.reenter = function(uid, sid, sessionId, room_id, table_id, msgNo, cb) {
   var player = roomService.getRoom(room_id).getPlayer(uid);
   var table = roomService.getTable(room_id, table_id);
 
+  console.log('[remoteHandler.reenter] client msgNo: ', msgNo);
   if (!!player) {
     if (!!player.connectionRestoreTimeout) {
       clearTimeout(player.connectionRestoreTimeout);
@@ -93,7 +94,19 @@ remoteHandler.reenter = function(uid, sid, sessionId, room_id, table_id, cb) {
     }
     player.connBroken = false;
     player.serverId = sid;
-    cb(null, !!table.pokeGame? table.pokeGame.playerMsgs[uid] : []);
+
+    if (!!table.pokeGame) {
+      var playerMsgs = table.pokeGame.playerMsgs[uid];
+      process.nextTick(function() {
+        for (var index in playerMsgs) {
+          var msg = playerMsgs[index];
+          if (msg[1].msgNo > msgNo) {
+            messageService.pushMessage(msg[0], msg[1], [player.getUidSid()], null);
+          }
+        }
+      });
+    }
+    cb(null, []);
   } else {
     cb(null, []);
   }
