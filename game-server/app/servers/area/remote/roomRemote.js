@@ -134,8 +134,6 @@ remoteHandler.leave = function(msg, cb) {
       process.nextTick(function() {
         messageService.pushTableMessage(table, "onPlayerJoin", table.toParams(), null);
       });
-
-      utils.invokeCallback(cb, null, null);
     });
   };
 
@@ -145,6 +143,7 @@ remoteHandler.leave = function(msg, cb) {
   } else {
     leaveFunc();
   }
+  utils.invokeCallback(cb, null, null);
 
 };
 

@@ -116,6 +116,18 @@ Handler.prototype.enterRoom = function(msg, session, next) {
 
 };
 
+Handler.prototype.restoreGame = function(msg, session, next) {
+  logger.debug('[GameHandler.restoreGame] session: ' , session);
+  var room_id = session.get('room_id');
+  var table_id = session.get('table_id');
+  var uid = session.uid;
+  var sid = session.frontendId;
+  var msgNo = msg.msgNo;
+  this.app.rpc.area.roomRemote.reenter(session, uid, sid, session.id, room_id, table_id, msgNo, function(err, data) {
+    utils.invokeCallback(next, err, data);
+  });
+};
+
 Handler.prototype.leave = function(msg, session, next) {
 
   session.set('self_close', true);
