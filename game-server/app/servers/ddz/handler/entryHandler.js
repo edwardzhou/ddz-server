@@ -1,6 +1,8 @@
 var format = require('util').format;
 var logger = require('pomelo-logger').getLogger(__filename);
 var GameTable = require('../../../domain/gameTable');
+var Result = require('../../../domain/result');
+var ErrorCode = require('../../../consts/errorCode');
 
 module.exports = function(app) {
   return new Handler(app);
@@ -101,15 +103,23 @@ Handler.prototype.enterRoom = function(msg, session, next) {
       return;
     }
 
-    table = new GameTable(table);
+    //table = new GameTable(table);
     session.set('table_id', table.tableId);
     session.push('table_id', null);
-    logger.info("[enterRoom] area.roomRemote.enter return: room_server_id: %s, users: %j", room_server_id, table.toParams());
+    logger.info("[enterRoom] area.roomRemote.enter return: room_server_id: %s, users: %j",
+      room_server_id,
+      GameTable.toParams(table));
     var resp = {
-      table: table.toParams(),
+      table: GameTable.toParams(table),
       room_server_id: room_server_id,
-      server_id: server_id
+      server_id: server_id,
+      timing: table.timing
     };
+    resp.result = new Result(ErrorCode.SUCCESS);
+
+
+    logger.info("[enterRoom] area.roomRemote.enter return resp: %j", resp);
+
 
     next(null, resp);
   });

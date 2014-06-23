@@ -13,7 +13,7 @@ var PlayerState = require('../consts/consts').PlayerState;
  * @constructor
  */
 var GameTable = function (opts) {
-  DomainBase.call(this, opts);
+  //DomainBase.call(this, opts);
   this.tableId = opts.tableId;
   this.room = opts.room;
   this.players = [];
@@ -31,11 +31,14 @@ var GameTable = function (opts) {
 };
 
 // GameTable继承于DomainBase
-util.inherits(GameTable, DomainBase);
+//util.inherits(GameTable, DomainBase);
 // 导出GameTable
 module.exports = GameTable;
 // 设置用于toParams导出的json属性映射
 GameTable.jsonAttrs = {tableId: "tableId", players: "players"};
+
+DomainBase.defineToParams(GameTable, GameTable, GameTable.prototype);
+
 
 GameTable.prototype.getPlayerByUserId = function(userId) {
   for (var index in this.players) {

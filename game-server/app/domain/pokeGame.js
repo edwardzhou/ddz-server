@@ -2,6 +2,8 @@ var GameState = require('../consts/consts').GameState;
 var PokeCard = require('./pokeCard');
 var DomainBase = require('./domainBase');
 var mongoose = require('mongoose');
+var uuid = require('node-uuid');
+var utils = require('../util/utils');
 
 /**
  * 牌局里玩家信息结构
@@ -96,6 +98,11 @@ PokeGame.jsonAttrs = {
 
 DomainBase.defineToParams(PokeGame, PokeGame.statics, PokeGame.methods);
 
+PokeGame.newGameId = function() {
+  var newId = utils.hashCode(uuid.v1(), true);
+  return newId;
+};
+
 /**
  *
  * @param roomId
@@ -106,7 +113,7 @@ DomainBase.defineToParams(PokeGame, PokeGame.statics, PokeGame.methods);
 PokeGame.newGame = function(table) {
   var gameRoom = table.room;
   var opts = {
-    gameId: 1,
+    gameId: PokeGame.newGameId(),
     roomId: gameRoom.roomId,
     gameRake: gameRoom.rake || 0,
     gameAnte: gameRoom.ante || 0,

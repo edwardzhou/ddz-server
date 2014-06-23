@@ -45,7 +45,8 @@
     "required PokeGame pokeGame": 4,
     "required uInt32 nextUserId": 5,
     "required uInt32 seqNo": 6,
-    "required uInt32 msgNo": 7
+    "required uInt32 msgNo": 7,
+    "required uInt32 timing": 8
   },
   "onGrabLord" : {
     "required uInt32 lordValue": 1,
@@ -55,14 +56,16 @@
     "optional uInt32 userId": 5,
     "optional string lordPokeCards": 6,
     "repeated Player players": 7,
-    "required uInt32 msgNo": 8
+    "required uInt32 msgNo": 8,
+    "required uInt32 timing": 9
   },
   "onPlayCard" : {
     "required Player player": 1,
     "required string pokeChars": 2,
     "required uInt32 nextUserId": 3,
     "required uInt32 seqNo": 4,
-    "required uInt32 msgNo": 5
+    "required uInt32 msgNo": 5,
+    "required uInt32 timing": 6
   },
   "onLordValueUpgrade" : {
     "required uInt32 lordValue": 1,
@@ -84,9 +87,12 @@
     "required uInt32 rakeValue": 7,
     "required uInt32 lordWon": 8,
     "required uInt32 bombs": 9,
-    "repeated Player players": 10
+    "repeated Player players": 10,
+    "required uInt32 timing": 11
   },
-
+  "onReadyTimeout": {
+    "optional Result result": 1
+  },
   "ddz.entryHandler.queryRooms": {
     "message GameRoom": {
       "required uInt32 roomId": 1,
@@ -100,6 +106,17 @@
       "required uInt32 maxCoinsQty": 9
     },
     "repeated GameRoom rooms": 1
+  },
+  "ddz.entryHandler.enterRoom": {
+    "message Table": {
+      "required uInt32 tableId": 1,
+      "repeated Player players": 2
+    },
+    "optional string room_server_id": 1,
+    "optional string server_id": 2,
+    "optional uInt32 timing": 3,
+    "required Table table": 4,
+    "required Result result": 5
   },
   "ddz.gameHandler.playCard": {
     "required Result result": 1

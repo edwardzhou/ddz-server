@@ -1,4 +1,5 @@
 var utils = module.exports;
+var uint32 = require('uint32');
 
 // control variable of func "myPrint"
 // var isPrintFlag = false;
@@ -131,4 +132,20 @@ utils.kickBySession = function(session) {
   } else if (!!session.__sessionService__.kickBySid) {
     session.__sessionService__.kickBySid(session.frontendId, session.id);
   }
+};
+
+utils.hashCode = function (str, unsigned) {
+  var hash = 0, i, chr, len;
+  if (str.length === 0) return hash;
+  for (i = 0, len = str.length; i < len; i++) {
+    chr   = str.charCodeAt(i);
+    hash  = ((hash << 5) - hash) + chr;
+    hash |= 0; // Convert to 32bit integer
+  }
+
+  if (!!unsigned) {
+    hash = uint32.toUint32(hash);
+  }
+
+  return hash;
 };

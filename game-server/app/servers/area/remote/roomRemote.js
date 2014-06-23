@@ -68,6 +68,7 @@ remoteHandler.enter = function(uid, sid, sessionId, room_id, cb) {
       player.userSession.sset('tableId', table.tableId);
 
       var msg = table.toParams();
+      msg.timing = 10;
 
       // 通知桌子的其他玩家，有新玩家进入
       process.nextTick(function() {
