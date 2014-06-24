@@ -121,6 +121,7 @@ var setupNextPlayerTimeout = function (table, callback, seconds) {
     tm = (!nextPlayer.isDelegating())? 35 : 35;
 
   pokeGame.actionTimeout = setTimeout(function(){
+      clearNextPlayerTimeout(table);
       callback(table, nextPlayer, seqNo);
     }, tm * 1000);
 };
@@ -220,7 +221,8 @@ exp.startGame = function (table, next) {
         player: player.toParams(),
         nextUserId: newPokeGame.grabbingLord.nextUserId,
         seqNo: (player.userId == newPokeGame.grabbingLord.nextUserId ? seqNo : 0),
-        msgNo: msgNo
+        msgNo: msgNo,
+        timing: 20
       };
       //newPokeGame.playerMsgs[player.userId] = [];
       newPokeGame.playerMsgs[player.userId].push([eventName, eventData]);
@@ -230,6 +232,15 @@ exp.startGame = function (table, next) {
         [player.getUidSid()],
         null);
     }
+
+//    var grabbingLordPlayer = newPokeGame.getPlayerByUserId(newPokeGame.grabbingLord.nextUserId);
+//    newPokeGame.actionTimeout
+
+    setupNextPlayerTimeout(table,
+      function(timeoutTable, timeoutPlayer, timeoutSeq){
+        self.grabLord(timeoutTable, timeoutPlayer, 1, timeoutSeq, null);
+      },
+    15);
   });
 
 
@@ -282,6 +293,7 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
     }
     actionResult.seqNo = pokeGame.token.currentSeqNo;
     actionResult.msgNo = msgNo;
+    actionResult.timing = 20;
 
     pokeGame.playerMsgs[pokeGame.players[0].userId].push([eventName, actionResult]);
     pokeGame.playerMsgs[pokeGame.players[1].userId].push([eventName, actionResult]);
@@ -322,6 +334,21 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
       });
       return;
     }
+
+    if (!pokeGame.lordPlayerId || pokeGame.lordPlayer < 1) {
+      setupNextPlayerTimeout(table,
+        function(timeoutTable, timeoutPlayer, timeoutSeq){
+          self.grabLord(timeoutTable, timeoutPlayer, 1, timeoutSeq, null);
+        },
+        15);
+    } else {
+//      setupNextPlayerTimeout(table,
+//        function(timeoutTable, timeoutPlayer, timeoutSeq){
+//          self.grabLord(timeoutTable, timeoutPlayer, 1, timeoutSeq, null);
+//        },
+//        15);
+    }
+
 
 //    // 未产生地主？
 //    if (pokeGame.lordPlayerId == null) {
@@ -464,6 +491,8 @@ exp.gameOver = function(table, player, cb) {
           null
         );
       }
+
+      actionResult.timing = 15;
 
       //var pokeGame = table.pokeGame;
       var eventName = GameEvent.gameOver;
