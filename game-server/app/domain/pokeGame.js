@@ -70,7 +70,8 @@ var pokeGameSchema = new mongoose.Schema({
     // 输赢总数 = ante x lordValue x (2 ^ doubles) x (2 ^ bombs) x (4 ^ rockets) x (2 ^ abs(spring))
     total: {type: Number, default: 0},
     // 扣除佣金后的输赢总数 = total - rake, or = total * (1 - rake)
-    raked_total: {type: Number, default: 0}
+    raked_total: {type: Number, default: 0},
+    players: []
   },
   createdAt: {type: Date, default: Date.now},
   updatedAt: {type: Date, default: Date.now}

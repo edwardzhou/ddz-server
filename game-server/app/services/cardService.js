@@ -416,7 +416,8 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
       pokeChars: actionResult.pokeChars,
       nextUserId: pokeGame.token.nextUserId,
       seqNo: pokeGame.token.currentSeqNo,
-      msgNo: msgNo
+      msgNo: msgNo,
+      timing: 30
     };
 
     self.messageService.pushTableMessage(table,
@@ -501,6 +502,8 @@ exp.gameOver = function(table, player, cb) {
         eventName,
         actionResult,
         null );
+
+      pokeGame.save();
 
       process.nextTick(function() {
         table.pokeGame = null;
