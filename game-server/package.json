@@ -15,6 +15,7 @@
     "webkit-devtools-agent": "*",
     "heapdump": "*",
     "uint32": "*",
+    "q": "*",
     "crc": "0.2.0"
   }
 }

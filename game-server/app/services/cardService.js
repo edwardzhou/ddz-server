@@ -99,7 +99,7 @@ var setupPlayerReadyTimeout = function(table, player, callback, seconds) {
 
 var clearNextPlayerTimeout = function (table) {
   var pokeGame = table.pokeGame;
-  if (!!pokeGame.actionTimeout) {
+  if (!!pokeGame && !!pokeGame.actionTimeout) {
     clearTimeout(pokeGame.actionTimeout);
     pokeGame.actionTimeout = null;
   }
@@ -293,7 +293,7 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
     }
     actionResult.seqNo = pokeGame.token.currentSeqNo;
     actionResult.msgNo = msgNo;
-    actionResult.timing = 20;
+    actionResult.timing = (!!pokeGame.lordPlayerId) ? 30 : 20;
 
     pokeGame.playerMsgs[pokeGame.players[0].userId].push([eventName, actionResult]);
     pokeGame.playerMsgs[pokeGame.players[1].userId].push([eventName, actionResult]);
@@ -335,7 +335,7 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
       return;
     }
 
-    if (!pokeGame.lordPlayerId || pokeGame.lordPlayer < 1) {
+    if (!pokeGame.lordPlayerId || pokeGame.lordValue < 1) {
       setupNextPlayerTimeout(table,
         function(timeoutTable, timeoutPlayer, timeoutSeq){
           self.grabLord(timeoutTable, timeoutPlayer, 1, timeoutSeq, null);
@@ -487,7 +487,8 @@ exp.gameOver = function(table, player, cb) {
           table,
           GameEvent.lordValueUpgrade,
           {
-            lordValue: pokeGame.lordValue
+            lordValue: pokeGame.lordValue,
+            msgNo: pokeGame.msgNo++
           },
           null
         );
