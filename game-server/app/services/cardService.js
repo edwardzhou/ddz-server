@@ -344,7 +344,7 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
     } else {
       setupNextPlayerTimeout(table,
         function(timeoutTable, timeoutPlayer, timeoutSeq){
-          self.playCard(timeoutTable, timeoutPlayer, timeoutPlayer.pokeCards[0].pokeChar , timeoutSeq, null);
+          self.playCard(timeoutTable, timeoutPlayer, timeoutPlayer.pokeCards[0].pokeChar , timeoutSeq, true, null);
         },
         31);
     }
@@ -421,7 +421,8 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
       nextUserId: pokeGame.token.nextUserId,
       seqNo: pokeGame.token.currentSeqNo,
       msgNo: msgNo,
-      timing: 30
+      timing: 30,
+      delegating: (!!player.delegating? 1 : 0)
     };
 
     self.messageService.pushTableMessage(table,
