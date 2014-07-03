@@ -19,6 +19,7 @@ var Player = function(opts) {
   this.plays = opts.plays || 0;
   this.prevPlayer = opts.prevPlayer || null;
   this.nextPlayer = opts.nextPlayer || null;
+  this.delegating = !!opts.delegating;
 };
 
 util.inherits(Player, DomainBase);
@@ -62,7 +63,8 @@ Player.prototype.isReady = function() {
 };
 
 Player.prototype.isDelegating = function() {
-  return this.state == PlayerState.DELEGATING;
+  //return this.state == PlayerState.DELEGATING;
+  return this.delegating;
 };
 
 Player.prototype.isLord = function() {
@@ -87,4 +89,5 @@ Player.prototype.reset = function() {
   this.role = PlayerRole.NONE;
   this.setPokeCards([]);
   this.plays = 0;
-}
+  this.delegating = false;
+};

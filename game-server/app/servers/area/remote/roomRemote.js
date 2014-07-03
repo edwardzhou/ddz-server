@@ -93,7 +93,7 @@ remoteHandler.reenter = function(uid, sid, sessionId, room_id, table_id, msgNo, 
       clearTimeout(player.connectionRestoreTimeout);
       player.connectionRestoreTimeout = null;
     }
-    player.connBroken = false;
+    player.connectionLost = false;
     player.serverId = sid;
 
     if (!!table.pokeGame) {
@@ -122,7 +122,10 @@ remoteHandler.leave = function(msg, cb) {
   var uid = msg.uid;
   var room_id = msg.room_id;
 
+  var room = roomService.getRoom(room_id);
+
   var player = roomService.getRoom(room_id).getPlayer(uid);
+  var table = room.getGameTable(player.tableId);
   var self_close = msg.self_close;
 
   var leaveFunc = function() {
@@ -139,7 +142,10 @@ remoteHandler.leave = function(msg, cb) {
   };
 
   if (!self_close) {
-    player.connBroken = true;
+    player.connectionLost = true;
+//    cardService.playerConnectionLost(table, player, function(){
+//
+//    });
     player.connectionRestoreTimeout = setTimeout(leaveFunc, 120 * 1000);
   } else {
     leaveFunc();

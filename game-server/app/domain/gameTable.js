@@ -109,10 +109,12 @@ GameTable.prototype.getPlayerUidsMap = function() {
   var uids = [];
   for (var index=0; index<this.players.length; index++) {
     var player = this.players[index];
-    uids.push({
-      uid: player.userId,
-      sid: player.serverId
-    });
+    if (!player.connectionLost) {
+      uids.push({
+        uid: player.userId,
+        sid: player.serverId
+      });
+    }
   }
   return uids;
 };

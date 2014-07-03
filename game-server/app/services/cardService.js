@@ -340,13 +340,13 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
         function(timeoutTable, timeoutPlayer, timeoutSeq){
           self.grabLord(timeoutTable, timeoutPlayer, 1, timeoutSeq, null);
         },
-        15);
+        21);
     } else {
-//      setupNextPlayerTimeout(table,
-//        function(timeoutTable, timeoutPlayer, timeoutSeq){
-//          self.grabLord(timeoutTable, timeoutPlayer, 1, timeoutSeq, null);
-//        },
-//        15);
+      setupNextPlayerTimeout(table,
+        function(timeoutTable, timeoutPlayer, timeoutSeq){
+          self.playCard(timeoutTable, timeoutPlayer, timeoutPlayer.pokeCards[0].pokeChar , timeoutSeq, null);
+        },
+        31);
     }
 
 
@@ -382,6 +382,10 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
     table.tableId, player.userId, pokeChars, seqNo, isTimeout);
 
   clearNextPlayerTimeout(table);
+
+  if (!!isTimeout) {
+    player.delegating = true;
+  }
 
   var self = this;
   var params = {table: table, player: player, seqNo: seqNo};
@@ -456,6 +460,21 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
       return;
     }
 
+    if (player.pokeCards.length > 0) {
+      var nextPlayer = pokeGame.getPlayerByUserId(pokeGame.token.nextUserId);
+      var nextTimeout = 10;
+      if (!!nextPlayer.delegating) {
+        nextTimeout = 0.5;
+      }
+      setupNextPlayerTimeout(table, function(timeoutTable, timeoutPlayer, timeoutSeqNo){
+        var pokeChars = ''; // 不出
+        var pokeGame = timeoutTable.pokeGame;
+        if (pokeGame.lastPlay.userId == timeoutPlayer.userId) {
+          pokeChars = timeoutPlayer.pokeCards[0].pokeChar;
+        }
+        self.playCard(timeoutTable, timeoutPlayer, pokeChars, timeoutSeqNo, true, null);
+      }, nextTimeout);
+    }
 //    setupNextPlayerTimeout(table, function(table, player, seqNo) {
 //        self.playCard(table, player, '', seqNo, true, null);
 //      });
@@ -516,4 +535,9 @@ exp.gameOver = function(table, player, cb) {
     }
   });
 
+};
+
+exp.playerConnectionLost = function(table, player, next) {
+//  var pokeGame = table.pokeGame;
+//  pokeGame.connectionLosts.push(player);
 };
