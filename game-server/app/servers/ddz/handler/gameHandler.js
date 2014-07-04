@@ -72,6 +72,28 @@ Handler.prototype.playCard = function(msg, session, next) {
 
 };
 
+Handler.prototype.cancelDelegate = function(msg, session, next) {
+  var room_id = session.get('room_id');
+  var uid = session.uid;
+  var sid = session.frontendId;
+  var table_id = session.get('table_id');
+
+  var params = {
+    uid: uid,
+    serverId: sid,
+    room_id: room_id,
+    table_id: table_id
+  };
+
+  logger.debug('[cancelDelegate] msg => %j， params => %j', msg, params);
+
+  this.app.rpc.area.gameRemote.cancelDelegate(session, params, function(err, data) {
+    logger.debug('[cancelDelegate] gameRemote.cancelDelegate returns %j', data);
+    utils.invokeCallback(next, err, data);
+  });
+
+};
+
 Handler.prototype.restoreGame = function(msg, session, next) {
   logger.debug('[GameHandler.restoreGame] session: ' , session);
   var room_id = session.get('room_id');

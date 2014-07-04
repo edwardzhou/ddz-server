@@ -121,5 +121,8 @@
   },
   "ddz.gameHandler.playCard": {
     "required Result result": 1
+  },
+  "ddz.gameHandler.cancelDelegate": {
+    "required Result result": 1
   }
 }

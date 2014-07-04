@@ -7,6 +7,7 @@ var Player = require('../../../domain/player');
 var PlayerState = require('../../../consts/consts').PlayerState;
 var utils = require('../../../util/utils');
 var format = require('util').format;
+var Result = require('../../../domain/result');
 
 module.exports = function(app) {
   return new GameRemote(app);
@@ -75,4 +76,17 @@ remoteHandler.playCard = function(msg, cb) {
   this.cardService.playCard(table, player, card, seqNo, false, function(err, data) {
     utils.invokeCallback(cb, err, data);
   });
+};
+
+remoteHandler.cancelDelegate = function(msg, cb) {
+  var uid = msg.uid;
+  var sid = msg.serverId;
+  var room_id = msg.room_id;
+  var table_id = msg.table_id;
+
+  var room = roomService.getRoom(room_id);
+  var player = room.getPlayer(uid);
+  player.delegating = false;
+
+  utils.invokeCallback(cb, null, {result: new Result()});
 };
