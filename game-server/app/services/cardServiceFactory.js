@@ -32,6 +32,7 @@ CardServiceFactory.createNormalCardService = function() {
 
   cardService.startGameAction = StartGameAction;
 
+  beforeFilters = [CheckSeqNoBeforeFilter];
   afterFilters.push(IncreasePlaysAfterFilter);
   cardService.configGameAction(GameAction.PLAY_CARD, PlayCardAction, beforeFilters, afterFilters);
 

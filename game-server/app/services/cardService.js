@@ -381,8 +381,6 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
   logger.debug("table: %j, player: %j, pokeChars: %j, seqNo: %j, isTimeout: %j",
     table.tableId, player.userId, pokeChars, seqNo, isTimeout);
 
-  clearNextPlayerTimeout(table);
-
   if (!!isTimeout) {
     player.delegating = true;
   }
@@ -405,6 +403,8 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
       utils.invokeCallback(next, null, {result: err});
       return;
     }
+
+    clearNextPlayerTimeout(table);
 
     utils.invokeCallback(next, null, {result: new Result(ErrorCode.SUCCESS)});
 
@@ -465,7 +465,7 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
       var nextPlayer = pokeGame.getPlayerByUserId(pokeGame.token.nextUserId);
       var nextTimeout = 10;
       if (!!nextPlayer.delegating) {
-        nextTimeout = 0.5;
+        nextTimeout = 2;
       }
       setupNextPlayerTimeout(table, function(timeoutTable, timeoutPlayer, timeoutSeqNo){
         var pokeChars = ''; // 不出

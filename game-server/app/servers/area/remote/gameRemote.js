@@ -88,5 +88,5 @@ remoteHandler.cancelDelegate = function(msg, cb) {
   var player = room.getPlayer(uid);
   player.delegating = false;
 
-  utils.invokeCallback(cb, null, {result: new Result()});
+  utils.invokeCallback(cb, null, {result: new Result(0)});
 };

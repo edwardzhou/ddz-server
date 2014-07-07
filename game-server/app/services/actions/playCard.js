@@ -20,7 +20,7 @@ PlayCardAction.doPlayCard = function(table, player, pokeChars, cb) {
   logger.debug('pokeChars: ', pokeChars);
 
   // 不出?
-  if ( pokeChars == '' && (!lastPlay || lastPlay.userId != player.userId) ) {
+  if ( pokeChars == '' && (!!lastPlay && lastPlay.userId != player.userId) ) {
     var resp = {table: table, player: player, pokeCards: [], pokeChars: ''};
     utils.invokeCallback(cb, null, resp);
     return true;

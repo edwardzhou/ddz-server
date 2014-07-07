@@ -83,6 +83,7 @@ StartGameAction.execute = function(table, cb) {
 
   newPokeGame.grabbingLord.nextUserId = lordUserId;
   newPokeGame.token = {nextUserId: lordUserId, currentSeqNo: 1};
+  //newPokeGame.pokeGame.lastPlay
 
   utils.invokeCallback(cb, null);
 
