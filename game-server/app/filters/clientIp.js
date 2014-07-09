@@ -17,8 +17,8 @@ Filter.prototype.before = function(msg, session, next) {
   logger.info('[ClientIpFilter] invoked. clientIp: ', session.get('clientIp'));
   if (session.get('clientIp') == null) {
     var ip = session.__sessionService__.getClientAddressBySessionId(sid);
-    logger.info('[clientIpFilter] set clientIp => %s', ip);
-    session.set('clientIp', ip);
+    logger.info('[clientIpFilter] set clientIp => %s, %d', ip.ip, ip.port);
+    session.set('clientIp', ip.ip);
     session.push('clientIp', function() {
       next();
     });
