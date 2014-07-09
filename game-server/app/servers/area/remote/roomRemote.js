@@ -141,7 +141,12 @@ remoteHandler.leave = function(msg, cb) {
     });
   };
 
-  if (!self_close) {
+//  UserSession.getByUserId(uid, function(err, userSession) {
+//
+//  });
+
+
+  if (!self_close && !!table.pokeGame) {
     player.connectionLost = true;
 //    cardService.playerConnectionLost(table, player, function(){
 //
