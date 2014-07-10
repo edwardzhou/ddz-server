@@ -259,6 +259,12 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
   var actionFilter = this.getActionFilters(GameAction.GRAB_LORD);
   var self = this;
 
+  // table.pokeGame为空，可能此次调用是超时回调
+  if (!table.pokeGame) {
+    utils.invokeCallback(next, null, {resultCode:0});
+    return;
+  }
+
   var lordValue = table.pokeGame.grabbingLord.lordValue || 0;
 
   var action = function(params, callback) {
@@ -470,10 +476,12 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
       setupNextPlayerTimeout(table, function(timeoutTable, timeoutPlayer, timeoutSeqNo){
         var pokeChars = ''; // 不出
         var pokeGame = timeoutTable.pokeGame;
-        if (pokeGame.lastPlay.userId == timeoutPlayer.userId) {
-          pokeChars = timeoutPlayer.pokeCards[0].pokeChar;
+        if (!!pokeGame) {
+          if (pokeGame.lastPlay.userId == timeoutPlayer.userId) {
+            pokeChars = timeoutPlayer.pokeCards[0].pokeChar;
+          }
+          self.playCard(timeoutTable, timeoutPlayer, pokeChars, timeoutSeqNo, true, null);
         }
-        self.playCard(timeoutTable, timeoutPlayer, pokeChars, timeoutSeqNo, true, null);
       }, nextTimeout);
     }
 //    setupNextPlayerTimeout(table, function(table, player, seqNo) {
@@ -489,6 +497,7 @@ exp.gameOver = function(table, player, cb) {
   var actionResult = null;
   var pokeGame = table.pokeGame;
   var actionFilter = this.getActionFilters(GameAction.GAME_OVER);
+  clearNextPlayerTimeout(table);
   var action = function(params, callback) {
     self.gameOverAction.doGameOver(table, player, function(err, result){
       actionResult = result;

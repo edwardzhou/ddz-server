@@ -124,36 +124,40 @@ remoteHandler.leave = function(msg, cb) {
 
   var room = roomService.getRoom(room_id);
 
+  var hasGame = false;
   var player = roomService.getRoom(room_id).getPlayer(uid);
-  var table = room.getGameTable(player.tableId);
-  var self_close = msg.self_close;
+  if (!!player) {
+    var table = room.getGameTable(player.tableId);
+    hasGame = (!!table && !!table.pokeGame);
+    var self_close = msg.self_close;
 
-  var leaveFunc = function() {
-    roomService.leave(room_id, uid, function(table) {
-      if (table.gameSate != GameState.PENDING_FOR_READY) {
-        table.reset();
-      }
+    var leaveFunc = function () {
+      roomService.leave(room_id, uid, function (table) {
+        if (table.gameSate != GameState.PENDING_FOR_READY) {
+          table.reset();
+        }
 
-      //setTimeout(table, "")
-      process.nextTick(function() {
-        messageService.pushTableMessage(table, "onPlayerJoin", table.toParams(), null);
+        //setTimeout(table, "")
+        process.nextTick(function () {
+          messageService.pushTableMessage(table, "onPlayerJoin", table.toParams(), null);
+        });
       });
-    });
-  };
+    };
 
 //  UserSession.getByUserId(uid, function(err, userSession) {
 //
 //  });
 
 
-  if (!self_close && !!table.pokeGame) {
-    player.connectionLost = true;
+    if (!self_close && hasGame) {
+      player.connectionLost = true;
 //    cardService.playerConnectionLost(table, player, function(){
 //
 //    });
-    player.connectionRestoreTimeout = setTimeout(leaveFunc, 120 * 1000);
-  } else {
-    leaveFunc();
+      player.connectionRestoreTimeout = setTimeout(leaveFunc, 120 * 1000);
+    } else {
+      leaveFunc();
+    }
   }
   utils.invokeCallback(cb, null, null);
 
