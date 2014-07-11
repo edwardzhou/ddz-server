@@ -9,6 +9,7 @@ var userSchema = new mongoose.Schema({
   nickName: String,
   mobileNo: String,
   email: String,
+  gender: {type: String, default: '女'},
   passwordSalt: String,
   passwordDigest: String,
   authToken: String,
@@ -70,7 +71,7 @@ var md5 = function(password, salt) {
   return crypto.createHash("md5").update(data).digest('hex');
 };
 
-var copyHandset = function(src, dst) {
+copyHandset = function(src, dst) {
   if (src == null) {
     return;
   }
