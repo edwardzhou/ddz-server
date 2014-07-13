@@ -27,7 +27,7 @@ UserIdSchema.statics.retrieveNextUserId = function(cb) {
         return;
       }
     });
-    cb(nextUserId);
+    cb(null, nextUserId);
     return nextUserId;
   }
 
@@ -38,13 +38,13 @@ UserIdSchema.statics.retrieveNextUserId = function(cb) {
       g_userId.updatedAt = Date.now();
       g_userId.increment();
       g_userId.save();
-      cb(nextUserId);
+      cb(null, nextUserId);
     } else {
       var idObj = new UserId();
       idObj.nextUserId = 50002;
       idObj.save(function(err, newIdObj){
         g_userId = newIdObj;
-        cb(50001);
+        cb(null, 50001);
       });
     }
 

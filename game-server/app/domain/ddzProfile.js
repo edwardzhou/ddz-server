@@ -2,11 +2,11 @@
  * Created by edwardzhou on 14-7-11.
  */
 
-var mongoose = require('mongoose');
+var mongoose = require('mongoose-q')();
 var DomainBase = require('./domainBase');
 
 var DdzProfileSchema = mongoose.Schema({
-  userObjId: Schema.Types.ObjectId,
+  userObjId: mongoose.Schema.Types.ObjectId,
   coins: Number,
   gameStat: {
     won: {type: Number, default: 0},
@@ -37,3 +37,7 @@ var DdzProfileSchema = mongoose.Schema({
   vipLevel: Number,
   avatar: String
 });
+
+var DdzProfile = mongoose.model('DdzProfile', DdzProfileSchema);
+
+module.exports = DdzProfile;

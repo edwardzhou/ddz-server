@@ -1,4 +1,6 @@
-var mongoose = require('mongoose');
+//var mongoose = require('mongoose');
+var mongoose = require('mongoose-q')();
+
 var crypto = require('crypto');
 var DomainBase = require('./domainBase');
 
@@ -121,6 +123,8 @@ userSchema.methods.setSignedInHandsetInfo = function(handsetInfo) {
 userSchema.methods.setSignedUpHandsetInfo = function(handsetInfo) {
   copyHandset(handsetInfo, this.signedUp.handset);
 };
+
+userSchema.statics.copyHandset = copyHandset;
 
 userSchema.methods.getAuthToken = function() {
   var imei = this.lastSignedIn.handset.imei;

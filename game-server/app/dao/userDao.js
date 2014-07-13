@@ -6,6 +6,9 @@ var ErrorCode = require('../consts/errorCode');
 var async = require('async');
 var SignInType = require('../consts/consts').SignInType;
 var UserId = require('../domain/userId');
+var DdzProfile = require('../domain/ddzProfile');
+
+var Q = require('q');
 
 var userDao = module.exports;
 
@@ -31,31 +34,81 @@ userDao.createUser = function (userInfo, cb) {
 
   var userId = null;
 
-  UserId.retrieveNextUserId(function(newUserId) {
+  var retrieveNextUserId = Q.nbind(UserId.retrieveNextUserId, UserId);
+
+  var saveNewUser = function(newUserId, cb) {
     var nickName = userInfo.nickName || newUserId.toString();
     var user = new User({
-      userId: newUserId,
-      nickName: nickName,
-      passwordDigest: passwordDigest,
-      passwordSalt: passwordSalt,
-      appid: userInfo.appid,
-      appVersion: userInfo.appVersion,
-      resVersion: userInfo.resVersion,
-      createdAt: (new Date()),
-      updatedAt: (new Date())
+        userId: newUserId,
+        nickName: nickName,
+        passwordDigest: passwordDigest,
+        passwordSalt: passwordSalt,
+        appid: userInfo.appid,
+        appVersion: userInfo.appVersion,
+        resVersion: userInfo.resVersion,
+        createdAt: (new Date()),
+        updatedAt: (new Date())
     });
-    user.setSignedInHandsetInfo(userInfo.handsetInfo);
+    //user.setSignedInHandsetInfo(userInfo.handsetInfo);
     user.setSignedUpHandsetInfo(userInfo.handsetInfo);
     user.updateAuthToken();
-    user.save(function (err, newUser) {
-      if (err !== null) {
-        utils.invokeCallback(cb, {code: err.number, msg: err.message}, null);
-      } else {
-        utils.invokeCallback(cb, null, newUser);
-      }
+
+    return user.saveQ();
+  };
+
+  var saveUserDdzProfile = function(newUser, cb) {
+    var ddzProfile = new DdzProfile();
+    User.copyHandset(newUser.signedUp.handset, ddzProfile.lastSignedIn.handset);
+    ddzProfile.userObjId = newUser._id;
+    ddzProfile.user = newUser;
+    newUser.ddzProfile = ddzProfile;
+    return ddzProfile.saveQ();
+//    ddzProfile.save(function(error, newProfile){
+//      if (!!error) {
+//        deferred.reject(error);
+//      } else {
+//        deferred.resolve(newUser);
+//      }
+//    });
+//
+//    return deferred.promise;
+  };
+
+  retrieveNextUserId()
+    .then(saveNewUser)
+    .then(saveUserDdzProfile)
+    .then(function(ddzProfile) {
+      utils.invokeCallback(cb, null, ddzProfile.user);
+    })
+    .fail(function(error){
+      utils.invokeCallback(cb, {code: error.number, msg: error.message}, null);
     });
 
-  });
+//  UserId.retrieveNextUserId(function(err, newUserId) {
+//    var nickName = userInfo.nickName || newUserId.toString();
+//    var user = new User({
+//      userId: newUserId,
+//      nickName: nickName,
+//      passwordDigest: passwordDigest,
+//      passwordSalt: passwordSalt,
+//      appid: userInfo.appid,
+//      appVersion: userInfo.appVersion,
+//      resVersion: userInfo.resVersion,
+//      createdAt: (new Date()),
+//      updatedAt: (new Date())
+//    });
+//    user.setSignedInHandsetInfo(userInfo.handsetInfo);
+//    user.setSignedUpHandsetInfo(userInfo.handsetInfo);
+//    user.updateAuthToken();
+//    user.save(function (err, newUser) {
+//      if (err !== null) {
+//        utils.invokeCallback(cb, {code: err.number, msg: err.message}, null);
+//      } else {
+//        utils.invokeCallback(cb, null, newUser);
+//      }
+//    });
+//
+//  });
 
 };
 

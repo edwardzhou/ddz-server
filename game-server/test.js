@@ -54,6 +54,14 @@ fs = require('fs');
 zipData = fs.readFileSync('./p1.gz');
 console.log(zipData);
 
+newUserInfo = {
+  handset: {
+
+  },
+  nickName: 'fooo'
+};
+userDao.createUser(newUserInfo, cb);
+
 
 //
 //var userSchema  =mongoose.Schema({
