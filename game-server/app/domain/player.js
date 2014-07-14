@@ -31,6 +31,7 @@ Player.jsonAttrs = {
   state: "state",
   headIcon: "headIcon",
   pokeCount: 'pokeCount',
+  gender: 'gender',
   role: 'role'
 };
 

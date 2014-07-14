@@ -33,3 +33,20 @@ remoteHandler.authConn = function(msg, callback) {
   logger.info('[userRemote.authConn] backendSession => ', backendSession);
   utils.invokeCallback(callback, null, {result: 'ok'});
 };
+
+UserRemote.prototype.updateUserInfo = function(userInfo, callback) {
+  logger.info('[userRemote.updateUserInfo] userInfo => ', userInfo);
+  var backendSessionService = this.app.get('backendSessionService');
+  backendSessionService.get(userInfo.frontendId, userInfo.sessionId, function(err, session) {
+    userDao.getByUserId(session.get('userId'), function(err, user) {
+      user.nickName = userInfo.nickName;
+      user.gender = userInfo.gender;
+      user.save(function(err, savedUser){
+        utils.invokeCallback(callback, null, {result: 'ok'});
+      });
+    });
+  });
+
+
+
+};

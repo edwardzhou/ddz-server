@@ -149,6 +149,14 @@ Handler.prototype.leave = function(msg, session, next) {
   next(null, null);
 };
 
+Handler.prototype.updateUserInfo = function(msg, session, next) {
+  msg.frontendId = session.frontendId;
+  msg.sessionId = session.id;
+  this.app.rpc.userSystem.userRemote.updateUserInfo(session, msg, function(err, result) {
+    next(null, result);
+  });
+};
+
 var getUser = function(uid) {
 //  return {
 //    uid: uid,

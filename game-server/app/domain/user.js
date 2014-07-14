@@ -149,7 +149,8 @@ User.jsonAttrs = {
   nickName: 'nickName',
   mobileNo: 'mobileNo',
   email: 'email',
-  authToken: 'authToken'
+  authToken: 'authToken',
+  gender: 'gender'
 };
 
 DomainBase.defineToParams(User, User.statics, User.methods);
