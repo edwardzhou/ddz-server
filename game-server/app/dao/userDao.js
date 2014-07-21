@@ -163,7 +163,7 @@ userDao.signIn = function(loginInfo, cb) {
      }],
     checkPassword: ['checkUserExists', function(callback, results) {
       if (signInType != SignInType.BY_PASSWORD) {
-        callback();
+        callback(null, false);
         return false;
       }
 
