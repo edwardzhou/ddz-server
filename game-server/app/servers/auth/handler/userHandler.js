@@ -7,6 +7,7 @@ var dispatcher = require('../../../util/dispatcher');
 var User = require('../../../domain/user');
 var UserSession = require('../../../domain/userSession');
 var userDao = require('../../../dao/userDao');
+var ErrorCode = require('../../../consts/errorCode');
 
 var async = require('async');
 
@@ -70,6 +71,7 @@ Handler.prototype.signIn = function(msg, session, next) {
   ], function(err, user, userSession) {
     if (!!err) {
       // 登录失败
+      err.message = ErrorCode.getErrorMessage(err.err);
       utils.invokeCallback(next, err, err);
     } else {
       // 登录成功，返回会话数据

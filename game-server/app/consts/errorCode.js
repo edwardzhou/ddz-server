@@ -48,4 +48,31 @@ var ErrorCode = {
   STUB : -1
 };
 
+var ErrorMessages = {};
+ErrorMessages[ErrorCode.CONNECTION_NOT_AUTHED] = '连接未授权';
+// 连接授权失败
+ErrorMessages[ErrorCode.CONNECTION_AUTH_FAILED] = '连接授权失败';
+  // 客户端版本被禁用
+ErrorMessages[ErrorCode.CLIENT_APP_VERSION_PROHIBITTED] = '客户端版本被禁用';
+  // 客户端设备被禁用
+ErrorMessages[ErrorCode.CLIENT_DEVICE_PROHIBITTED] = '客户端设备被禁用';
+// 未登录
+ErrorMessages[ErrorCode.CLIENT_NOT_SIGNED_YET] = '未登录';
+
+// 用户不存在
+ErrorMessages[ErrorCode.USER_NOT_FOUND] = '用户不存在';
+// 用户被禁用
+ErrorMessages[ErrorCode.USER_PROHIBITTED] = '用户被禁用';
+// 密码不匹配
+ErrorMessages[ErrorCode.PASSWORD_INCORRECT] = '密码不匹配';
+// 登录token无效
+ErrorMessages[ErrorCode.AUTH_TOKEN_INVALID] = '登录token无效';
+// 会话token过期
+ErrorMessages[ErrorCode.SESSION_TOKEN_EXPIRED] = '会话token过期';
+
+ErrorCode.getErrorMessage = function(errCode) {
+  return ErrorMessages[errCode];
+};
+
+
 module.exports = ErrorCode;
