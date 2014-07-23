@@ -2,7 +2,7 @@
  * Created by edwardzhou on 14-2-11.
  */
 
-var mongoose = require('mongoose');
+var mongoose = require('mongoose-q')();
 var Schema = mongoose.Schema;
 var crypto = require('crypto');
 var uuid = require('node-uuid');
@@ -56,6 +56,11 @@ userSessionSchema.methods.sset = function(key, value) {
   this.update(updateFields, function(err, affected) {
     console.log('update: ', err, affected);
   });
+};
+
+userSessionSchema.methods.touchQ = function() {
+  this.updatedAt = Date.now();
+  return this.saveQ();
 };
 
 var UserSession = mongoose.model('UserSession', userSessionSchema);

@@ -46,7 +46,7 @@ User = require('./app/domain/user');
 userDao = require('./app/dao/userDao');
 UserSession = require('./app/domain/userSession');
 GameRoom = require('./app/domain/gameRoom');
-
+UserService = require('./app/services/userService');
 
 zlib = require('zlib');
 fs = require('fs');
@@ -60,7 +60,10 @@ newUserInfo = {
   },
   nickName: 'fooo'
 };
-userDao.createUser(newUserInfo, cb);
+//userDao.createUser(newUserInfo, cb);
+
+UserService.signInByPassword({userId: 50206, password: 'abc123'}, cb)
+
 
 
 //

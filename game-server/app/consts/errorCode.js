@@ -44,6 +44,8 @@ var ErrorCode = {
   // 牌型打不过上手牌（1. 牌型不配， 2. 没有大过对方）
   INVALID_PLAY_CARD: 3002,
 
+  SYSTEM_ERROR: 100000,
+
   // no use, just for a stub.
   STUB : -1
 };

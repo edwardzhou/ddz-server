@@ -6,7 +6,7 @@ var mongoose = require('mongoose-q')();
 var DomainBase = require('./domainBase');
 
 var DdzProfileSchema = mongoose.Schema({
-  userObjId: mongoose.Schema.Types.ObjectId,
+  userId: Number,
   coins: Number,
   gameStat: {
     won: {type: Number, default: 0},
@@ -14,7 +14,7 @@ var DdzProfileSchema = mongoose.Schema({
   },
   lastSignedIn: {
     appid: Number,
-    appVersion: String,
+    appVersion: Number,
     resVersion: String,
     signedInTime: {type: Date, default: Date.now},
     handset: {

@@ -8,8 +8,12 @@ var User = require('../../../domain/user');
 var UserSession = require('../../../domain/userSession');
 var userDao = require('../../../dao/userDao');
 var ErrorCode = require('../../../consts/errorCode');
-
+var SignInType = require('../../../consts/consts').SignInType;
 var async = require('async');
+
+var userService = require('../../../services/userService');
+
+var Q = require('q');
 
 /**
  * Gate handler that dispatch user to connectors.
@@ -35,7 +39,7 @@ Handler.prototype.signIn = function(msg, session, next) {
   loginInfo.signInType = msg.signInType;
   loginInfo.authToken = msg.authToken;
   loginInfo.password = msg.password;
-  loginInfo.handsetInfo = msg.handsetInfo;
+  loginInfo.handset = msg.handsetInfo;
 
   if (!msg.authToken && !msg.password) {
     // 参数无效
@@ -43,56 +47,84 @@ Handler.prototype.signIn = function(msg, session, next) {
     return;
   }
 
-  async.waterfall([
-    function (callback) {
-      // 1. 登录
-      userDao.signIn(loginInfo, function(err, user) {
-        callback(err, user);
-      });
-    }, function(user, callback) {
-      // 1.1 清除旧userSession
-      UserSession.removeAllByUserId(user.userId, function() {
-        callback(null, user);
-      });
-    }, function (user, callback) {
-      // 2. 绑定Session，并创建新的userSession
-      session.bind(user.userId);
-      UserSession.createSession(user.userId, function(err, userSession) {
-        callback(err, user, userSession);
-      });
-    }, function (user, userSession, callback) {
-      // 3. 设置session数据
-      session.set('userId', user.userId);
-      session.set('sessionToken', userSession.sessionToken);
-      session.pushAll(function() {
-        callback(null, user, userSession);
-      });
-    }
-  ], function(err, user, userSession) {
-    if (!!err) {
-      // 登录失败
-      err.message = ErrorCode.getErrorMessage(err.err);
-      utils.invokeCallback(next, err, err);
+  Q.fcall( function() {
+    if (msg.signInType == SignInType.BY_AUTH_TOKEN) {
+      return Q.nbind(userService.signInByAuthToken, userService, loginInfo)();
     } else {
-      // 登录成功，返回会话数据
-      var result = {};
-      result.user = user.toParams();
-      result.sessionToken = userSession.sessionToken;
-
+      return Q.nbind(userService.signInByPassword, userService, loginInfo)();
+    }
+  })
+    .then(function(result) {
+      var resp = {};
+      resp.user = result.user.toParams();
+      resp.sessionToken = result.userSession.sessionToken;
       var connectors = self.app.getServersByType('ddz');
-      //logger.debug('connectors: ', connectors);
       if(!connectors || connectors.length === 0) {
-        utils.invokeCallback(next, null,{err: Code.GATE.NO_SERVER_AVAILABLE});
+        utils.invokeCallback(callback, null, {err:Code.GATE.NO_SERVER_AVAILABLE} );
         return;
       }
 
-      logger.info('[Handler.signIn] clientIp : ', session.get('clientIp'));
+      resp.server = dispatcher.dispatch(result.user.userId, connectors);
 
-      result.server = dispatcher.dispatch(user.userId, connectors);
+      utils.invokeCallback(next, null, resp);
+    })
+    .fail(function(error) {
+      error.message = ErrorCode.getErrorMessage(error.err);
+      utils.invokeCallback(next, null, error);
+    });
 
-      utils.invokeCallback(next, null, result);
-    }
-  });
+
+
+//  async.waterfall([
+//    function (callback) {
+//      // 1. 登录
+//      userDao.signIn(loginInfo, function(err, user) {
+//        callback(err, user);
+//      });
+//    }, function(user, callback) {
+//      // 1.1 清除旧userSession
+//      UserSession.removeAllByUserId(user.userId, function() {
+//        callback(null, user);
+//      });
+//    }, function (user, callback) {
+//      // 2. 绑定Session，并创建新的userSession
+//      session.bind(user.userId);
+//      UserSession.createSession(user.userId, function(err, userSession) {
+//        callback(err, user, userSession);
+//      });
+//    }, function (user, userSession, callback) {
+//      // 3. 设置session数据
+//      session.set('userId', user.userId);
+//      session.set('sessionToken', userSession.sessionToken);
+//      session.pushAll(function() {
+//        callback(null, user, userSession);
+//      });
+//    }
+//  ], function(err, user, userSession) {
+//    if (!!err) {
+//      // 登录失败
+//      err.message = ErrorCode.getErrorMessage(err.err);
+//      utils.invokeCallback(next, err, err);
+//    } else {
+//      // 登录成功，返回会话数据
+//      var result = {};
+//      result.user = user.toParams();
+//      result.sessionToken = userSession.sessionToken;
+//
+//      var connectors = self.app.getServersByType('ddz');
+//      //logger.debug('connectors: ', connectors);
+//      if(!connectors || connectors.length === 0) {
+//        utils.invokeCallback(next, null,{err: Code.GATE.NO_SERVER_AVAILABLE});
+//        return;
+//      }
+//
+//      logger.info('[Handler.signIn] clientIp : ', session.get('clientIp'));
+//
+//      result.server = dispatcher.dispatch(user.userId, connectors);
+//
+//      utils.invokeCallback(next, null, result);
+//    }
+//  });
 };
 
 Handler.prototype.signUp = function(msg, session, next) {

@@ -15,6 +15,7 @@ var userSchema = new mongoose.Schema({
   passwordSalt: String,
   passwordDigest: String,
   authToken: String,
+  oldAuthToken: String,
   appid: Number,
   appVersion: String,
   locked: {type: Boolean, default: false},
@@ -73,10 +74,29 @@ var md5 = function(password, salt) {
   return crypto.createHash("md5").update(data).digest('hex');
 };
 
+clearHandset = function(handset) {
+  handset.model = null;
+  handset.os_ver = null;
+  handset.fingerprint = null;
+  handset.brand = null;
+  handset.manufacture = null;
+  handset.cpuAbi = null;
+  handset.board = null;
+  handset.device = null;
+  handset.product = null;
+  handset.display = null;
+  handset.buildId = null;
+  handset.imsi = null;
+  handset.imei = null;
+  handset.mac = null;
+};
+
 copyHandset = function(src, dst) {
   if (src == null) {
     return;
   }
+
+  clearHandset(dst);
 
   dst.model = src.model;
   dst.os_ver = src.os_ver;
@@ -135,11 +155,24 @@ userSchema.methods.getAuthToken = function() {
 };
 
 userSchema.methods.updateAuthToken = function() {
+  this.oldAuthToken = this.authToken;
   this.authToken = this.getAuthToken();
 };
 
 userSchema.methods.verifyToken = function(authToken, imei) {
-  return (this.getAuthToken() == authToken) && (this.lastSignedIn.handset.imei == imei);
+  //return (this.getAuthToken() == authToken) && (this.lastSignedIn.handset.imei == imei);
+  var lastMac = this.lastSignedIn.handset.mac;
+  if (!!lastMac && lastMac != imei)
+    return false;
+
+  if (authToken == this.authToken && !!this.authToken) {
+    if (this.oldAuthToken != this.authToken) {
+      this.oldAuthToken = this.authToken;
+    }
+    return true;
+  }
+
+  return (authToken == this.oldAuthToken);
 };
 
 var User = mongoose.model('User', userSchema);

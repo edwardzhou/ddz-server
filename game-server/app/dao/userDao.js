@@ -49,7 +49,7 @@ userDao.createUser = function (userInfo, cb) {
         createdAt: (new Date()),
         updatedAt: (new Date())
     });
-    //user.setSignedInHandsetInfo(userInfo.handsetInfo);
+    user.setSignedInHandsetInfo(userInfo.handsetInfo);
     user.setSignedUpHandsetInfo(userInfo.handsetInfo);
     user.updateAuthToken();
 
@@ -59,19 +59,10 @@ userDao.createUser = function (userInfo, cb) {
   var saveUserDdzProfile = function(newUser, cb) {
     var ddzProfile = new DdzProfile();
     User.copyHandset(newUser.signedUp.handset, ddzProfile.lastSignedIn.handset);
-    ddzProfile.userObjId = newUser._id;
+    ddzProfile.userId = newUser.userId;
     ddzProfile.user = newUser;
     newUser.ddzProfile = ddzProfile;
     return ddzProfile.saveQ();
-//    ddzProfile.save(function(error, newProfile){
-//      if (!!error) {
-//        deferred.reject(error);
-//      } else {
-//        deferred.resolve(newUser);
-//      }
-//    });
-//
-//    return deferred.promise;
   };
 
   retrieveNextUserId()
@@ -83,32 +74,6 @@ userDao.createUser = function (userInfo, cb) {
     .fail(function(error){
       utils.invokeCallback(cb, {code: error.number, msg: error.message}, null);
     });
-
-//  UserId.retrieveNextUserId(function(err, newUserId) {
-//    var nickName = userInfo.nickName || newUserId.toString();
-//    var user = new User({
-//      userId: newUserId,
-//      nickName: nickName,
-//      passwordDigest: passwordDigest,
-//      passwordSalt: passwordSalt,
-//      appid: userInfo.appid,
-//      appVersion: userInfo.appVersion,
-//      resVersion: userInfo.resVersion,
-//      createdAt: (new Date()),
-//      updatedAt: (new Date())
-//    });
-//    user.setSignedInHandsetInfo(userInfo.handsetInfo);
-//    user.setSignedUpHandsetInfo(userInfo.handsetInfo);
-//    user.updateAuthToken();
-//    user.save(function (err, newUser) {
-//      if (err !== null) {
-//        utils.invokeCallback(cb, {code: err.number, msg: err.message}, null);
-//      } else {
-//        utils.invokeCallback(cb, null, newUser);
-//      }
-//    });
-//
-//  });
 
 };
 
