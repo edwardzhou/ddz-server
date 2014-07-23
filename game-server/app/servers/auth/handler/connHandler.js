@@ -40,10 +40,11 @@ Handler.prototype.authConn = function(msg, session, next) {
     return;
   }
 
-  var getByUserIdQ = Q.nbind(userDao.getByUserId, userDao);
+  //var getByUserIdQ = Q.nbind(userDao.getByUserId, userDao);
   var getSessionByTokenQ = Q.nbind(UserSession.getByToken, UserSession);
 
-  getByUserIdQ(userId)
+  User.findOneQ({userId: userId})
+  //getByUserIdQ(userId)
     .then(function(user){
       session.set('connAuthed', true);
       logger.info('Connection authed~');

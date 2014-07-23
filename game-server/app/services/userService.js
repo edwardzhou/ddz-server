@@ -119,5 +119,52 @@ UserService.signInByMac = function() {
 };
 
 UserService.signUp = function(signUpParams, cb) {
+  var passwordSalt = crypto.createHash('md5').update(Math.random().toString()).digest('hex');
+  userInfo.password = userInfo.password || 'abc123';
+  var passwordDigest = null;
+  if (!!userInfo.password) {
+    passwordDigest = _genPasswordDigest(userInfo.password, passwordSalt);
+  }
 
+  var userId = null;
+  var results = {};
+
+  var retrieveNextUserId = Q.nbind(UserId.retrieveNextUserId, UserId);
+
+  retrieveNextUserId()
+    .then(function(newUserId) {
+      var nickName = userInfo.nickName || newUserId.toString();
+      var user = new User({
+        userId: newUserId,
+        nickName: nickName,
+        passwordDigest: passwordDigest,
+        passwordSalt: passwordSalt,
+        appid: userInfo.appid,
+        appVersion: userInfo.appVersion,
+        resVersion: userInfo.resVersion,
+        createdAt: (new Date()),
+        updatedAt: (new Date())
+      });
+      user.setSignedInHandsetInfo(userInfo.handsetInfo);
+      user.setSignedUpHandsetInfo(userInfo.handsetInfo);
+      user.updateAuthToken();
+      user.oldAuthToken = user.authToken;
+
+      return user.saveQ();
+    })
+    .then(function(user) {
+      results.user = user;
+
+      var ddzProfile = new DdzProfile();
+      User.copyHandset(newUser.signedUp.handset, ddzProfile.lastSignedIn.handset);
+      ddzProfile.userId = results.user.userId;
+      return ddzProfile.saveQ();
+    })
+    .then(function(ddzProfile) {
+      results.ddzProfile = ddzProfile;
+      utils.invokeCallback(cb, null, results.user);
+    })
+    .fail(function(error) {
+      utils.invokeCallback(cb, {code: error.number, msg: error.message}, null);
+    });
 };
