@@ -159,10 +159,10 @@ userSchema.methods.updateAuthToken = function() {
   this.authToken = this.getAuthToken();
 };
 
-userSchema.methods.verifyToken = function(authToken, imei) {
+userSchema.methods.verifyToken = function(authToken, mac) {
   //return (this.getAuthToken() == authToken) && (this.lastSignedIn.handset.imei == imei);
   var lastMac = this.lastSignedIn.handset.mac;
-  if (!!lastMac && lastMac != imei)
+  if (!!lastMac && lastMac != mac)
     return false;
 
   if (authToken == this.authToken && !!this.authToken) {

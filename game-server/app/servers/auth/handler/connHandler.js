@@ -62,7 +62,7 @@ Handler.prototype.authConn = function(msg, session, next) {
       results.user = user;
     })
     .then(function(){
-      if (sessionToken == null) {
+      if (sessionToken == null || !results.user.verifyToken(authToken, mac)) {
         results.error = {needSignIn: true};
         throw genError('user[userId: ' + userId + '] without sessionToken.');
       }
