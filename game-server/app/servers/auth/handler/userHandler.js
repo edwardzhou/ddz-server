@@ -81,6 +81,7 @@ Handler.prototype.signIn = function(msg, session, next) {
 Handler.prototype.signUp = function(msg, session, next) {
   var self = this;
   var userInfo = msg;
+  var handsetInfo = msg.handsetInfo || {};
   var results = {};
 
   // 1. 创建新用户
@@ -88,14 +89,14 @@ Handler.prototype.signUp = function(msg, session, next) {
     .then(function(user) {
       // 2. 创建userSession用于跨链接共享用户数据
       results.user = user;
-      return createUserSessionQ(user.userId);
+      return createUserSessionQ(user.userId, handsetInfo.mac);
     })
     .then(function(newUserSession) {
       // 3. 绑定到session
       results.userSession = newUserSession;
-      session.bind(result.user.userId);
-      session.set('userId', result.user.UserId);
-      session.set('sessionToken', result.userSession.sessionToken);
+      session.bind(results.user.userId);
+      session.set('userId', results.user.UserId);
+      session.set('sessionToken', results.userSession.sessionToken);
       return Q.nbind(session.pushAll, session)();
     })
     .then(function() {

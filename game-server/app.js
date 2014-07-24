@@ -15,6 +15,11 @@ app.set('name', 'ddz_server');
 
 // configuration for global
 app.configure('production|development', function () {
+
+  app.set('proxyConfig', {
+    timeout: 10 * 60 * 1000
+  });
+
   app.enable('systemMonitor');
 
   app.loadConfig('mongodb', app.getBase() + "/config/mongodb.json");

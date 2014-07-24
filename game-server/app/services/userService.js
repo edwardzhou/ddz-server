@@ -2,17 +2,25 @@
  * Created by edwardzhou on 14-7-23.
  */
 var User = require('../domain/user');
+var UserId = require('../domain/userId');
 var DdzProfile = require('../domain/ddzProfile');
 var UserSession = require('../domain/userSession');
 var ErrorCode = require('../consts/errorCode');
 var utils = require('../util/utils');
+var crypto = require('crypto');
 
 var Q = require('q');
 
+var createUserSessionQ = Q.nbind(UserSession.createSession, UserSession);
+var retrieveNextUserId = Q.nbind(UserId.retrieveNextUserId, UserId);
 
 var pomeloApp = null;
 var UserService = module.exports;
 
+
+var _genPasswordDigest = function (password, salt) {
+  return crypto.createHash('md5').update(password + "_" + salt).digest('hex');
+};
 
 UserService.init = function(app, opts) {
   pomeloApp = app;
@@ -30,7 +38,6 @@ UserService.signInByAuthToken = function(signInParams, callback) {
   var handsetInfo = signInParams.handset || {};
   var mac = handsetInfo.mac;
   var result = {};
-  var createUserSessionQ = Q.nbind(UserSession.createSession, UserSession);
 
   User.findOneQ({userId: userId})
     .then(function(user) {
@@ -53,7 +60,7 @@ UserService.signInByAuthToken = function(signInParams, callback) {
       return UserSession.removeQ({userId: result.user.userId});
     })
     .then(function(){
-      return createUserSessionQ(result.user.userId);
+      return createUserSessionQ(result.user.userId, mac);
     })
     .then(function(newUserSession){
       result.userSession = newUserSession;
@@ -71,10 +78,8 @@ UserService.signInByAuthToken = function(signInParams, callback) {
 UserService.signInByPassword = function(signInParams, callback) {
   var userId = signInParams.userId;
   var password = signInParams.password;
-  var handsetInfo = signInParams.handset;
+  var handsetInfo = signInParams.handset || {};
   var result = {};
-
-  var createUserSessionQ = Q.nbind(UserSession.createSession, UserSession);
 
   User.findOneQ({userId: userId})
     .then(function(user) {
@@ -100,7 +105,7 @@ UserService.signInByPassword = function(signInParams, callback) {
       return UserSession.removeQ({userId: result.user.userId});
     })
     .then(function() {
-      return createUserSessionQ(result.user.userId);
+      return createUserSessionQ(result.user.userId, handsetInfo.mac);
     })
     .then(function(newUserSession){
       result.userSession = newUserSession;
@@ -119,6 +124,7 @@ UserService.signInByMac = function() {
 };
 
 UserService.signUp = function(signUpParams, cb) {
+  var userInfo = signUpParams;
   var passwordSalt = crypto.createHash('md5').update(Math.random().toString()).digest('hex');
   userInfo.password = userInfo.password || 'abc123';
   var passwordDigest = null;
@@ -129,7 +135,7 @@ UserService.signUp = function(signUpParams, cb) {
   var userId = null;
   var results = {};
 
-  var retrieveNextUserId = Q.nbind(UserId.retrieveNextUserId, UserId);
+
 
   retrieveNextUserId()
     .then(function(newUserId) {
@@ -156,7 +162,7 @@ UserService.signUp = function(signUpParams, cb) {
       results.user = user;
 
       var ddzProfile = new DdzProfile();
-      User.copyHandset(newUser.signedUp.handset, ddzProfile.lastSignedIn.handset);
+      User.copyHandset(results.user.signedUp.handset, ddzProfile.lastSignedIn.handset);
       ddzProfile.userId = results.user.userId;
       return ddzProfile.saveQ();
     })

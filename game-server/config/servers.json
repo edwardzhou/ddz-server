@@ -7,7 +7,7 @@
       {"id": "gate-server-1", "host": "127.0.0.1", "port": 4101, "clientPort": 4001, "frontend": true,"args": " --debug=32213 "}
     ],
     "auth": [
-      {"id": "auth-server-1", "host": "127.0.0.1", "port": 4201}
+      {"id": "auth-server-1", "host": "127.0.0.1", "port": 4201, "args": " --debug=32220 "}
     ],
     "area": [
       {"id": "room-server", "host": "127.0.0.1", "port": 3200},

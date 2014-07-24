@@ -10,6 +10,7 @@ var utils = require('../util/utils');
 
 var userSessionSchema = new mongoose.Schema({
   userId: Number,
+  mac: String,
   sessionToken: {type:String, default: uuid.v1},
   sessionStart: {type:Date, default: Date.now},
   sessionData: {type: Schema.Types.Mixed, default: {_placeholder:0}},
@@ -19,9 +20,10 @@ var userSessionSchema = new mongoose.Schema({
 
 userSessionSchema.index({sessionToken: 1});
 
-userSessionSchema.statics.createSession = function(userId, cb) {
+userSessionSchema.statics.createSession = function(userId, mac, cb) {
   var newSession = new this();
   newSession.userId = userId;
+  newSession.mac = mac;
   newSession.save(function(err, session) {
     utils.invokeCallback(cb, err, session);
   });
