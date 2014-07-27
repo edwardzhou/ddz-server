@@ -66,7 +66,7 @@ var userSchema = new mongoose.Schema({
   updatedAt: {type: Date, default: Date.now}
 });
 
-var md5 = function(password, salt) {
+var md5_data = function(password, salt) {
   var data = password;
   if (!!salt) {
     data = data + "_" + salt;
@@ -116,10 +116,10 @@ copyHandset = function(src, dst) {
 
 userSchema.virtual('password').set(function(password) {
   if (!this.passwordSalt) {
-    this.passwordSalt = md5(Math.random().toString());
+    this.passwordSalt = md5_data(Math.random().toString());
   }
 
-  this.passwordDigest = md5(password, this.passwordSalt);
+  this.passwordDigest = md5_data(password, this.passwordSalt);
 });
 
 //User.prototype.setPassword = function(password) {
@@ -131,7 +131,7 @@ userSchema.virtual('password').set(function(password) {
 //};
 
 userSchema.methods.verifyPassword = function(password) {
-  var pwdDigest = md5(password, this.passwordSalt);
+  var pwdDigest = md5_data(password, this.passwordSalt);
 
   return pwdDigest == this.passwordDigest;
 };
@@ -151,7 +151,7 @@ userSchema.methods.getAuthToken = function() {
   var lastLoginTime = this.lastSignedIn.signedInTime || this.createdAt;
   var pwdSalt = this.passwordSalt;
 
-  return md5(imei + '_' + lastLoginTime.valueOf() + '_' + pwdSalt);
+  return md5_data(imei + '_' + lastLoginTime.valueOf() + '_' + pwdSalt);
 };
 
 userSchema.methods.updateAuthToken = function() {

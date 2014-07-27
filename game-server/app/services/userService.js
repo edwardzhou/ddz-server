@@ -174,3 +174,18 @@ UserService.signUp = function(signUpParams, cb) {
       utils.invokeCallback(cb, {code: error.number, msg: error.message}, null);
     });
 };
+
+UserService.updatePassword = function(userId, newPassword, callback) {
+  User.findOneQ({userId: userId})
+    .then(function(user) {
+      user.password = newPassword;
+      return user.saveQ();
+    })
+    .then(function(){
+      utils.invokeCallback(callback, null, true);
+    })
+    .fail(function(error) {
+      logger.error(error);
+      utils.invokeCallback(callback, null, false);
+    });
+};

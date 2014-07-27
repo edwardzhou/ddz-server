@@ -5,6 +5,7 @@ var Code = require('../../../../../shared/code');
 var dispatcher = require('../../../util/dispatcher');
 
 var User = require('../../../domain/user');
+var Result = require('../../../domain/result');
 var UserSession = require('../../../domain/userSession');
 var userDao = require('../../../dao/userDao');
 var ErrorCode = require('../../../consts/errorCode');
@@ -18,7 +19,9 @@ var Q = require('q');
 var signUpQ = Q.nbind(userService.signUp, userService);
 var signInByAuthTokenQ = Q.nbind(userService.signInByAuthToken, userService);
 var signInByPasswordQ = Q.nbind(userService.signInByPassword, userService);
+var updatePasswordQ = Q.nbind(userService.updatePassword, userService);
 var createUserSessionQ = Q.nbind(UserSession.createSession, UserSession);
+
 
 /**
  * Gate handler that dispatch user to connectors.
@@ -118,49 +121,20 @@ Handler.prototype.signUp = function(msg, session, next) {
     .fail(function(error) {
       utils.invokeCallback(next, null, {err: 502});
     });
+};
 
-//  async.waterfall([
-//    function(callback){
-//      // 1. 创建新用户
-//      userDao.createUser(userInfo, function(err, user) {
-//        callback(err, user);
-//      });
-//    }, function(user, callback) {
-//      // 2. 绑定到session
-//      session.bind(user.userId, function(err) {
-//        callback(err, user);
-//      });
-//    }, function(user, callback) {
-//      // 3. 创建userSession用于跨链接共享用户数据
-//      UserSession.createSession(user.userId, function(err, uSession) {
-//        callback(err, user, uSession);
-//      });
-//    }, function(user, userSession, callback) {
-//      // 4. 设置session数据
-//      session.set('userId', user.userId);
-//      session.set('sessionToken', userSession.sessionToken);
-//      session.pushAll();
-//      callback(null, user, userSession);
-//    }
-//  ], function(err, user, userSession) {
-//    if (!!err) {
-//      // 创建用户失败
-//      utils.invokeCallback(next, err, {err: 502});
-//    } else {
-//      // 成功返回用户信息
-//      var result = {};
-//      result.user = user.toParams();
-//      result.sessionToken = userSession.sessionToken;
-//
-//      var connectors = self.app.getServersByType('ddz');
-//      if(!connectors || connectors.length === 0) {
-//        utils.invokeCallback(next, null, {err:Code.GATE.NO_SERVER_AVAILABLE} );
-//        return;
-//      }
-//
-//      result.server = dispatcher.dispatch(user.userId, connectors);
-//      utils.invokeCallback(next, null, result);
-//    }
-//  });
-
+Handler.prototype.updatePassword = function(msg, session, next) {
+  var newPassword = msg.password;
+  var userId = session.get('userId');
+  updatePasswordQ(userId, newPassword)
+    .then(function(success) {
+      if (success) {
+        utils.invokeCallback(next, null, new Result(ErrorCode.SUCCESS));
+      } else {
+        utils.invokeCallback(next, null, new Result(ErrorCode.SYSTEM_ERROR));
+      }
+    })
+    .fail(function(error) {
+      logger.error('[Handler.prototype.updatePassword] error => ', error);
+    })
 };
