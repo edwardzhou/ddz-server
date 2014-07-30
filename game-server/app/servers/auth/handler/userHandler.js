@@ -136,5 +136,23 @@ Handler.prototype.updatePassword = function(msg, session, next) {
     })
     .fail(function(error) {
       logger.error('[Handler.prototype.updatePassword] error => ', error);
+      utils.invokeCallback(next, null, new Result(ErrorCode.SYSTEM_ERROR));
+    })
+};
+
+Handler.prototype.updateHeadIcon = function(msg, session, next) {
+  var newHeadIcon = msg.headIcon;
+  var userId = session.get('userId');
+  User.findOneQ({userId: userId})
+    .then(function(user) {
+      user.headIcon = newHeadIcon;
+      return user.saveQ();
+    })
+    .then(function() {
+      utils.invokeCallback(next, null, new Result(ErrorCode.SUCCESS));
+    })
+    .fail(function(error) {
+      logger.error('[Handler.prototype.updateHeadIcon] error => ', error);
+      utils.invokeCallback(next, null, new Result(ErrorCode.SYSTEM_ERROR));
     })
 };

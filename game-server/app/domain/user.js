@@ -11,6 +11,7 @@ var userSchema = new mongoose.Schema({
   nickName: String,
   mobileNo: String,
   email: String,
+  headIcon: {type: String, default: 'head1'},
   gender: {type: String, default: '女'},
   passwordSalt: String,
   passwordDigest: String,
@@ -182,6 +183,7 @@ User.jsonAttrs = {
   nickName: 'nickName',
   mobileNo: 'mobileNo',
   email: 'email',
+  headIcon: 'headIcon',
   authToken: 'authToken',
   gender: 'gender'
 };
