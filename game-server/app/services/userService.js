@@ -65,6 +65,12 @@ UserService.signInByAuthToken = function(signInParams, callback) {
     .then(function(newUserSession){
       result.userSession = newUserSession;
     })
+    .then(function() {
+      return DdzProfile.findOneQ({userId: result.user.userId});
+    })
+    .then(function(ddzProfile) {
+      result.user.ddzProfile = ddzProfile;
+    })
     .then(function(){
       utils.invokeCallback(callback, null, result);
     })
@@ -109,6 +115,12 @@ UserService.signInByPassword = function(signInParams, callback) {
     })
     .then(function(newUserSession){
       result.userSession = newUserSession;
+    })
+    .then(function() {
+      return DdzProfile.findOneQ({userId: result.user.userId});
+    })
+    .then(function(ddzProfile) {
+      result.user.ddzProfile = ddzProfile;
     })
     .then(function(){
       utils.invokeCallback(callback, null, result);
@@ -168,6 +180,7 @@ UserService.signUp = function(signUpParams, cb) {
     })
     .then(function(ddzProfile) {
       results.ddzProfile = ddzProfile;
+      results.user.ddzProfile = ddzProfile;
       utils.invokeCallback(cb, null, results.user);
     })
     .fail(function(error) {

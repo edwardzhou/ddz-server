@@ -4,6 +4,7 @@ var utils = require('../../../util/utils');
 var dispatcher = require('../../../util/dispatcher');
 var UserSession = require('../../../domain/userSession');
 var User = require('../../../domain/user');
+var DdzProfile = require('../../../domain/ddzProfile');
 var userDao = require('../../../dao/userDao');
 var userService = require('../../../services/userService');
 var async = require('async');
@@ -95,6 +96,12 @@ Handler.prototype.authConn = function(msg, session, next) {
       session.bind(results.user.userId);
 
       return Q.nbind(session.pushAll, session)();
+    })
+    .then(function() {
+      return DdzProfile.findOneQ({userId: results.user.userId});
+    })
+    .then(function(ddzProfile) {
+      results.user.ddzProfile = ddzProfile;
     })
     .then(function(){
       if (session.frontendId.indexOf('gate')>=0) {

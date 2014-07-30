@@ -185,7 +185,8 @@ User.jsonAttrs = {
   email: 'email',
   headIcon: 'headIcon',
   authToken: 'authToken',
-  gender: 'gender'
+  gender: 'gender',
+  ddzProfile: 'ddzProfile'
 };
 
 DomainBase.defineToParams(User, User.statics, User.methods);

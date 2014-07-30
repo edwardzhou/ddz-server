@@ -40,4 +40,11 @@ var DdzProfileSchema = mongoose.Schema({
 
 var DdzProfile = mongoose.model('DdzProfile', DdzProfileSchema);
 
+DdzProfile.jsonAttrs = {
+  coins: 'coins',
+  gameStat: 'gameStat'
+};
+
+DomainBase.defineToParams(DdzProfile, DdzProfile.statics, DdzProfile.methods);
+
 module.exports = DdzProfile;

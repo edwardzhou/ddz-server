@@ -7,6 +7,7 @@ var dispatcher = require('../../../util/dispatcher');
 var User = require('../../../domain/user');
 var Result = require('../../../domain/result');
 var UserSession = require('../../../domain/userSession');
+var DdzProfile = require('../../../domain/ddzProfile');
 var userDao = require('../../../dao/userDao');
 var ErrorCode = require('../../../consts/errorCode');
 var SignInType = require('../../../consts/consts').SignInType;
