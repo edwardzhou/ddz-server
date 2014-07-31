@@ -4,6 +4,26 @@
     "optional uInt32 subCode": 2,
     "optional string message": 3
   },
+  "message ServerInfo": {
+    "required string host": 1,
+    "optional uInt32 port": 2
+  },
+  "message DdzProfile": {
+    "message GameStat": {
+      "required uInt32 won": 1,
+      "required uInt32 lose": 2
+    },
+    "required int32 coins":1 ,
+    "optional GameStat gameStat": 2
+  },
+  "message User": {
+    "required uInt32 userId": 1,
+    "optional string nickName": 2,
+    "optional string gender": 3,
+    "optional string headIcon": 4,
+    "optional string authToken": 5,
+    "optional DdzProfile ddzProfile": 6
+  },
   "message Player": {
     "required uInt32 userId": 1,
     "optional string nickName": 2,
@@ -94,6 +114,11 @@
   },
   "onReadyTimeout": {
     "optional Result result": 1
+  },
+  "auth.connHandler.authConn": {
+    "required User user": 1,
+    "required string sessionToken": 2,
+    "optional ServerInfo server": 3
   },
   "ddz.entryHandler.queryRooms": {
     "message GameRoom": {

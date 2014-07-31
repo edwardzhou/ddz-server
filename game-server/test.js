@@ -43,6 +43,7 @@ UserId = require('./app/domain/userId');
 mongoose.connections[0].on('error', cb);
 
 User = require('./app/domain/user');
+DdzProfile = require('./app/domain/ddzProfile');
 userDao = require('./app/dao/userDao');
 UserSession = require('./app/domain/userSession');
 GameRoom = require('./app/domain/gameRoom');
@@ -62,7 +63,22 @@ newUserInfo = {
 };
 //userDao.createUser(newUserInfo, cb);
 
-UserService.signInByPassword({userId: 50206, password: 'abc123'}, cb)
+//UserService.signInByPassword({userId: 50206, password: 'abc123'}, cb)
+
+DdzProfile.findOneQ({userId: 50386}).then(function(ddzProfile) {
+  dp = ddzProfile;
+})
+  .then(function() {
+    return User.findOneQ({userId: 50386})
+  })
+  .then(function(user) {
+    u = user;
+    u.ddzProfile = dp;
+    upp = u.toParams();
+    //upp.DdzProfile = DdzProfile.toParams(dp);
+    console.log(upp);
+  });
+
 
 
 

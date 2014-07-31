@@ -3,7 +3,6 @@
  */
 
 var mongoose = require('mongoose-q')();
-var DomainBase = require('./domainBase');
 
 var DdzProfileSchema = mongoose.Schema({
   userId: Number,
@@ -38,13 +37,29 @@ var DdzProfileSchema = mongoose.Schema({
   avatar: String
 });
 
-var DdzProfile = mongoose.model('DdzProfile', DdzProfileSchema);
+var __toParams = function(model, excludeAttrs) {
+  var transObj = {
+    coins: model.coins,
+    gameStat: model.gameStat
+  };
 
-DdzProfile.jsonAttrs = {
-  coins: 'coins',
-  gameStat: 'gameStat'
+  if (!!excludeAttrs) {
+    for (var index in excludeAttrs) {
+      delete transObj[excludeAttrs[index]];
+    }
+  }
+
+  return transObj;
 };
 
-DomainBase.defineToParams(DdzProfile, DdzProfile.statics, DdzProfile.methods);
+DdzProfileSchema.statics.toParams = __toParams;
+
+DdzProfileSchema.methods.toParams = function(excludeAttrs) {
+  return __toParams(this, excludeAttrs);
+};
+
+
+var DdzProfile = mongoose.model('DdzProfile', DdzProfileSchema);
+
 
 module.exports = DdzProfile;

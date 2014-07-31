@@ -6,7 +6,7 @@
     "pomelo": "0.9.10",
     "pomelo-logger": "0.1.2",
     "mongodb": "*",
-    "mongoose": "3.8.9",
+    "mongoose": "3.8.14",
     "async": "0.2.9",
     "mess": "0.1.1",
     "js-combinatorics": "*",
@@ -17,6 +17,7 @@
     "uint32": "*",
     "q": "*",
     "mongoose-q": "*",
+    "mpath": "*",
     "crc": "0.2.0"
   }
 }

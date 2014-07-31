@@ -176,19 +176,33 @@ userSchema.methods.verifyToken = function(authToken, mac) {
   return (authToken == this.oldAuthToken);
 };
 
-var User = mongoose.model('User', userSchema);
+var __toParams = function(model, excludeAttrs) {
+  var transObj = {
+    userId: model.userId,
+    nickName: model.nickName,
+    authToken: model.authToken,
+    gender: model.gender,
+    headIcon: model.headIcon,
+    ddzProfile: model.ddzProfile.toParams(),
+    lastSignedInTime: model.lastSignedIn.signedInTime
+  };
 
-User.jsonAttrs = {
-  userId: 'userId',
-  nickName: 'nickName',
-  mobileNo: 'mobileNo',
-  email: 'email',
-  headIcon: 'headIcon',
-  authToken: 'authToken',
-  gender: 'gender',
-  ddzProfile: 'ddzProfile'
+  if (!!excludeAttrs) {
+    for (var index in excludeAttrs) {
+      delete transObj[excludeAttrs[index]];
+    }
+  }
+
+  return transObj;
 };
 
-DomainBase.defineToParams(User, User.statics, User.methods);
+userSchema.statics.toParams = __toParams;
+
+userSchema.methods.toParams = function(excludeAttrs) {
+  return __toParams(this, excludeAttrs);
+};
+
+
+var User = mongoose.model('User', userSchema);
 
 module.exports = User;

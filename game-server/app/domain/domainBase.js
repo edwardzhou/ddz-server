@@ -1,6 +1,9 @@
 var EventEmitter = require('events').EventEmitter;
 var util = require('util');
 
+var mongoose = require('mongoose');
+var mpath = require('mpath');
+
 var DomainBase = function(opts) {
   EventEmitter.call(this);
   // this._id = opts._id;
@@ -29,16 +32,26 @@ var _toParams = function(model, jsonAttrs, excludeAttrs) {
       continue;
 
     var attrName = jsonAttrs[propName];
-    var attrObj = model[propName];
-    if (propName.indexOf('.') > 0) {
-      var names = propName.split('.');
-      attrObj = this;
-      for(var index=0; index<names.length; index++) {
-        attrObj = attrObj[names[index]];
-        if (attrObj == null)
-          break;
-      }
-    }
+    var attrObj = mpath.get(propName, model);
+//    if (model instanceof mongoose.Model) {
+//      attrObj = model.get(propName);
+//    }
+//
+//    if (propName.indexOf('.') > 0) {
+//      var names = propName.split('.');
+//      attrObj = model;
+//      for(var index=0; index<names.length; index++) {
+//
+//        if (attrObj instanceof mongoose.Model) {
+//          attrObj = attrObj.get(names[index]);
+//        } else {
+//          attrObj = attrObj[names[index]];
+//        }
+//
+//        if (attrObj == null)
+//          break;
+//      }
+//    }
 
     if(attrObj instanceof Array) {
       params[attrName] = attrObj.map(function(element) {
