@@ -1,4 +1,4 @@
-var DomainBase = require('./domainBase');
+var EventEmitter = require('events').EventEmitter;
 var Player = require('./player');
 var util = require('util');
 var logger = require('pomelo-logger').getLogger('pomelo', __filename);
@@ -13,7 +13,7 @@ var PlayerState = require('../consts/consts').PlayerState;
  * @constructor
  */
 var GameTable = function (opts) {
-  //DomainBase.call(this, opts);
+  EventEmitter.call(this, opts);
   this.tableId = opts.tableId;
   this.room = opts.room;
   this.players = [];
@@ -31,13 +31,36 @@ var GameTable = function (opts) {
 };
 
 // GameTable继承于DomainBase
-//util.inherits(GameTable, DomainBase);
+util.inherits(GameTable, EventEmitter);
 // 导出GameTable
 module.exports = GameTable;
-// 设置用于toParams导出的json属性映射
-GameTable.jsonAttrs = {tableId: "tableId", players: "players"};
 
-DomainBase.defineToParams(GameTable, GameTable, GameTable.prototype);
+var __toParams = function(model, excludeAttrs) {
+  var transObj = {
+    tableId: model.tableId,
+    players: []
+  };
+
+  for (var index in model.players) {
+    transObj.push( model.players[index].toParams() );
+  }
+
+  if (!!excludeAttrs) {
+    for (var index in excludeAttrs) {
+      delete transObj[excludeAttrs[index]];
+    }
+  }
+
+  return transObj;
+};
+
+GameTable.toParams = __toParams;
+
+GameTable.prototype.toParams = function(excludeAttrs) {
+  return __toParams(this, excludeAttrs);
+};
+
+
 
 
 GameTable.prototype.getPlayerByUserId = function(userId) {

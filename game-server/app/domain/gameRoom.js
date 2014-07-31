@@ -1,6 +1,5 @@
 var mongoose = require('mongoose');
 var util = require('util');
-var DomainBase = require('./domainBase');
 var GameTable = require('./gameTable');
 
 /**
@@ -181,26 +180,51 @@ roomSchema.methods.leave = function(playerId) {
   return table;
 };
 
-var GameRoom = mongoose.model('GameRoom', roomSchema);
+var __toParams = function(model, excludeAttrs) {
 
-/**
- * 定义GameRoom的json字段对照
- * @type {{info.roomName: string, info.roomId: string}}
- */
-GameRoom.jsonAttrs = {
-  'roomId'    : 'roomId',     //
-  'roomName'  : 'roomName',   //
-  'roomDesc'  : 'roomDesc',   // 描述
-  'state'     : 'state',      // 状态, ref: RoomState
-  'ante'      : 'ante',       // 底注
-  'rake'      : 'rake',       // 佣金
-  'maxPlayers': 'maxPlayers', // 最大人数
-  'minCoinsQty': 'minCoinsQty', // 准入资格, 最小金币数, 0 代表无限制
-  'maxCoinsQty': 'maxCoinsQty', // 准入资格, 最大金币数, 0 代表无限制
-  'roomType'  : 'roomType'    // 房间类型
+//  GameRoom.jsonAttrs = {
+//    'roomId'    : 'roomId',     //
+//    'roomName'  : 'roomName',   //
+//    'roomDesc'  : 'roomDesc',   // 描述
+//    'state'     : 'state',      // 状态, ref: RoomState
+//    'ante'      : 'ante',       // 底注
+//    'rake'      : 'rake',       // 佣金
+//    'maxPlayers': 'maxPlayers', // 最大人数
+//    'minCoinsQty': 'minCoinsQty', // 准入资格, 最小金币数, 0 代表无限制
+//    'maxCoinsQty': 'maxCoinsQty', // 准入资格, 最大金币数, 0 代表无限制
+//    'roomType'  : 'roomType'    // 房间类型
+//  };
+//
+  var transObj = {
+    roomId: model.roomId,
+    roomName: model.roomName,
+    roomDesc: model.roomDesc,
+    state: model.state,
+    ante: model.ante,
+    rake: model.rake,
+    maxPlayers: model.maxPlayers,
+    minCoinsQty: model.minCoinsQty,
+    maxCoinsQty: model.maxCoinsQty,
+    roomType: model.roomType
+  };
+
+  if (!!excludeAttrs) {
+    for (var index in excludeAttrs) {
+      delete transObj[excludeAttrs[index]];
+    }
+  }
+
+  return transObj;
 };
 
-DomainBase.defineToParams(GameRoom, GameRoom.statics, GameRoom.methods);
+roomSchema.statics.toParams = __toParams;
+
+roomSchema.methods.toParams = function(excludeAttrs) {
+  return __toParams(this, excludeAttrs);
+};
+
+
+var GameRoom = mongoose.model('GameRoom', roomSchema);
 
 // 导出GameRoom
 module.exports = GameRoom;

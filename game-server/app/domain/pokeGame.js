@@ -1,6 +1,6 @@
 var GameState = require('../consts/consts').GameState;
 var PokeCard = require('./pokeCard');
-var DomainBase = require('./domainBase');
+var EventEmitter = require('events').EventEmitter;
 var mongoose = require('mongoose');
 var uuid = require('node-uuid');
 var utils = require('../util/utils');
@@ -77,6 +77,41 @@ var pokeGameSchema = new mongoose.Schema({
   updatedAt: {type: Date, default: Date.now}
 });
 
+
+var __toParams = function(model, excludeAttrs) {
+  var transObj = {
+    gameId: model.gameId,
+    roomId: model.roomId,
+    tableId: model.tableId,
+    gameRake: model.gameRake,
+    gameAnte: model.gameAnte,
+    lordValue: model.lordValue,
+    state: model.state,
+    players: [],
+    grabbingLord: model.grabbingLord
+  };
+
+  for (var index in model.players) {
+    transObj.push( model.players[index].toParams() );
+  }
+
+  if (!!excludeAttrs) {
+    for (var index in excludeAttrs) {
+      delete transObj[excludeAttrs[index]];
+    }
+  }
+
+  return transObj;
+};
+
+pokeGameSchema.statics.toParams = __toParams;
+
+pokeGameSchema.methods.toParams = function(excludeAttrs) {
+  return __toParams(this, excludeAttrs);
+};
+
+
+
 /**
  * PokeGame 模型
  * @type {*}
@@ -84,20 +119,6 @@ var pokeGameSchema = new mongoose.Schema({
 var PokeGame = mongoose.model('PokeGame', pokeGameSchema);
 
 module.exports = PokeGame;
-
-PokeGame.jsonAttrs = {
-  gameId: 'gameId',
-  roomId: 'roomId',
-  tableId: 'tableId',
-  gameRake: 'gameRake',
-  gameAnte: 'gameAnte',
-  lordValue: 'lordValue',
-  state: 'state',
-  players: 'players',
-  grabbingLord: 'grabbingLord'
-};
-
-DomainBase.defineToParams(PokeGame, PokeGame.statics, PokeGame.methods);
 
 PokeGame.newGameId = function() {
   var newId = utils.hashCode(uuid.v1(), true);

@@ -1,13 +1,13 @@
 var util = require('util');
 var utils = require('../util/utils');
-var DomainBase = require('./domainBase');
+var EventEmitter = require('events').EventEmitter;
 var PlayerState = require('../consts/consts').PlayerState;
 var PlayerRole = require('../consts/consts').PlayerRole;
 var cardUtil = require('../util/cardUtil');
 
 var Player = function(opts) {
   opts = opts || {};
-  DomainBase.call(this, opts);
+  EventEmitter.call(this, opts);
   this.pokeCards = opts.pokeCards || [];
   this.initPokeCards = this.pokeCardsString();
   this.userId = opts.userId;
@@ -22,18 +22,37 @@ var Player = function(opts) {
   this.delegating = !!opts.delegating;
 };
 
-util.inherits(Player, DomainBase);
+util.inherits(Player, EventEmitter);
 
 module.exports = Player;
-Player.jsonAttrs = {
-  userId: "userId",
-  nickName: "nickName",
-  state: "state",
-  headIcon: "headIcon",
-  pokeCount: 'pokeCount',
-  gender: 'gender',
-  role: 'role'
+
+var __toParams = function(model, excludeAttrs) {
+  var transObj = {
+    userId: model.userId,
+    nickName: model.nickName,
+    state: model.state,
+    headIcon: model.headIcon,
+    gender: model.gender,
+    pokeCount: model.pokeCount,
+    role: model.role
+  };
+
+  if (!!excludeAttrs) {
+    for (var index in excludeAttrs) {
+      delete transObj[excludeAttrs[index]];
+    }
+  }
+
+  return transObj;
 };
+
+Player.toParams = __toParams;
+
+Player.prototype.toParams = function(excludeAttrs) {
+  return __toParams(this, excludeAttrs);
+};
+
+
 
 Object.defineProperty(Player.prototype, 'playerId', {
   get: function() {return this.userId},
