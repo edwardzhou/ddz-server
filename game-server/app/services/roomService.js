@@ -31,15 +31,21 @@ exp.getRoom = function(roomId) {
   return roomsMap[roomId];
 };
 
-exp.enterRoom = function(player, roomId, lastTableId) {
+exp.enterRoom = function(player, roomId, lastTableId, cb) {
   var room = roomsMap[roomId];
 
-  var table = room.enter(player, lastTableId);
+  room.enter(player, lastTableId);
+  room.playerReady(player, function(table) {
+    utils.invokeCallback(cb, table);
+  });
+
+  //var table = room.enter(player, lastTableId);
+
   // table.setupEvents(engine);
 //  table.players.push(player);
 //  player.tableId = table.tableId;
 
-  return table;
+  //return table;
 };
 
 exp.getTable = function(roomId, tableId) {
@@ -53,7 +59,7 @@ exp.leave = function(roomId, playerId, cb) {
   var room = roomsMap[roomId];
   var player = room.getPlayer(playerId);
   var table = room.getGameTable(player.tableId);
-  if (!!table.pokeGame) {
+  if (!!table && !!table.pokeGame) {
     pomeloApp.get('cardService').gameOver(table, player, function() {
       utils.invokeCallback(cb, room.leave(playerId));
     });

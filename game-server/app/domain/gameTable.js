@@ -24,6 +24,7 @@ var GameTable = function (opts) {
       var player = opts.players[index];
       if (! (player instanceof Player) )
         player = new Player(player);
+      player.tableId = this.tableId;
       this.players.push(player);
     }
   }
@@ -42,7 +43,7 @@ var __toParams = function(model, excludeAttrs) {
   };
 
   for (var index in model.players) {
-    transObj.push( model.players[index].toParams() );
+    transObj.players.push( model.players[index].toParams() );
   }
 
   if (!!excludeAttrs) {
@@ -60,6 +61,19 @@ GameTable.prototype.toParams = function(excludeAttrs) {
   return __toParams(this, excludeAttrs);
 };
 
+GameTable.prototype.release = function() {
+  for (var index=0; index < this.players.length; index++) {
+    var player = this.players[index];
+    player.reset();
+  }
+  this.players.splice(0, this.players.length);
+
+  this.table.pokeGame = null;
+
+  if(!!this.room) {
+    this.room.releaseTable(this);
+  }
+};
 
 
 

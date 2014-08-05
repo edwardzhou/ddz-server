@@ -115,11 +115,6 @@
   "onReadyTimeout": {
     "optional Result result": 1
   },
-  "auth.connHandler.authConn": {
-    "required User user": 1,
-    "required string sessionToken": 2,
-    "optional ServerInfo server": 3
-  },
   "ddz.entryHandler.queryRooms": {
     "message GameRoom": {
       "required uInt32 roomId": 1,

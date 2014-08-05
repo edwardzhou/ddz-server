@@ -113,6 +113,9 @@ var clearNextPlayerTimeout = function (table) {
  */
 var setupNextPlayerTimeout = function (table, callback, seconds) {
   clearNextPlayerTimeout(table);
+
+  return;
+
   var pokeGame = table.pokeGame;
   var nextPlayer = pokeGame.getPlayerByUserId(pokeGame.token.nextUserId);
   var seqNo = pokeGame.token.currentSeqNo;
@@ -213,6 +216,7 @@ exp.startGame = function (table, next) {
     // 通知各玩家牌局开始
     for (var index=0; index<table.players.length; index ++) {
       var player = table.players[index];
+      player.state = PlayerState.NEW_GAME;
       var eventName = GameEvent.gameStart;
       var eventData = {
         grabLord: (player.userId == newPokeGame.grabbingLord.nextUserId ? 1 : 0),
@@ -535,9 +539,12 @@ exp.gameOver = function(table, player, cb) {
 
       pokeGame.save();
 
-      process.nextTick(function() {
-        table.pokeGame = null;
-      });
+      table.release();
+
+//      process.nextTick(function() {
+//        table.pokeGame = null;
+//        table.release();
+//      });
 
 //      setupPlayerReadyTimeout(table, table.players[0], self.playerReadyTimeout.bind(self), 35);
 //      setupPlayerReadyTimeout(table, table.players[1], self.playerReadyTimeout.bind(self), 35);

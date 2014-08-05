@@ -24,8 +24,7 @@ var GameRemote = function(app) {
 var remoteHandler = GameRemote.prototype;
 
 remoteHandler.readyGame = function(msg, cb) {
-
-  // logger.info("msg: %j", msg);
+  var self = this;
 
   var uid = msg.uid;
   var sid = msg.serverId;
@@ -33,15 +32,28 @@ remoteHandler.readyGame = function(msg, cb) {
 
   var room = roomService.getRoom(room_id);
   var player = room.getPlayer(uid);
-  var table = room.getGameTable(player.tableId);
+  room.playerReady(player, function(table) {
+    for (var index in table.players) {
+      var p = table.players[index];
+      p.userSession.sset('roomId', table.room.roomId);
+      p.userSession.sset('tableId', table.tableId);
+    }
+    var msg = table.toParams();
+    process.nextTick(function() {
+      messageService.pushTableMessage(table, "onPlayerJoin", msg, function() {
+        self.cardService.startGame(table);
+      });
+    });
+  });
+  // var table = room.getGameTable(player.tableId);
   // player.state = PlayerState.ready;
   // player.ready();
 
   // messageService.pushTableMessage(this.app, table, "onPlayerJoin", table.toParams(), null);
-  this.cardService.playerReady(table, player, function(err, data) {
-    utils.invokeCallback(cb, err, data);
-  });
-  //cb(null, {result: 0});
+//  this.cardService.playerReady(table, player, function(err, data) {
+//    utils.invokeCallback(cb, err, data);
+//  });
+  utils.invokeCallback(cb, null, {result: 0});
 };
 
 remoteHandler.grabLord = function(msg, cb) {

@@ -1,6 +1,9 @@
 var mongoose = require('mongoose');
 var util = require('util');
+var utils = require('../util/utils');
 var GameTable = require('./gameTable');
+var PlayerState = require('../consts/consts').PlayerState;
+var Player = require('./player');
 
 /**
  * 房间Mongodb架构的字段定义
@@ -62,6 +65,8 @@ roomSchema.methods.initRoom = function(opts) {
   this.tablesMap = {};
   // 房间里玩家对照表(playerId -> player), 用于速查
   this.playersMap = {};
+  // 已准备的玩家
+  this.readyPlayers = [];
   // 桌子列表
   this.tables = [];
   // 下一张新桌子的Id
@@ -103,49 +108,80 @@ roomSchema.methods.getNextTableId = function() {
  */
 roomSchema.methods.enter = function (player, lastTableId) {
   var self = this;
-  lastTableId = lastTableId || -1;
-
-  // 安排桌子
-  var table = function() {
-    // 尝试安排到二人桌
-    var tmpTables = this.tables.filter(_filter.bind(null, 2, lastTableId));
-    if (tmpTables.length > 0) {
-      return _randomSelect(tmpTables);
-    }
-
-    // 尝试安排到一人桌
-    tmpTables = this.tables.filter(_filter.bind(null, 1, lastTableId));
-    if (tmpTables.length > 0) {
-      return _randomSelect(tmpTables);
-    }
-
-    // 尝试安排到无人桌
-    tmpTables = this.tables.filter(_filter.bind(null, 0, lastTableId));
-    if (tmpTables.length > 3) {
-      return _randomSelect(tmpTables);
-    }
-
-    // 无足够空桌
-    return null;
-  }.apply(this);
-
-  // 如果没有安排到桌子，则生成一些新桌子
-  if (!table) {
-    var index = this.tables.length;
-    for(var i=0; i<10; i++) {
-      var newTable = new GameTable({tableId: this.getNextTableId(), room: this});
-      this.tables.push(newTable);
-      this.tablesMap[newTable.tableId] = newTable;
-    }
-
-    table = this.tables[index];
-  }
+//  lastTableId = lastTableId || -1;
+//
+//  // 安排桌子
+//  var table = function() {
+//    // 尝试安排到二人桌
+//    var tmpTables = this.tables.filter(_filter.bind(null, 2, lastTableId));
+//    if (tmpTables.length > 0) {
+//      return _randomSelect(tmpTables);
+//    }
+//
+//    // 尝试安排到一人桌
+//    tmpTables = this.tables.filter(_filter.bind(null, 1, lastTableId));
+//    if (tmpTables.length > 0) {
+//      return _randomSelect(tmpTables);
+//    }
+//
+//    // 尝试安排到无人桌
+//    tmpTables = this.tables.filter(_filter.bind(null, 0, lastTableId));
+//    if (tmpTables.length > 3) {
+//      return _randomSelect(tmpTables);
+//    }
+//
+//    // 无足够空桌
+//    return null;
+//  }.apply(this);
+//
+//  // 如果没有安排到桌子，则生成一些新桌子
+//  if (!table) {
+//    var index = this.tables.length;
+//    for(var i=0; i<10; i++) {
+//      var newTable = new GameTable({tableId: this.getNextTableId(), room: this});
+//      this.tables.push(newTable);
+//      this.tablesMap[newTable.tableId] = newTable;
+//    }
+//
+//    table = this.tables[index];
+//  }
 
   // 玩家加入桌子
-  player = table.addPlayer(player);
+  // player = table.addPlayer(player);
+  if (!player instanceof Player) {
+    player = new Player(player);
+  }
+
   this.playersMap[player.userId] = player;
 
-  return table;
+  return player;
+};
+
+roomSchema.methods.arrangeTable = function(players) {
+  var newTable = new GameTable({tableId: this.getNextTableId(), room: this, players: players});
+
+  return newTable;
+};
+
+roomSchema.methods.releaseTable = function(table) {
+  var index = this.tables.indexOf(table);
+  this.tables.splice(index, 1);
+  delete this.tablesMap[table.tableId];
+  table.room = null;
+};
+
+roomSchema.methods.playerReady = function(player, callback) {
+  var player = this.playersMap[player.userId];
+  player.state = PlayerState.READY;
+  this.readyPlayers.push(player);
+  while (this.readyPlayers.length > 2) {
+    var players = this.readyPlayers.splice(0, 3);
+    var table = this.arrangeTable(players);
+    this.tables.push(table);
+    this.tablesMap[table.tableId] = table;
+
+    utils.invokeCallback(callback, table);
+  }
 };
 
 /**
@@ -174,27 +210,13 @@ roomSchema.methods.getPlayer = function(playerId) {
 roomSchema.methods.leave = function(playerId) {
   var player = this.getPlayer(playerId);
   var table = this.getGameTable(player.tableId);
-  table.removePlayer(playerId);
+//  table.removePlayer(playerId);
   delete this.playersMap[playerId];
   player.tableId = -1;
   return table;
 };
 
 var __toParams = function(model, excludeAttrs) {
-
-//  GameRoom.jsonAttrs = {
-//    'roomId'    : 'roomId',     //
-//    'roomName'  : 'roomName',   //
-//    'roomDesc'  : 'roomDesc',   // 描述
-//    'state'     : 'state',      // 状态, ref: RoomState
-//    'ante'      : 'ante',       // 底注
-//    'rake'      : 'rake',       // 佣金
-//    'maxPlayers': 'maxPlayers', // 最大人数
-//    'minCoinsQty': 'minCoinsQty', // 准入资格, 最小金币数, 0 代表无限制
-//    'maxCoinsQty': 'maxCoinsQty', // 准入资格, 最大金币数, 0 代表无限制
-//    'roomType'  : 'roomType'    // 房间类型
-//  };
-//
   var transObj = {
     roomId: model.roomId,
     roomName: model.roomName,

@@ -104,17 +104,18 @@ Handler.prototype.enterRoom = function(msg, session, next) {
     }
 
     //table = new GameTable(table);
-    session.set('table_id', table.tableId);
-    session.push('table_id', null);
-    logger.info("[enterRoom] area.roomRemote.enter return: room_server_id: %s, users: %j",
-      room_server_id,
-      GameTable.toParams(table));
-    var resp = {
-      table: GameTable.toParams(table),
-      room_server_id: room_server_id,
-      server_id: server_id,
-      timing: table.timing
-    };
+//    session.set('table_id', table.tableId);
+//    session.push('table_id', null);
+//    logger.info("[enterRoom] area.roomRemote.enter return: room_server_id: %s, users: %j",
+//      room_server_id,
+//      GameTable.toParams(table));
+//    var resp = {
+//      table: GameTable.toParams(table),
+//      room_server_id: room_server_id,
+//      server_id: server_id,
+//      timing: table.timing
+//    };
+    var resp = {};
     resp.result = new Result(ErrorCode.SUCCESS);
 
 
@@ -170,14 +171,14 @@ var onUserLeave = function(app, session) {
   }
 
   var roomId = session.get('room_id');
-  var tableId = session.get('table_id');
-  if (!roomId || !tableId) {
-    return;
-  }
+//  var tableId = session.get('table_id');
+//  if (!roomId || !tableId) {
+//    return;
+//  }
 
   var msg = {
     room_id: session.get('room_id'),
-    table_id: session.get('table_id'),
+//    table_id: session.get('table_id'),
     uid: session.uid,
     sid: session.frontendId,
     self_close: session.get('self_close') || false,

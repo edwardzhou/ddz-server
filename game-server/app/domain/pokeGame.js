@@ -92,7 +92,7 @@ var __toParams = function(model, excludeAttrs) {
   };
 
   for (var index in model.players) {
-    transObj.push( model.players[index].toParams() );
+    transObj.players.push( model.players[index].toParams() );
   }
 
   if (!!excludeAttrs) {

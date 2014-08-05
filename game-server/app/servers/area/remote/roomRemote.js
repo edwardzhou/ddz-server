@@ -26,6 +26,7 @@ var RoomRemote = function(app) {
   // this.tableService = app.get('tableService');
   this.channelService = app.get('channelService');
   this.sessionService = app.get('localSessionService');
+  this.cardService = app.get('cardService');
 };
 
 var remoteHandler = RoomRemote.prototype;
@@ -53,30 +54,44 @@ remoteHandler.enter = function(uid, sid, sessionId, room_id, cb) {
       utils.invokeCallback(cb, null, thisServeId, {ret: ErrorCode.USER_NOT_FOUND});
     }
 
-    var player = user;
+    var player = new Player(user);
     player.serverId = sid;
 
     UserSession.getByUserId(player.userId, function(err, userSession) {
       player.userSession = userSession;
 
-      // 进入房间，并取得玩家所属桌子
-      var table = roomService.enterRoom(new Player(player), room_id, -1);
-      // cardServer挂接table的playerReady事件
-      //utils.on(table, "playerReady", cardService.onPlayerReady);
+//      // 进入房间，并取得玩家所属桌子
+//      var table = roomService.enterRoom(new Player(player), room_id, -1);
+//      // cardServer挂接table的playerReady事件
+//      //utils.on(table, "playerReady", cardService.onPlayerReady);
+//
+//      player.userSession.sset('roomId', table.room.roomId);
+//      player.userSession.sset('tableId', table.tableId);
+//
+//      var msg = table.toParams();
+//      msg.timing = 10;
+//
+//      // 通知桌子的其他玩家，有新玩家进入
+//      process.nextTick(function() {
+//        messageService.pushTableMessage(table, "onPlayerJoin", msg, null);
+//      });
 
-      player.userSession.sset('roomId', table.room.roomId);
-      player.userSession.sset('tableId', table.tableId);
-
-      var msg = table.toParams();
-      msg.timing = 10;
-
-      // 通知桌子的其他玩家，有新玩家进入
-      process.nextTick(function() {
-        messageService.pushTableMessage(table, "onPlayerJoin", msg, null);
+      roomService.enterRoom(player, room_id, -1, function(table) {
+        for (var index in table.players) {
+          var p = table.players[index];
+          p.userSession.sset('roomId', table.room.roomId);
+          p.userSession.sset('tableId', table.tableId);
+        }
+        var msg = table.toParams();
+        process.nextTick(function() {
+          messageService.pushTableMessage(table, "onPlayerJoin", msg, function() {
+            self.cardService.startGame(table);
+          });
+        });
       });
 
       // 返回结果
-      cb(null, thisServerId, msg);
+      cb(null, thisServerId, {});
 
     });
   });
@@ -123,6 +138,10 @@ remoteHandler.leave = function(msg, cb) {
   var room_id = msg.room_id;
 
   var room = roomService.getRoom(room_id);
+  if (!room) {
+    utils.invokeCallback(cb, null, null);
+    return;
+  }
 
   var hasGame = false;
   var player = roomService.getRoom(room_id).getPlayer(uid);
@@ -133,14 +152,14 @@ remoteHandler.leave = function(msg, cb) {
 
     var leaveFunc = function () {
       roomService.leave(room_id, uid, function (table) {
-        if (table.gameSate != GameState.PENDING_FOR_READY) {
-          table.reset();
-        }
-
-        //setTimeout(table, "")
-        process.nextTick(function () {
-          messageService.pushTableMessage(table, "onPlayerJoin", table.toParams(), null);
-        });
+//        if (table.gameSate != GameState.PENDING_FOR_READY) {
+//          table.reset();
+//        }
+//
+//        //setTimeout(table, "")
+//        process.nextTick(function () {
+//          messageService.pushTableMessage(table, "onPlayerJoin", table.toParams(), null);
+//        });
       });
     };
 

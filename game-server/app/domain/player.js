@@ -109,5 +109,10 @@ Player.prototype.reset = function() {
   this.role = PlayerRole.NONE;
   this.setPokeCards([]);
   this.plays = 0;
+  this.tableId = null;
   this.delegating = false;
+  if (!!this.userSession) {
+    this.userSession.sset('tableId', null);
+    this.userSession.sset('gameId', null);
+  }
 };
