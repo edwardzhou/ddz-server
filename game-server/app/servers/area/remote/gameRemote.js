@@ -82,8 +82,8 @@ remoteHandler.playCard = function(msg, cb) {
   var seqNo = msg.seqNo;
 
   var room = roomService.getRoom(room_id);
-  var table = room.getGameTable(table_id);
   var player = room.getPlayer(uid);
+  var table = room.getGameTable(player.tableId);
 
   this.cardService.playCard(table, player, card, seqNo, false, function(err, data) {
     utils.invokeCallback(cb, err, data);

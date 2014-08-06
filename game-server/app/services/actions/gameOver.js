@@ -217,9 +217,10 @@ GameOverAction.doGameOver = function(table, player, cb) {
   result.score.rakeValue = result.score.total - result.score.rakedTotal;
   result.score.players = pokeGame.score.players.slice(0);
 
-  table.players[0].reset();
-  table.players[1].reset();
-  table.players[2].reset();
+//
+//  table.players[0].reset();
+//  table.players[1].reset();
+//  table.players[2].reset();
 
   utils.invokeCallback(cb, null, result.score);
 };

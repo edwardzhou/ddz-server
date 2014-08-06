@@ -114,8 +114,6 @@ var clearNextPlayerTimeout = function (table) {
 var setupNextPlayerTimeout = function (table, callback, seconds) {
   clearNextPlayerTimeout(table);
 
-  return;
-
   var pokeGame = table.pokeGame;
   var nextPlayer = pokeGame.getPlayerByUserId(pokeGame.token.nextUserId);
   var seqNo = pokeGame.token.currentSeqNo;

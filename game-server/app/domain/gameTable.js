@@ -64,11 +64,12 @@ GameTable.prototype.toParams = function(excludeAttrs) {
 GameTable.prototype.release = function() {
   for (var index=0; index < this.players.length; index++) {
     var player = this.players[index];
-    player.reset();
+    if (!!player)
+      player.reset();
   }
   this.players.splice(0, this.players.length);
 
-  this.table.pokeGame = null;
+  this.pokeGame = null;
 
   if(!!this.room) {
     this.room.releaseTable(this);

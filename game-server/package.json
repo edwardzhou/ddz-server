@@ -3,8 +3,8 @@
   "version": "0.0.1",
   "private": false,
   "dependencies": {
-    "pomelo": "0.9.10",
-    "pomelo-logger": "0.1.2",
+    "pomelo": "1.0.3",
+    "pomelo-logger": "*",
     "mongodb": "*",
     "mongoose": "3.8.14",
     "async": "0.2.9",
