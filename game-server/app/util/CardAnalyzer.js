@@ -84,7 +84,7 @@ CardInfo.create = function(pokecards) {
   cardInfo.threes = CardInfo.getThrees(pokeGroups);
   cardInfo.pairs = CardInfo.getPairs(pokeGroups);
   cardInfo.singles = CardInfo.getSingles(pokeGroups);
-  cardInfo.rockets = CardInfo.getRocket(pokeGroups);
+  cardInfo.rockets = CardInfo.getRockets(pokeGroups);
 };
 
 CardInfo.getBombs = function (pokeGroups) {
@@ -145,7 +145,7 @@ CardInfo.getSingles = function (pokeGroups) {
   return singles;
 };
 
-CardInfo.getRocketInfos = function (pokeGroups) {
+CardInfo.getRockets = function (pokeGroups) {
   var rockets = [];
   var count = pokeGroups.length;
 
