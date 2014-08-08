@@ -4,7 +4,7 @@ var CardUtil = require('../util/cardUtil');
 var PokeCard = require('./pokeCard');
 
 var Card = function(pokeCards) {
-  this.pokeCards = pokeCards;
+  this.pokeCards = pokeCards.slice(0);
 
   var tmpCardType = CardUtil.getCardType(pokeCards);
   if (tmpCardType == null || tmpCardType.cardType == CardType.NONE) {
@@ -13,7 +13,11 @@ var Card = function(pokeCards) {
     this.cardLength = 0;
   } else {
     this.cardType = tmpCardType.cardType;
-    this.maxPokeValue = tmpCardType.maxPokeValue;
+    //this.maxPokeValue = tmpCardType.maxPokeValue;
+    if (pokeCards.length > 0) {
+      this.maxPokeValue = pokeCards[pokeCards.length - 1].value;
+      this.minPokeValue = pokeCards[0].value;
+    }
     this.cardLength = tmpCardType.cardLength;
   }
 

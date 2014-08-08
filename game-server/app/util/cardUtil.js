@@ -1,7 +1,10 @@
 var CardType = require('../consts/consts').CardType;
+var PokeCardValue = require('../consts/consts').PokeCardValue;
 var Combinatorics = require('js-combinatorics').Combinatorics;
+var fs = require('fs');
+var path = require('path');
 
-var cardUtil = module.exports;
+var cardUtil = {};
 
 var _allCardTypes = {};
 
@@ -29,7 +32,11 @@ cardUtil.pokeCardsToString = function(pokeCards) {
 
 cardUtil.pokeCardsToIdChars = function(pokeCards) {
   return pokeCards.map(_pokeCardFieldValue('idChar')).join('');
-}
+};
+
+cardUtil.pokeCardsToValueString = function(pokeCards) {
+  return pokeCards.map(_pokeCardFieldValue('valueChar')).join("");
+};
 
 cardUtil.getCardType = function (pokeCards) {
   var pokeCardIdChars = cardUtil.pokeCardsToIdChars(cardUtil.sortPokeCards(pokeCards));
@@ -78,6 +85,24 @@ cardUtil.compare = function(cardA, cardB) {
 
   // 比较最大牌值
   return (cardA.maxPokeValue > cardB.maxPokeValue);
+};
+
+cardUtil.isStraight = function(pokecards, dontSort) {
+  dontSort = !!dontSort;
+  if (!dontSort) {
+    pokecards = pokecards.slice(0).sort(function(a,b){return a.pokeIndex - b.pokeIndex;});
+  }
+
+  var result = true;
+  for (var index=0; index<pokecards.length-1; index++) {
+    if (pokecards[index].value + 1 != pokecards[index+1].value
+        || pokecards[index + 1].value > PokeCardValue.ACE) {
+      result = false;
+      break;
+    }
+  }
+
+  return result;
 };
 
 cardUtil.buildCardTypes = function() {
@@ -413,4 +438,18 @@ cardUtil.buildCardTypes = function() {
 
 };
 
-cardUtil.allCardTypes = _allCardTypes;
+var typesFile =  path.join( path.dirname(__filename) + '/../../data/allCardTypes.json');
+console.log('typesFile => ' , typesFile, fs.existsSync(typesFile));
+if (fs.existsSync(typesFile)) {
+  _allCardTypes = require(typesFile);
+  console.log('loaded all card types from [' + typesFile + ']');
+} else {
+  cardUtil.buildCardTypes();
+  console.log('cardUtil.buildCardTypes');
+}
+
+//cardUtil.allCardTypes = _allCardTypes;
+
+module.exports = cardUtil;
+
+console.log('cardUtil loaded');

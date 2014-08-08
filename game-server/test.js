@@ -48,6 +48,7 @@ userDao = require('./app/dao/userDao');
 UserSession = require('./app/domain/userSession');
 GameRoom = require('./app/domain/gameRoom');
 UserService = require('./app/services/userService');
+cardUtil = require('./app/util/cardUtil');
 
 zlib = require('zlib');
 fs = require('fs');
@@ -64,22 +65,53 @@ newUserInfo = {
 //userDao.createUser(newUserInfo, cb);
 
 //UserService.signInByPassword({userId: 50206, password: 'abc123'}, cb)
+CardInfo = require('./app/util/CardAnalyzer').CardInfo;
+PokeCard = require('./app/domain/pokeCard');
+CardAnalyzer = require('./app/util/CardAnalyzer').CardAnalyzer;
+var pokes = PokeCard.shuffle().slice(0, 17);
+//pokes = PokeCard.pokeCardsFromChars('BEGHIKQRSX^chmpuv');
+ci = CardInfo.create(pokes);
 
-DdzProfile.findOneQ({userId: 50386}).then(function(ddzProfile) {
-  dp = ddzProfile;
-})
-  .then(function() {
-    return User.findOneQ({userId: 50386})
-  })
-  .then(function(user) {
-    u = user;
-    u.ddzProfile = dp;
-    upp = u.toParams();
-    //upp.DdzProfile = DdzProfile.toParams(dp);
-    console.log(upp);
-  });
+ci.dump();
+
+pokes = CardInfo.pokeCardsFromGroups(ci.groups, 0, 5);
+console.log('first 5 pokes is ' + cardUtil.pokeCardsToValueString(pokes) + '\n');
+
+straights = CardInfo.findPossibleStraights(ci.groups);
+console.log('straights => ', straights.length);
+
+for(var index=0; index<straights.length; index++) {
+  console.log('\t' + cardUtil.pokeCardsToValueString(straights[index]) );
+}
+
+cardResult = CardAnalyzer.analyze(ci);
+
+cardResult.dump();
+
+testcases = [
+  'BCFGIKOPWZ\\_cfitv'
+  , 'EJKMRTUVW[cdeijkt'
+  , 'GJMRUXZ[^`cejmprs' // 4567889900JQKAA22
+  , 'EGJLOPQSU[]bcdfqr' // 44556677890JJJQ22
+  , 'EKTUWXY[]belnopqt' // 457888990JQKAAA22
+  , 'BDGKPSTXYZ[_ghijs' // 334567789990QQKK2
+];
 
 
+//pokes = PokeCard.getByIds('a03, b04, a05, c06,a07');
+//console.log(cardUtil.pokeCardsToValueString(pokes) + ' is straight ? ' + cardUtil.isStraight(pokes));
+//pokes = PokeCard.getByIds('a03, b04, a05, c06,a08');
+//console.log(cardUtil.pokeCardsToValueString(pokes) + ' is straight ? ' + cardUtil.isStraight(pokes));
+//pokes = PokeCard.getByIds('a03, b04, a05');
+//console.log(cardUtil.pokeCardsToValueString(pokes) + ' is straight ? ' + cardUtil.isStraight(pokes));
+//pokes = PokeCard.getByIds('a03, b04');
+//console.log(cardUtil.pokeCardsToValueString(pokes) + ' is straight ? ' + cardUtil.isStraight(pokes));
+//pokes = PokeCard.getByIds('a01, b13, b12');
+//console.log(cardUtil.pokeCardsToValueString(pokes) + ' is straight ? ' + cardUtil.isStraight(pokes));
+//pokes = PokeCard.getByIds('a01, b02');
+//console.log(cardUtil.pokeCardsToValueString(pokes) + ' is straight ? ' + cardUtil.isStraight(pokes));
+////cardUtil.isStraight()
+//
 
 
 //

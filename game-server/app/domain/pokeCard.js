@@ -98,6 +98,19 @@ PokeCard.shuffle = function() {
   return mess( mess(tmpPokeCards) );
 };
 
+PokeCard.getByIds = function(ids) {
+  if (typeof ids == 'string') {
+    ids = ids.split(',');
+  }
+
+  var pokes = [];
+  for (var index=0; index<ids.length; index++) {
+    pokes.push(allPokeCardsMap[ids[index].trim()]);
+  }
+
+  return pokes;
+};
+
 PokeCard.getByChar = function(pokeChar) {
   return allPokeCardsCharMap[pokeChar];
 };
