@@ -65,6 +65,35 @@ PokeGroup.prototype.push = function(poke) {
   return this;
 };
 
+PokeGroup.prototype.shift = function() {
+  if (this.pokeCards.length <= 0) {
+    return null;
+  }
+
+  var poke = this.pokeCards.shift();
+  this.pokeCount --;
+  if (this.pokeCount <=0) {
+    this.pokeValue = 0; // None
+  }
+
+  return poke;
+};
+
+PokeGroup.prototype.remove = function(poke) {
+  var index = this.pokeCards.indexOf(poke);
+  if (index >=0) {
+    this.pokeCards.splice(index, 1);
+    this.pokeCount = this.pokeCards.length;
+    if (this.pokeCount <=0) {
+      this.pokeValue = 0;
+      this.pokeValueChar = '';
+    }
+    return poke;
+  }
+
+  return null;
+};
+
 PokeGroup.prototype.clone = function() {
   return new PokeGroup(this.pokeCards);
 };
@@ -114,6 +143,7 @@ PokeGroupArray.prototype.findIndex = function(pokeGroup) {
   return -1;
 };
 
+
 PokeGroupArray.prototype.findIndexByPokeValue = function(pokeValue) {
   for (var index=0; index< this.data.length; index++) {
     if (this.data[index].pokeValue == pokeValue)
@@ -149,10 +179,23 @@ PokeGroupArray.prototype.clone = function() {
   return newGroupArray;
 };
 
+PokeGroupArray.prototype.getPokecards = function() {
+  var pokecards = [];
+  for (var groupIndex=0; groupIndex<this.data.length; groupIndex++){
+    for (var pokeIndex=0; pokeIndex<this.data[groupIndex].pokeCards.length; pokeIndex++) {
+      pokecards.push(this.get(groupIndex).get(pokeIndex));
+    }
+  }
+
+  return pokecards;
+};
+
 PokeGroupArray.prototype.removeGroups = function(groups) {
   var removedGroups = [];
   for (var index=0; index<groups.length; index++) {
-    var g = this.remove(groups.get(index));
+    var g = groups.get(index);
+    var groupIndex = this.findIndex(g);
+    this.data.splice(groupIndex, 1);
     if (!!g)
       removedGroups.push(g);
   }
@@ -160,6 +203,26 @@ PokeGroupArray.prototype.removeGroups = function(groups) {
   return removedGroups;
 };
 
+PokeGroupArray.prototype.removePokeCard = function(poke) {
+  var index = this.findIndexByPokeValue(poke.value);
+  if (index<0) {
+    return null;
+  }
+
+  var group = this.data[index];
+  group.remove(poke);
+  if (group.pokeCount ==0 ) {
+    this.data.splice(index, 1);
+  }
+  return group;
+};
+
+
+PokeGroupArray.prototype.removePokeCards = function(pokes) {
+  for (var index=0; index<pokes.length; index++) {
+    this.removePokeCard(pokes[index]);
+  }
+};
 
 
 var CardInfo = function() {
@@ -331,7 +394,8 @@ CardResult.prototype.dump = function() {
   console.log('三顺: ' + cardsToString(this.threesStraightsCards));
   console.log('双顺: ' + cardsToString(this.pairsStraightsCards));
   console.log('对子: ' + cardsToString(this.pairsCards));
-  console.log('单牌: ' );
+  console.log('单顺: ' + cardsToString(this.straightsCards));
+  console.log('单牌: ' + cardsToString(this.singlesCards) );
 
 };
 
@@ -352,13 +416,17 @@ CardInfo.pokeCardsFromGroups = function(groups, startIndex, count) {
   return pokes;
 };
 
-CardInfo.findPossibleStraights = function(groups, minLen) {
+CardInfo.findPossibleStraights = function(groups, minLen, maxLen) {
   var straights = [];
   var count = groups.length;
 
   minLen = minLen || 5;
+  maxLen = maxLen || 20;
 
   var index = 0;
+
+  if (count < minLen)
+    return straights;
 
   // 取前5张牌
   var pokes = CardInfo.pokeCardsFromGroups(groups, 0, minLen);
@@ -371,6 +439,12 @@ CardInfo.findPossibleStraights = function(groups, minLen) {
     if (result) {
       if (pokes.length == minLen) {
         straights.push(pokes);
+      }
+
+      if (pokes.length == maxLen) {
+        pokes = CardInfo.pokeCardsFromGroups(groups, index, minLen );
+        index = index + minLen;
+        continue;
       }
 
       if (index < count) {
@@ -414,7 +488,18 @@ CardAnalyzer.analyze = function(cardInfo) {
   cardInfo.workingGroups.removeGroups(cardInfo.rockets);
 
   CardAnalyzer.processThreesStraights(cardInfo.threes, cardResult);
-  CardAnalyzer.processPairsStraights(cardInfo.pairs, cardResult);
+  cardInfo.workingGroups.removeGroups(cardInfo.threes);
+
+  var removedPairsGroups = CardAnalyzer.processPairsStraights(cardInfo.pairs, cardResult);
+  cardInfo.workingGroups.removeGroups(removedPairsGroups);
+
+  var tmpWorkingGroups = CardAnalyzer.processStraights(cardInfo, cardResult);
+
+  var remaingPokecards = tmpWorkingGroups.getPokecards();
+  var remaingCardInfo = CardInfo.create(remaingPokecards);
+
+
+  cardResult.singlesCards = groupsToCards(remaingCardInfo.singles);
 
   return cardResult;
 };
@@ -445,8 +530,105 @@ CardAnalyzer.processThreesStraights = function(threesGroups, cardResult) {
   cardResult.threesCards = groupsToCards(tmpThrees);
 };
 
+CardAnalyzer.processStraights = function(cardInfo, cardResult) {
+//  var straights = [];
+//  cardResult.singlesStraights = straights;
+  if (cardInfo.possibleStraights.length == 0 || cardInfo.workingGroups.length < 5) {
+    return;
+  }
+
+  var tmpGroups = cardInfo.workingGroups.clone();
+
+  var straights = [];
+  var count = tmpGroups.length;
+
+  var minLen = 5;
+
+  var index = 0;
+
+  // 取前5张牌
+  var pokes = CardInfo.pokeCardsFromGroups(tmpGroups, index, minLen);
+  //index = minLen;
+
+  var done = false;
+
+  while (!done) {
+    var result = cardUtil.isStraight(pokes, true);
+    if (result) {
+      tmpGroups.removePokeCards(pokes);
+      straights.push(pokes);
+      pokes = CardInfo.pokeCardsFromGroups(tmpGroups, index, minLen);
+    } else {
+      pokes.shift();
+      if (index < tmpGroups.length) {
+        pokes.push(tmpGroups.get(index).get(0));
+      }
+      index++;
+    }
+
+    done = index >= (tmpGroups.length - minLen);
+  }
+
+  for (var index=0; index<straights.length; index++) {
+    var tmpIndex=0;
+    var straight = straights[index];
+    while (tmpIndex<tmpGroups.length) {
+      var group = tmpGroups.get(tmpIndex);
+      var poke = group.get(0);
+      straight.push(poke);
+      if (cardUtil.isStraight(straight, true)) {
+        var g = tmpGroups.removePokeCard(poke);
+        if (g.pokeCount>0)
+          tmpIndex ++;
+      } else {
+        straight.pop();
+        // break;
+        tmpIndex ++;
+      }
+    }
+  }
+
+  cardResult.straightsCards = [];
+  for (var index=0; index<straights.length; index++) {
+    cardResult.straightsCards.push(new Card(straights[index]));
+  }
+
+  console.log('[CardAnalyzer.processStraights] remaining pokes: ' , groupsToString(tmpGroups));
+
+  if (tmpGroups.length>=4) {
+    var psIndex=0;
+    while (psIndex < tmpGroups.length-4) {
+      var pokecards = CardInfo.pokeCardsFromGroups(tmpGroups, psIndex, 4);
+
+      if ( pokecards[0].value + 1 == pokecards[1].value
+        && pokecards[0].value + 2 == pokecards[2].value
+        && pokecards[0].value + 3 == pokecards[3].value
+        && pokecards[3].value < PokeCardValue.TWO ) {
+        for (var cardIndex=0; cardIndex<cardResult.threesCards.length; cardIndex++) {
+          // .....
+        }
+      }
+
+      psIndex++;
+    }
+  }
+
+  var possibleStraights = CardInfo.findPossibleStraights(tmpGroups,2);
+  var psIndex = 0;
+  while (psIndex < possibleStraights.length) {
+    var st = possibleStraights[psIndex];
+    if
+  }
+
+
+  return tmpGroups;
+
+};
+
 CardAnalyzer.processPairsStraights = function(pairsGroups, cardResult) {
   var tmpPairsGroup = pairsGroups.clone();
+
+  var removedGroups = new PokeGroupArray();
 
   var pairsStraightsCards = [];
 
@@ -459,6 +641,7 @@ CardAnalyzer.processPairsStraights = function(pairsGroups, cardResult) {
       for (var pi=0; pi<pokeCards.length; pi++) {
         var group = tmpPairsGroup.getGroupByPokeValue(pokeCards[pi].value);
         tmpPairsGroup.remove(group);
+        removedGroups.push(group);
         pokes.append(group.pokeCards);
       }
 
@@ -469,6 +652,8 @@ CardAnalyzer.processPairsStraights = function(pairsGroups, cardResult) {
   cardResult.pairsStraightsCards = pairsStraightsCards;
 
   cardResult.pairsCards = groupsToCards(tmpPairsGroup);
+
+  return removedGroups;
 };
 
 

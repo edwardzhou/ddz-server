@@ -69,7 +69,7 @@ CardInfo = require('./app/util/CardAnalyzer').CardInfo;
 PokeCard = require('./app/domain/pokeCard');
 CardAnalyzer = require('./app/util/CardAnalyzer').CardAnalyzer;
 var pokes = PokeCard.shuffle().slice(0, 17);
-//pokes = PokeCard.pokeCardsFromChars('BEGHIKQRSX^chmpuv');
+pokes = PokeCard.pokeCardsFromChars('EGJLOPQSU[]bcdfqr');
 ci = CardInfo.create(pokes);
 
 ci.dump();
@@ -78,7 +78,15 @@ pokes = CardInfo.pokeCardsFromGroups(ci.groups, 0, 5);
 console.log('first 5 pokes is ' + cardUtil.pokeCardsToValueString(pokes) + '\n');
 
 straights = CardInfo.findPossibleStraights(ci.groups);
-console.log('straights => ', straights.length);
+console.log('possible straights => ', straights.length);
+
+for(var index=0; index<straights.length; index++) {
+  console.log('\t' + cardUtil.pokeCardsToValueString(straights[index]) );
+}
+
+
+straights = CardInfo.findPossibleStraights(ci.groups, 5, 5);
+console.log('5 straights => ', straights.length);
 
 for(var index=0; index<straights.length; index++) {
   console.log('\t' + cardUtil.pokeCardsToValueString(straights[index]) );
@@ -91,11 +99,20 @@ cardResult.dump();
 testcases = [
   'BCFGIKOPWZ\\_cfitv'
   , 'EJKMRTUVW[cdeijkt'
-  , 'GJMRUXZ[^`cejmprs' // 4567889900JQKAA22
-  , 'EGJLOPQSU[]bcdfqr' // 44556677890JJJQ22
-  , 'EKTUWXY[]belnopqt' // 457888990JQKAAA22
-  , 'BDGKPSTXYZ[_ghijs' // 334567789990QQKK2
+  , 'GJMRUXZ[^`cejmprs'  // 4567889900JQKAA22
+  , 'EGJLOPQSU[]bcdfqr'  // 44556677890JJJQ22
+  , 'EKTUWXY[]belnopqt'  // 457888990JQKAAA22
+  , 'BDGKPSTXYZ[_ghijs'  // 334567789990QQKK2
+  , 'CFJKOQU[\\^_acdhnt' // 34556789900JJJQA2
 ];
+
+//for (var index=0; index<testcases.length; index++) {
+//  console.log('\n\n');
+//  var cardInfo = CardInfo.create( PokeCard.pokeCardsFromChars(testcases[index]));
+//  var cardResult = CardAnalyzer.analyze(cardInfo);
+//  cardInfo.dump();
+//  cardResult.dump();
+//}
 
 
 //pokes = PokeCard.getByIds('a03, b04, a05, c06,a07');

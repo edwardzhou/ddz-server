@@ -10,14 +10,16 @@ var Card = function(pokeCards) {
   if (tmpCardType == null || tmpCardType.cardType == CardType.NONE) {
     this.cardType = CardType.NONE;
     this.maxPokeValue = 0;
+    this.minPokeValue = 0;
     this.cardLength = 0;
   } else {
     this.cardType = tmpCardType.cardType;
-    //this.maxPokeValue = tmpCardType.maxPokeValue;
-    if (pokeCards.length > 0) {
-      this.maxPokeValue = pokeCards[pokeCards.length - 1].value;
-      this.minPokeValue = pokeCards[0].value;
-    }
+    this.maxPokeValue = tmpCardType.maxPokeValue;
+    this.minPokeValue = pokeCards[0].value;
+//    if (pokeCards.length > 0) {
+//      this.maxPokeValue = pokeCards[pokeCards.length - 1].value;
+//      this.minPokeValue = pokeCards[0].value;
+//    }
     this.cardLength = tmpCardType.cardLength;
   }
 
@@ -56,7 +58,7 @@ Card.prototype.toString = function() {
     + ", cardLen: " + this.cardLength
     + ", pokeLen: " + this.pokeCards.length
     + ", maxVal: " + this.maxPokeValue
-//    + ", minVal: " + this.minPokeValue
+    + ", minVal: " + this.minPokeValue
     + " ]";
 };
 
