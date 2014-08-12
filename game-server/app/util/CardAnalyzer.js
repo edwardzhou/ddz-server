@@ -25,6 +25,10 @@ Array.prototype.append = function(otherArray) {
   return this;
 };
 
+Array.prototype.preappend = function(otherArray) {
+  Array.prototype.splice.apply(this, [0,0].concat(otherArray));
+};
+
 var copyGroups = function(srcGroups, dstGroups) {
   for (var index=0; index<srcGroups.length; index++) {
     dstGroups.push(srcGroups[index].slice(0));
@@ -42,6 +46,10 @@ var groupsToString = function( groups ) {
 };
 
 var cardsToString = function( cards ) {
+
+  if (cards == null)
+    return "";
+
   return cards.map( function(card) {
     return card.pokeCards.map(function(p) { return p.valueChar; }).join('');
   }).join(", ");
@@ -113,6 +121,11 @@ Object.defineProperty(PokeGroup.prototype, 'length', {
 
 var PokeGroupArray = function() {
   this.data = [];
+};
+
+PokeGroupArray.prototype.sort = function() {
+  this.data.sort(function(a,b) { return a.get(0).value - b.get(0).value; });
+  return this;
 };
 
 PokeGroupArray.prototype.add = function(pokeGroup) {
@@ -384,10 +397,41 @@ CardInfo.prototype.dump = function() {
 };
 
 var CardResult = function() {
+  this.name = "no name";
+  this.singlesCards = [];
+  this.pairsCards = [];
+  this.threesCards = [];
+  this.bombsCards = [];
+  this.rocketsCards = [];
+  this.pairsStraightsCards = [];
+  this.threesStraightsCards = [];
+  this.straightsCards = [];
 
+  this.hands = 0;
+  this.totalWeight = 0;
+  this.cardInfo = null;
+};
+
+CardResult.prototype.calculate = function() {
+  this.hands += this.bombsCards.length;
+  this.hands += this.rocketsCards.length;
+  this.hands += this.straightsCards.length;
+  this.hands += this.pairsStraightsCards.length;
+  this.hands += this.threesStraightsCards.length;
+  this.hands += this.threesCards.length;
+  this.hands += this.singlesCards.length;
+  var allThreesCount = this.threesCards.length + this.threesStraightsCards.length;
+  var allSinglePairCount = this.singlesCards.length + this.pairsCards.length;
+  if ( allThreesCount > 0 && allThreesCount < allSinglePairCount) {
+    this.hands -= allThreesCount;
+  } else if (allThreesCount > 0 && allThreesCount>allSinglePairCount) {
+    this.hands -= allSinglePairCount;
+  }
 };
 
 CardResult.prototype.dump = function() {
+  console.log('========================================');
+  console.log('方案: ' + this.name + ',  手数: ' + this.hands);
   console.log('火箭: ' + cardsToString(this.rocketsCards));
   console.log('炸弹: ' + cardsToString(this.bombsCards));
   console.log('三张: ' + cardsToString(this.threesCards));
@@ -396,6 +440,7 @@ CardResult.prototype.dump = function() {
   console.log('对子: ' + cardsToString(this.pairsCards));
   console.log('单顺: ' + cardsToString(this.straightsCards));
   console.log('单牌: ' + cardsToString(this.singlesCards) );
+  console.log('========================================');
 
 };
 
@@ -479,6 +524,17 @@ var groupsToCards = function(groups) {
 };
 
 CardAnalyzer.analyze = function(cardInfo) {
+  var plans = [];
+
+  plans.push(CardAnalyzer.analyzePlanA(cardInfo));
+  plans.push(CardAnalyzer.analyzePlanB(cardInfo));
+  plans.push(CardAnalyzer.analyzePlanC(cardInfo));
+
+  return plans;
+
+};
+
+CardAnalyzer.analyzePlanA = function(cardInfo) {
   cardInfo.workingGroups = cardInfo.groups.clone();
 
   var cardResult = new CardResult();
@@ -500,9 +556,75 @@ CardAnalyzer.analyze = function(cardInfo) {
 
 
   cardResult.singlesCards = groupsToCards(remaingCardInfo.singles);
+  cardResult.pairsCards.append(groupsToCards(remaingCardInfo.pairs));
+  cardResult.calculate();
 
   return cardResult;
 };
+
+CardAnalyzer.analyzePlanB = function(cardInfo) {
+  cardInfo.workingGroups = cardInfo.groups.clone();
+
+  var cardResult = new CardResult();
+  cardResult.bombsCards = groupsToCards(cardInfo.bombs);
+  cardInfo.workingGroups.removeGroups(cardInfo.bombs);
+  cardResult.rocketsCards = groupsToCards(cardInfo.rockets);
+  cardInfo.workingGroups.removeGroups(cardInfo.rockets);
+
+  CardAnalyzer.processThreesStraights(cardInfo.threes, cardResult);
+  cardInfo.workingGroups.removeGroups(cardInfo.threes);
+
+//  var removedPairsGroups = CardAnalyzer.processPairsStraights(cardInfo.pairs, cardResult);
+//  cardInfo.workingGroups.removeGroups(removedPairsGroups);
+
+  var tmpWorkingGroups = CardAnalyzer.processStraights(cardInfo, cardResult);
+
+  var remaingPokecards = tmpWorkingGroups.getPokecards();
+  var remaingCardInfo = CardInfo.create(remaingPokecards);
+
+
+  cardResult.singlesCards = groupsToCards(remaingCardInfo.singles);
+  var removedPairsGroups = CardAnalyzer.processPairsStraights(remaingCardInfo.pairs, cardResult);
+  remaingCardInfo.pairs.removeGroups(removedPairsGroups);
+  cardResult.pairsCards.append(groupsToCards(remaingCardInfo.pairs));
+  cardResult.calculate();
+
+  return cardResult;
+};
+
+
+CardAnalyzer.analyzePlanC = function(cardInfo) {
+  cardInfo.workingGroups = cardInfo.groups.clone();
+
+  var cardResult = new CardResult();
+  cardResult.bombsCards = groupsToCards(cardInfo.bombs);
+  cardInfo.workingGroups.removeGroups(cardInfo.bombs);
+  cardResult.rocketsCards = groupsToCards(cardInfo.rockets);
+  cardInfo.workingGroups.removeGroups(cardInfo.rockets);
+
+//  CardAnalyzer.processThreesStraights(cardInfo.threes, cardResult);
+//  cardInfo.workingGroups.removeGroups(cardInfo.threes);
+
+//  var removedPairsGroups = CardAnalyzer.processPairsStraights(cardInfo.pairs, cardResult);
+//  cardInfo.workingGroups.removeGroups(removedPairsGroups);
+
+  var tmpWorkingGroups = CardAnalyzer.processStraights(cardInfo, cardResult);
+
+  var remaingPokecards = tmpWorkingGroups.getPokecards();
+  var remaingCardInfo = CardInfo.create(remaingPokecards);
+
+
+  cardResult.singlesCards = groupsToCards(remaingCardInfo.singles);
+  var removedPairsGroups = CardAnalyzer.processPairsStraights(remaingCardInfo.pairs, cardResult);
+  remaingCardInfo.pairs.removeGroups(removedPairsGroups);
+  cardResult.pairsCards.append(groupsToCards(remaingCardInfo.pairs));
+  CardAnalyzer.processThreesStraights(remaingCardInfo.threes, cardResult);
+  //cardInfo.workingGroups.removeGroups(remaingCardInfo.threes);
+  cardResult.calculate();
+  return cardResult;
+};
+
+
 
 CardAnalyzer.processThreesStraights = function(threesGroups, cardResult) {
   var tmpThrees = threesGroups.clone();
@@ -533,93 +655,275 @@ CardAnalyzer.processThreesStraights = function(threesGroups, cardResult) {
 CardAnalyzer.processStraights = function(cardInfo, cardResult) {
 //  var straights = [];
 //  cardResult.singlesStraights = straights;
+  var tmpGroups = cardInfo.workingGroups.clone();
   if (cardInfo.possibleStraights.length == 0 || cardInfo.workingGroups.length < 5) {
-    return;
+    return tmpGroups;
   }
 
-  var tmpGroups = cardInfo.workingGroups.clone();
 
   var straights = [];
   var count = tmpGroups.length;
 
   var minLen = 5;
 
-  var index = 0;
 
-  // 取前5张牌
-  var pokes = CardInfo.pokeCardsFromGroups(tmpGroups, index, minLen);
-  //index = minLen;
+  var buildStraights = function() {
+    var index = 0;
+    // 取前5张牌
+    var pokes = CardInfo.pokeCardsFromGroups(tmpGroups, index, minLen);
+    index = minLen;
 
-  var done = false;
+    var done = false;
 
-  while (!done) {
-    var result = cardUtil.isStraight(pokes, true);
-    if (result) {
-      tmpGroups.removePokeCards(pokes);
-      straights.push(pokes);
-      pokes = CardInfo.pokeCardsFromGroups(tmpGroups, index, minLen);
-    } else {
-      pokes.shift();
-      if (index < tmpGroups.length) {
-        pokes.push(tmpGroups.get(index).get(0));
+    while (!done) {
+      var dumpStringg = cardUtil.pokeCardsToValueString(pokes);
+      var result = cardUtil.isStraight(pokes, true);
+      if (result) {
+        tmpGroups.removePokeCards(pokes);
+        straights.push(pokes);
+        index = 0;
+        pokes = CardInfo.pokeCardsFromGroups(tmpGroups, index, minLen);
+      } else {
+        pokes.shift();
+        if (index < tmpGroups.length) {
+          pokes.push(tmpGroups.get(index).get(0));
+        }
+        index++;
       }
-      index++;
+
+      done = index >= (tmpGroups.length);
     }
+  };
 
-    done = index >= (tmpGroups.length - minLen);
-  }
-
-  for (var index=0; index<straights.length; index++) {
-    var tmpIndex=0;
-    var straight = straights[index];
-    while (tmpIndex<tmpGroups.length) {
-      var group = tmpGroups.get(tmpIndex);
-      var poke = group.get(0);
-      straight.push(poke);
-      if (cardUtil.isStraight(straight, true)) {
+  var extendStraights = function() {
+    for (var index=0; index<straights.length; index++) {
+      var tmpIndex=0;
+      var straight = straights[index];
+      while (tmpIndex<tmpGroups.length) {
+        var group = tmpGroups.get(tmpIndex);
+        var poke = group.get(0);
+        if (straight[0].value -1 == poke.value) {
+          straight.unshift(poke);
+        } else if (straight[straight.length-1].value + 1 == poke.value && poke.value < PokeCardValue.TWO) {
+          straight.push(poke);
+        } else {
+          tmpIndex++;
+          continue;
+        }
         var g = tmpGroups.removePokeCard(poke);
         if (g.pokeCount>0)
           tmpIndex ++;
-      } else {
-        straight.pop();
-        // break;
-        tmpIndex ++;
       }
     }
+
+  };
+
+  var findCardIndexByPokeValue = function(cards, pokeValue) {
+    if (cards == null)
+      return -1;
+
+    for (var index=0; index<cards.length; index++) {
+      if (cards[index].maxPokeValue == pokeValue
+        || cards[index].minPokeValue == pokeValue)
+        return index;
+    }
+
+    return -1;
+  };
+
+  var findStraightIndexByPokeValue = function(straights, pokeValue) {
+    if (straights == null)
+      return -1;
+
+    for (var index=0; index<straights.length; index++) {
+      var straight = straights[index];
+      if (straight[0].value == pokeValue
+        || straight[straight.length-1].value == pokeValue)
+        return index;
+    }
+
+    return -1;
+  };
+
+
+  buildStraights();
+  //extendStraights();
+
+  console.log('[CardAnalyzer.processStraights] remaining pokes: ' , groupsToString(tmpGroups));
+
+  if (tmpGroups.length - cardInfo.threes.length > 2) {
+    if (tmpGroups.length >= 4) {
+      var psIndex = 0;
+      while (psIndex < tmpGroups.length - 4) {
+        var pokecards = CardInfo.pokeCardsFromGroups(tmpGroups, psIndex, 4);
+
+        if (pokecards[0].value + 1 == pokecards[1].value
+          && pokecards[0].value + 2 == pokecards[2].value
+          && pokecards[0].value + 3 == pokecards[3].value
+          && pokecards[3].value < PokeCardValue.TWO) {
+          var index = findCardIndexByPokeValue(cardResult.threesCards, pokecards[0].value - 1);
+          if (index < 0) {
+            index = findCardIndexByPokeValue(cardResult.threesCards, pokecards[0].value + 4);
+          }
+
+          if (index >= 0) {
+            tmpGroups.removePokeCards(pokecards);
+            var card = cardResult.threesCards.splice(index, 1)[0];
+            if (pokecards[0].value - 1 == card.pokeCards[0].value) {
+              pokecards.unshift(card.pokeCards.shift());
+            } else {
+              pokecards.push(card.pokeCards.shift());
+            }
+            straights.push(pokecards);
+            if (cardResult.pairsCards == null) {
+              cardResult.pairsCards = [];
+            }
+            cardResult.pairsCards.push(new Card(card.pokeCards));
+          } else {
+            index = findCardIndexByPokeValue(cardResult.pairsStraightsCards, pokecards[0].value - 1);
+            if (index < 0) {
+              index = findCardIndexByPokeValue(cardResult.pairsStraightsCards, pokecards[0].value + 4);
+            }
+            if (index >= 0) {
+              var card = cardResult.pairsStraightsCards[index];
+              if (card.cardLength > 3) {
+                //cardResult.pairsStraightsCards.splice(index, 1);
+                tmpGroups.removePokeCards(pokecards);
+                if (card.maxPokeValue == pokecards[0].value -1) {
+                  pokecards.unshift(card.pokeCards.pop());
+                  straights.push(pokecards);
+                  tmpGroups.push(new PokeGroup(card.pokeCards.splice(-1)));
+                  tmpGroups.sort();
+                  cardResult.pairsStraightsCards[index] = new Card(card.pokeCards);
+                  psIndex=-1;
+                } else {
+                  pokecards.push(card.pokeCards.shift());
+                  straights.push(pokecards);
+                  tmpGroups.push(new PokeGroup(card.pokeCards.splice(0,1)));
+                  tmpGroups.sort();
+                  cardResult.pairsStraightsCards[index] = new Card(card.pokeCards);
+                  psIndex=-1;
+                }
+              }
+            }
+          }
+
+        } else if ( pokecards[0].value + 1 == pokecards[1].value
+            && pokecards[0].value + 2 == pokecards[2].value
+            && pokecards[0].value + 4 == pokecards[3].value
+            && pokecards[3].value < PokeCardValue.TWO) {
+          var index = findCardIndexByPokeValue(cardResult.threesCards, pokecards[0].value + 3);
+          if (index >=0) {
+            tmpGroups.removePokeCards(pokecards);
+            var card = cardResult.threesCards.splice(index, 1)[0];
+            pokecards.splice(3, 0, card.pokeCards.shift());
+            straights.push(pokecards);
+            tmpGroups.push(new PokeGroup(card.pokeCards));
+            tmpGroups.sort();
+            psIndex = -1;
+//            if (cardResult.pairsCards == null) {
+//              cardResult.pairsCards = [];
+//            }
+//            cardResult.pairsCards.push(new Card(card.pokeCards));
+          }
+        } else if (pokecards[0].value + 1 == pokecards[1].value
+          && pokecards[0].value + 3 == pokecards[2].value
+          && pokecards[0].value + 4 == pokecards[3].value
+          && pokecards[3].value < PokeCardValue.TWO) {
+          var index = findCardIndexByPokeValue(cardResult.threesCards, pokecards[0].value + 2);
+          if (index >=0) {
+            tmpGroups.removePokeCards(pokecards);
+            var card = cardResult.threesCards.splice(index, 1)[0];
+            pokecards.splice(2, 0, card.pokeCards.shift());
+            straights.push(pokecards);
+            tmpGroups.push(new PokeGroup(card.pokeCards));
+            tmpGroups.sort();
+            psIndex = -1;
+
+//            if (cardResult.pairsCards == null) {
+//              cardResult.pairsCards = [];
+//            }
+//            cardResult.pairsCards.push(new Card(card.pokeCards));
+          }
+        } else if (pokecards[0].value + 2 == pokecards[1].value
+          && pokecards[0].value + 3 == pokecards[2].value
+          && pokecards[0].value + 4 == pokecards[3].value
+          && pokecards[3].value < PokeCardValue.TWO) {
+          var index = findCardIndexByPokeValue(cardResult.threesCards, pokecards[0].value + 1);
+          if (index >=0) {
+            tmpGroups.removePokeCards(pokecards);
+            var card = cardResult.threesCards.splice(index, 1)[0];
+            pokecards.splice(1, 0, card.pokeCards.shift());
+            straights.push(pokecards);
+            tmpGroups.push(new PokeGroup(card.pokeCards));
+            tmpGroups.sort();
+            psIndex = -1;
+//            if (cardResult.pairsCards == null) {
+//              cardResult.pairsCards = [];
+//            }
+//            cardResult.pairsCards.push(new Card(card.pokeCards));
+          }
+        }
+
+        psIndex++;
+      }
+    }
+
+    if (tmpGroups.length >= 3) {
+      var psIndex = 0;
+      while (psIndex < tmpGroups.length - 3) {
+        var pokecards = CardInfo.pokeCardsFromGroups(tmpGroups, psIndex, 3);
+
+        if (pokecards[0].value + 1 == pokecards[1].value
+          && pokecards[0].value + 2 == pokecards[2].value
+          && pokecards[2].value < PokeCardValue.TWO) {
+          var threeIndex = findCardIndexByPokeValue(cardResult.threesCards, pokecards[0]-1);
+          var straightIndex = findStraightIndexByPokeValue(straights, pokecards[0].value - 2);
+          if (threeIndex <0 || straightIndex < 0) {
+            threeIndex = findCardIndexByPokeValue(cardResult.threesCards, pokecards[0]+3);
+            straightIndex = findStraightIndexByPokeValue(straights, pokecards[0].value + 4);
+          }
+
+          if (threeIndex >= 0 && straightIndex>=0) {
+            tmpGroups.removePokeCards(pokecards);
+            var card = cardResult.threesCards.splice(threeIndex, 1)[0];
+            var straight = straights[straightIndex];
+            if (pokecards[0].value - 1 == card.pokeCards[0].value) {
+              pokecards.unshift(card.pokeCards.shift());
+            } else {
+              pokecards.push(card.pokeCards.shift());
+            }
+
+            if (straight[0].value == pokecards[pokecards.length-1].value + 1) {
+              straight.preappend(pokecards);
+            } else if (straight[straight.length-1].value == pokecards[0].value - 1) {
+              straight.append(pokecards);
+            }
+
+            tmpGroups.push(new PokeGroup(card.pokeCards));
+            tmpGroups.sort();
+            psIndex = -1;
+//            if (cardResult.pairsCards == null) {
+//              cardResult.pairsCards = [];
+//            }
+//            cardResult.pairsCards.push(new Card(card.pokeCards));
+          }
+
+        }
+        psIndex++;
+      }
+    }
+
+
   }
+
+  extendStraights();
+  console.log('[CardAnalyzer.processStraights] remaining pokes: ' , groupsToString(tmpGroups));
 
   cardResult.straightsCards = [];
   for (var index=0; index<straights.length; index++) {
     cardResult.straightsCards.push(new Card(straights[index]));
   }
-
-  console.log('[CardAnalyzer.processStraights] remaining pokes: ' , groupsToString(tmpGroups));
-
-  if (tmpGroups.length>=4) {
-    var psIndex=0;
-    while (psIndex < tmpGroups.length-4) {
-      var pokecards = CardInfo.pokeCardsFromGroups(tmpGroups, psIndex, 4);
-
-      if ( pokecards[0].value + 1 == pokecards[1].value
-        && pokecards[0].value + 2 == pokecards[2].value
-        && pokecards[0].value + 3 == pokecards[3].value
-        && pokecards[3].value < PokeCardValue.TWO ) {
-        for (var cardIndex=0; cardIndex<cardResult.threesCards.length; cardIndex++) {
-          // .....
-        }
-      }
-
-      psIndex++;
-    }
-  }
-
-  var possibleStraights = CardInfo.findPossibleStraights(tmpGroups,2);
-  var psIndex = 0;
-  while (psIndex < possibleStraights.length) {
-    var st = possibleStraights[psIndex];
-    if
-  }
-
 
   return tmpGroups;
 
@@ -651,7 +955,9 @@ CardAnalyzer.processPairsStraights = function(pairsGroups, cardResult) {
 
   cardResult.pairsStraightsCards = pairsStraightsCards;
 
-  cardResult.pairsCards = groupsToCards(tmpPairsGroup);
+  cardResult.pairsCards = cardResult.pairsCards || [];
+
+  //cardResult.pairsCards = cardResult.pairsCards.concat(groupsToCards(tmpPairsGroup));
 
   return removedGroups;
 };
