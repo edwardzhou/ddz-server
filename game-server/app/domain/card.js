@@ -5,25 +5,61 @@ var PokeCard = require('./pokeCard');
 
 var Card = function(pokeCards) {
   this.pokeCards = pokeCards.slice(0);
+  this.cardType = CardType.NONE;
+  this.maxPokeValue = 0;
+  this.minPokeValue = 0;
+  this.cardLength = 0;
+  this.weight = 0;
 
   var tmpCardType = CardUtil.getCardType(pokeCards);
-  if (tmpCardType == null || tmpCardType.cardType == CardType.NONE) {
-    this.cardType = CardType.NONE;
-    this.maxPokeValue = 0;
-    this.minPokeValue = 0;
-    this.cardLength = 0;
-  } else {
+  if (!!tmpCardType && tmpCardType.cardType != CardType.NONE) {
     this.cardType = tmpCardType.cardType;
     this.maxPokeValue = tmpCardType.maxPokeValue;
     this.minPokeValue = pokeCards[0].value;
-//    if (pokeCards.length > 0) {
-//      this.maxPokeValue = pokeCards[pokeCards.length - 1].value;
-//      this.minPokeValue = pokeCards[0].value;
-//    }
     this.cardLength = tmpCardType.cardLength;
+    this.calcWeight();
   }
 
   return this;
+};
+
+Card.prototype.calcWeight = function () {
+  switch (this.cardType) {
+    case CardType.ROCKET:
+    case CardType.BOMB:
+      this.weight = 7;
+      break;
+
+    case CardType.SINGLE:
+      this.weight = 1;
+      break;
+
+    case CardType.PAIRS:
+      this.weight = 2;
+      break;
+
+    case CardType.THREE:
+    case CardType.THREE_WITH_ONE:
+    case CardType.THREE_WITH_PAIRS:
+      this.weight = 3;
+      break;
+
+    case CardType.PAIRS_STRAIGHT:
+      this.weight = 5 + (this.cardLength - 3) * 2;
+      break;
+
+    case CardType.STRAIGHT:
+      this.weight = 4 + (this.cardLength - 5);
+      break;
+
+    case CardType.THREE_STRAIGHT:
+      this.weight = 6 + (this.cardLength-2) * 3;
+      break;
+
+    default:
+      this.weight = 0;
+      break;
+  }
 };
 
 Card.prototype.isValid = function() {

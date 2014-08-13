@@ -65,11 +65,11 @@ newUserInfo = {
 //userDao.createUser(newUserInfo, cb);
 
 //UserService.signInByPassword({userId: 50206, password: 'abc123'}, cb)
-CardInfo = require('./app/util/CardAnalyzer').CardInfo;
+CardInfo = require('./app/AI/CardAnalyzer').CardInfo;
 PokeCard = require('./app/domain/pokeCard');
-CardAnalyzer = require('./app/util/CardAnalyzer').CardAnalyzer;
+CardAnalyzer = require('./app/AI/CardAnalyzer').CardAnalyzer;
 var pokes = PokeCard.shuffle().slice(0, 17);
-pokes = PokeCard.pokeCardsFromChars('ACEGJLMORU[]hlmntv');
+pokes = PokeCard.pokeCardsFromChars('ACEGJLMOQRghmnqstu');
 ci = CardInfo.create(pokes);
 
 ci.dump();
@@ -117,7 +117,9 @@ testcases = [
   , 'BDILMNSXYafklmpqv'  // 33, 55, 66, 7, 8, 9, J, Q, KK, AA, 2, W
   , 'DKOQRSVWZ]_chkmps'  // 3, 5, 6, 777, 88, 9, 00, J, Q, K, AA, 2
   , 'BEFIMST\\]aghlmntv' // 3, 44, 5, 6, 77, 9, 0, J, QQ, K, AA, 2, W
-  , 'ACEGJLMORU[]hlmntv' // 33, 44, 55, 6, 7, 8, 9, 0, Q, K, AA, 2, W
+  , 'ACEGJLMORU[]hlmntv' // 33, 44, 55, 66, 7, 8, 9, 0, Q, K, AA, 2, W
+  , 'EFLMORU[]cfghmnqstu'   // 44, 5, 66, 7, 8, 9, 0, J, QQQ, AA, 222, W
+  , 'ACEGJLMOQRghmnqstu'   // 44, 5, 66, 7, 8, 9, 0, J, QQQ, AA, 222, W
 ];
 
 //for (var index=0; index<testcases.length; index++) {

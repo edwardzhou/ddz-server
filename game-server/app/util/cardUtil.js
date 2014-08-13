@@ -93,7 +93,12 @@ cardUtil.isStraight = function(pokecards, dontSort) {
     pokecards = pokecards.slice(0).sort(function(a,b){return a.pokeIndex - b.pokeIndex;});
   }
 
+  if (pokecards.length < 2) {
+    return false;
+  }
+
   var result = true;
+
   for (var index=0; index<pokecards.length-1; index++) {
     if (pokecards[index].value + 1 != pokecards[index+1].value
         || pokecards[index + 1].value > PokeCardValue.ACE) {
