@@ -500,7 +500,4 @@ CardAnalyzer.processPairsStraights = function(pairsGroups, cardResult) {
 };
 
 
-module.exports = {
-  CardInfo: CardInfo,
-  CardAnalyzer: CardAnalyzer
-};
+module.exports = CardAnalyzer;

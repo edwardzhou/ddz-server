@@ -65,9 +65,9 @@ newUserInfo = {
 //userDao.createUser(newUserInfo, cb);
 
 //UserService.signInByPassword({userId: 50206, password: 'abc123'}, cb)
-CardInfo = require('./app/AI/CardAnalyzer').CardInfo;
+CardInfo = require('./app/AI/CardInfo');
 PokeCard = require('./app/domain/pokeCard');
-CardAnalyzer = require('./app/AI/CardAnalyzer').CardAnalyzer;
+CardAnalyzer = require('./app/AI/CardAnalyzer');
 var pokes = PokeCard.shuffle().slice(0, 17);
 pokes = PokeCard.pokeCardsFromChars('ACEGJLMOQRghmnqstu');
 ci = CardInfo.create(pokes);
