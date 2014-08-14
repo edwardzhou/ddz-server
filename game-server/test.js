@@ -70,7 +70,10 @@ PokeCard = require('./app/domain/pokeCard');
 CardAnalyzer = require('./app/AI/CardAnalyzer');
 var pokes = PokeCard.shuffle().slice(0, 17);
 pokes = PokeCard.pokeCardsFromChars('ACEGJLMOQRghmnqstu');
+
+console.time('CardInfo create');
 ci = CardInfo.create(pokes);
+console.timeEnd('CardInfo create');
 
 ci.dump();
 

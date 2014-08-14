@@ -11,9 +11,9 @@ var CardResult = function() {
   this.threesStraightsCards = [];
   this.straightsCards = [];
 
+  this.allCards = [];
   this.hands = 0;
   this.totalWeight = 0;
-  this.cardInfo = null;
 };
 
 CardResult.prototype.calculate = function() {
@@ -47,6 +47,15 @@ CardResult.prototype.calculate = function() {
   } else if (allThreesCount > 0 && allThreesCount>allSinglePairCount) {
     this.hands -= allSinglePairCount;
   }
+
+  this.allCards.append(this.singlesCards)
+    .append(this.straightsCards)
+    .append(this.pairsCards)
+    .append(this.pairsStraightsCards)
+    .append(this.threesCards)
+    .append(this.threesStraightsCards)
+    .append(this.bombsCards)
+    .append(this.rocketsCards);
 };
 
 CardResult.prototype.dump = function() {

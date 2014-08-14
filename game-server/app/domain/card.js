@@ -5,6 +5,7 @@ var PokeCard = require('./pokeCard');
 
 var Card = function(pokeCards) {
   this.pokeCards = pokeCards.slice(0);
+  cardUtil.sortPokeCards(this.pokeCards);
   this.cardType = CardType.NONE;
   this.maxPokeValue = 0;
   this.minPokeValue = 0;

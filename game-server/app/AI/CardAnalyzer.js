@@ -20,6 +20,8 @@ Array.prototype.append = function(otherArray) {
 
 Array.prototype.preappend = function(otherArray) {
   Array.prototype.splice.apply(this, [0,0].concat(otherArray));
+
+  return this;
 };
 
 
@@ -34,13 +36,22 @@ CardAnalyzer.analyze = function(cardInfo) {
   plans.push(CardAnalyzer.analyzePlanC(cardInfo));
 
   plans.sort(function(a,b){
-
     if (a.hands != b.hands)
       return a.hands - b.hands;
 
     return b.totalWeight - a.totalWeight;
-
   });
+
+  var planIndex=0;
+  while(planIndex < plans.length-1) {
+    var planA = plans[planIndex];
+    var planB = plans[planIndex+1];
+    if (planA.hands == planB.hands && planA.totalWeight == planB.totalWeight) {
+      plans.splice(planIndex+1, 1);
+    } else {
+      planIndex ++;
+    }
+  }
 
   return plans;
 
