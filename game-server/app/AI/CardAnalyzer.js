@@ -8,7 +8,7 @@ var Card = require('../domain/card');
 var PokeGroup = require('./PokeGroup');
 var PokeGroupArray = require('./PokeGroupArray');
 var CardInfo = require('./CardInfo');
-var CardResult = require('./CardResult');
+var CardPlan = require('./CardPlan');
 var AIHelper = require('./AIHelper');
 
 Array.prototype.append = function(otherArray) {
@@ -53,6 +53,8 @@ CardAnalyzer.analyze = function(cardInfo) {
     }
   }
 
+  cardInfo.cardResults = plans;
+
   return plans;
 
 };
@@ -60,72 +62,72 @@ CardAnalyzer.analyze = function(cardInfo) {
 CardAnalyzer.analyzePlanA = function(cardInfo) {
   cardInfo.workingGroups = cardInfo.groups.clone();
 
-  var cardResult = new CardResult();
-  cardResult.name = '火箭->炸弹->三顺->三张->连对->单顺->单牌';
-  cardResult.bombsCards = AIHelper.groupsToCards(cardInfo.bombs);
+  var cardPlan = new CardPlan();
+  cardPlan.name = '火箭->炸弹->三顺->三张->连对->单顺->单牌';
+  cardPlan.bombsCards = AIHelper.groupsToCards(cardInfo.bombs);
   cardInfo.workingGroups.removeGroups(cardInfo.bombs);
-  cardResult.rocketsCards = AIHelper.groupsToCards(cardInfo.rockets);
+  cardPlan.rocketsCards = AIHelper.groupsToCards(cardInfo.rockets);
   cardInfo.workingGroups.removeGroups(cardInfo.rockets);
 
-  CardAnalyzer.processThreesStraights(cardInfo.threes, cardResult);
+  CardAnalyzer.processThreesStraights(cardInfo.threes, cardPlan);
   cardInfo.workingGroups.removeGroups(cardInfo.threes);
 
-  var removedPairsGroups = CardAnalyzer.processPairsStraights(cardInfo.pairs, cardResult);
+  var removedPairsGroups = CardAnalyzer.processPairsStraights(cardInfo.pairs, cardPlan);
   cardInfo.workingGroups.removeGroups(removedPairsGroups);
 
-  var tmpWorkingGroups = CardAnalyzer.processStraights(cardInfo, cardResult);
+  var tmpWorkingGroups = CardAnalyzer.processStraights(cardInfo, cardPlan);
 
   var remaingPokecards = tmpWorkingGroups.getPokecards();
   var remaingCardInfo = CardInfo.create(remaingPokecards);
 
 
-  cardResult.singlesCards = AIHelper.groupsToCards(remaingCardInfo.singles);
-  cardResult.pairsCards.append(AIHelper.groupsToCards(remaingCardInfo.pairs));
-  cardResult.calculate();
+  cardPlan.singlesCards = AIHelper.groupsToCards(remaingCardInfo.singles);
+  cardPlan.pairsCards.append(AIHelper.groupsToCards(remaingCardInfo.pairs));
+  cardPlan.calculate();
 
-  return cardResult;
+  return cardPlan;
 };
 
 CardAnalyzer.analyzePlanB = function(cardInfo) {
   cardInfo.workingGroups = cardInfo.groups.clone();
 
-  var cardResult = new CardResult();
-  cardResult.name = '火箭->炸弹->三顺->三张->单顺->连对->对子->单牌';
-  cardResult.bombsCards = AIHelper.groupsToCards(cardInfo.bombs);
+  var cardPlan = new CardPlan();
+  cardPlan.name = '火箭->炸弹->三顺->三张->单顺->连对->对子->单牌';
+  cardPlan.bombsCards = AIHelper.groupsToCards(cardInfo.bombs);
   cardInfo.workingGroups.removeGroups(cardInfo.bombs);
-  cardResult.rocketsCards = AIHelper.groupsToCards(cardInfo.rockets);
+  cardPlan.rocketsCards = AIHelper.groupsToCards(cardInfo.rockets);
   cardInfo.workingGroups.removeGroups(cardInfo.rockets);
 
-  CardAnalyzer.processThreesStraights(cardInfo.threes, cardResult);
+  CardAnalyzer.processThreesStraights(cardInfo.threes, cardPlan);
   cardInfo.workingGroups.removeGroups(cardInfo.threes);
 
 //  var removedPairsGroups = CardAnalyzer.processPairsStraights(cardInfo.pairs, cardResult);
 //  cardInfo.workingGroups.removeGroups(removedPairsGroups);
 
-  var tmpWorkingGroups = CardAnalyzer.processStraights(cardInfo, cardResult);
+  var tmpWorkingGroups = CardAnalyzer.processStraights(cardInfo, cardPlan);
 
   var remaingPokecards = tmpWorkingGroups.getPokecards();
   var remaingCardInfo = CardInfo.create(remaingPokecards);
 
 
-  cardResult.singlesCards = AIHelper.groupsToCards(remaingCardInfo.singles);
-  var removedPairsGroups = CardAnalyzer.processPairsStraights(remaingCardInfo.pairs, cardResult);
+  cardPlan.singlesCards = AIHelper.groupsToCards(remaingCardInfo.singles);
+  var removedPairsGroups = CardAnalyzer.processPairsStraights(remaingCardInfo.pairs, cardPlan);
   remaingCardInfo.pairs.removeGroups(removedPairsGroups);
-  cardResult.pairsCards.append(AIHelper.groupsToCards(remaingCardInfo.pairs));
-  cardResult.calculate();
+  cardPlan.pairsCards.append(AIHelper.groupsToCards(remaingCardInfo.pairs));
+  cardPlan.calculate();
 
-  return cardResult;
+  return cardPlan;
 };
 
 
 CardAnalyzer.analyzePlanC = function(cardInfo) {
   cardInfo.workingGroups = cardInfo.groups.clone();
 
-  var cardResult = new CardResult();
-  cardResult.name = '火箭->炸弹->单顺->三顺->三张->连对->对子->单牌';
-  cardResult.bombsCards = AIHelper.groupsToCards(cardInfo.bombs);
+  var cardPlan = new CardPlan();
+  cardPlan.name = '火箭->炸弹->单顺->三顺->三张->连对->对子->单牌';
+  cardPlan.bombsCards = AIHelper.groupsToCards(cardInfo.bombs);
   cardInfo.workingGroups.removeGroups(cardInfo.bombs);
-  cardResult.rocketsCards = AIHelper.groupsToCards(cardInfo.rockets);
+  cardPlan.rocketsCards = AIHelper.groupsToCards(cardInfo.rockets);
   cardInfo.workingGroups.removeGroups(cardInfo.rockets);
 
 //  CardAnalyzer.processThreesStraights(cardInfo.threes, cardResult);
@@ -134,20 +136,20 @@ CardAnalyzer.analyzePlanC = function(cardInfo) {
 //  var removedPairsGroups = CardAnalyzer.processPairsStraights(cardInfo.pairs, cardResult);
 //  cardInfo.workingGroups.removeGroups(removedPairsGroups);
 
-  var tmpWorkingGroups = CardAnalyzer.processStraights(cardInfo, cardResult);
+  var tmpWorkingGroups = CardAnalyzer.processStraights(cardInfo, cardPlan);
 
   var remaingPokecards = tmpWorkingGroups.getPokecards();
   var remaingCardInfo = CardInfo.create(remaingPokecards);
 
 
-  cardResult.singlesCards = AIHelper.groupsToCards(remaingCardInfo.singles);
-  var removedPairsGroups = CardAnalyzer.processPairsStraights(remaingCardInfo.pairs, cardResult);
+  cardPlan.singlesCards = AIHelper.groupsToCards(remaingCardInfo.singles);
+  var removedPairsGroups = CardAnalyzer.processPairsStraights(remaingCardInfo.pairs, cardPlan);
   remaingCardInfo.pairs.removeGroups(removedPairsGroups);
-  cardResult.pairsCards.append(AIHelper.groupsToCards(remaingCardInfo.pairs));
-  CardAnalyzer.processThreesStraights(remaingCardInfo.threes, cardResult);
+  cardPlan.pairsCards.append(AIHelper.groupsToCards(remaingCardInfo.pairs));
+  CardAnalyzer.processThreesStraights(remaingCardInfo.threes, cardPlan);
   //cardInfo.workingGroups.removeGroups(remaingCardInfo.threes);
-  cardResult.calculate();
-  return cardResult;
+  cardPlan.calculate();
+  return cardPlan;
 };
 
 

@@ -89,6 +89,19 @@ Card.prototype.getPokeCardString = function() {
   return CardUtil.pokeCardsToString(this.pokeCards);
 };
 
+Card.prototype.getPokeValueChars = function() {
+  return CardUtil.pokeCardsToValueString(this.pokeCards);
+};
+
+Card.prototype.hasPokecard = function(poke) {
+  for (var index=0; index<this.pokeCards.length; index++) {
+    if (this.pokeCards[index].pokeIndex == poke.pokeIndex)
+      return true;
+  }
+
+  return false;
+};
+
 Card.prototype.toString = function() {
   return "Card[ " + PokeCard.getPokeValuesChars(this.pokeCards, true)
     + ", cardType: " + CardTypeString[this.cardType]

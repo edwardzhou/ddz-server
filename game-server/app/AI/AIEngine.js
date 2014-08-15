@@ -38,8 +38,80 @@ AIEngine.findFeasibleStraight = function (straights) {
   return straight;
 };
 
+
+AIEngine.findGreaterStraight = function(card, cardInfo) {
+  var plan = cardInfo.cardResults[0];
+  // 找刚好的单顺
+  for (var cardIndex=0; cardIndex<plan.straightsCards.length; cardIndex++) {
+    var otherCard = plan.straightsCards[cardIndex];
+    if (cardUtil.compare(otherCard, card)) {
+      return {
+        card: otherCard,
+        breakCard: null
+      };
+    }
+  }
+
+  // 拆同张数的双顺
+  for (var cardIndex=0; cardIndex<plan.pairsStraightsCards.length; cardIndex++) {
+    var otherCard = plan.pairsStraightsCards[cardIndex];
+    if (otherCard.cardLength == card.cardLength
+      && otherCard.maxPokeValue > card.maxPokeValue) {
+      var pokes = [];
+      for (var pokeIndex=0; pokeIndex<otherCard.cardLength; pokeIndex++) {
+        pokes.push(otherCard.pokeCards[pokeIndex*2]);
+      }
+      return {
+        card: new Card(pokes),
+        breakCard: otherCard
+      };
+    }
+  }
+
+  // 拆最大单顺
+  for (var cardIndex=plan.straightsCards.length-1; cardIndex>=0; cardIndex--) {
+    var otherCard = plan.straightsCards[cardIndex];
+    if (otherCard.cardLength > card.cardLength
+      && otherCard.maxPokeValue > card.maxPokeValue) {
+      var pokes = otherCard.pokeCards.slice(0);
+      for (var pokeIndex=card.cardLength-1; pokeIndex<pokes.length; pokeIndex++) {
+        if (pokes[pokeIndex].value > card.maxPokeValue) {
+          pokes = pokes.slice(pokeIndex-card.cardLength+1, pokeIndex+1);
+          return {
+            card: new Card(pokes),
+            breakCard: otherCard
+          };
+        }
+      }
+    }
+  }
+
+  // 拆最大双顺
+  for (var cardIndex=plan.pairsStraightsCards.length-1; cardIndex>=0; cardIndex--) {
+    var otherCard = plan.pairsStraightsCards[cardIndex];
+    if (otherCard.cardLength > card.cardLength
+      && otherCard.maxPokeValue > card.maxPokeValue) {
+      var pokes = [];
+      for (var index=0; index<otherCard.cardLength; index++){
+        poke.push(otherCard.pokeCards[index*2]);
+      }
+
+      for (var pokeIndex=card.cardLength-1; pokeIndex<pokes.length; pokeIndex++) {
+        if (pokes[pokeIndex].value > card.maxPokeValue) {
+          pokes = pokes.slice(pokeIndex-card.cardLength+1, pokeIndex+1);
+          return {
+            card: new Card(pokes),
+            breakCard: otherCard
+          };
+        }
+      }
+    }
+  }
+
+  return null;
+};
+
 AIEngine.findGreaterThree = function(card, cardInfo) {
-  var results = [];
   var plan = cardInfo.cardResults[0];
   for (var cardIndex=0; cardIndex<plan.threesCards.length; cardIndex++) {
     var otherCard = plan.threesCards[cardIndex];
@@ -49,7 +121,10 @@ AIEngine.findGreaterThree = function(card, cardInfo) {
 
     // 牌型恰好为三张
     if (card.cardType == CardType.THREE) {
-      return otherCard;
+      return {
+        card: otherCard,
+        breakCard: null
+      };
     }
 
     // 如果是三带二
@@ -58,47 +133,57 @@ AIEngine.findGreaterThree = function(card, cardInfo) {
       if (plan.pairsCards.length>0
         //&& plan.pairsCards[0].maxPokeValue != PokeCardValue.TWO
         ) {
-        return {card: new Card(otherCard.pokeCards.concat(plan.pairsCards[0].pokeCards)), breakCard: false};
+        return {
+          card: new Card(otherCard.pokeCards.concat(plan.pairsCards[0].pokeCards)),
+          breakCard: null
+        };
       }
 
       // 没对子，尝试拆连对
       var pairsStraight = AIEngine.findFeasibleStraight(plan.pairsStraightsCards);
       if (!!pairsStraight) {
-        return {card: new Card(otherCard.pokeCards.concat(pairsStraight.pokeCards.slice(0,2))),
-          breakCard: pairsStraight.cardLength>3}
+        return {
+          card: new Card(otherCard.pokeCards.concat(pairsStraight.pokeCards.slice(0,2))),
+          breakCard: pairsStraight
+        };
       }
 
       // 没对子、连对，拆小的三张
       if (cardIndex > 0) {
-        return {card: new Card(otherCard.pokeCards.concat(plan.threesCards[0].pokeCards.slice(0,2))), breakCard: true};
+        return {
+          card: new Card(otherCard.pokeCards.concat(plan.threesCards[0].pokeCards.slice(0,2))),
+          breakCard: otherCard
+        };
       }
 
       // 拆三连
       var threesStraight = AIEngine.findFeasibleStraight(plan.threesStraightsCards);
       if (!!threesStraight) {
-        return {card: new Card(otherCard.pokeCards.concat(threesStraight.pokeCards.slice(0,2))),
-          breakCard: true}
+        return {
+          card: new Card(otherCard.pokeCards.concat(threesStraight.pokeCards.slice(0,2))),
+          breakCard: threesStraight
+        };
       }
     }
     else if (card.cardType == CardType.THREE_WITH_ONE) {
       if (plan.singlesCards.length > 0) {
         return {
           card: new Card(otherCard.pokeCards.concat(plan.singlesCards[0].pokeCards.slice(0, 1))),
-          breakCard: false
+          breakCard: null
         };
       }
 
       if (plan.pairsCards.length > 0) {
         return {
           card: new Card(otherCard.pokeCards.concat(plan.pairsCards[0].pokeCards.slice(0, 1))),
-          breakCard: false
+          breakCard: null
         }
       }
 
       if (cardIndex > 0) {
         return {
           card: new Card(otherCard.pokeCards.concat(plan.threesCards[0].pokeCards.slice(0, 1))),
-          breakCard: true
+          breakCard: plan.threesCards[0]
         }
       }
 
@@ -106,7 +191,7 @@ AIEngine.findGreaterThree = function(card, cardInfo) {
       if (!!threesStraight) {
         return {
           card: new Card(otherCard.pokeCards.concat(threesStraight.pokeCards.slice(0, 1))),
-          breakCard: true
+          breakCard: threesStraight
         }
       }
 
@@ -114,7 +199,7 @@ AIEngine.findGreaterThree = function(card, cardInfo) {
       if (!!pairsStraight) {
         return {
           card: new Card(otherCard.pokeCards.concat(pairsStraight.pokeCards.slice(0, 1))),
-          breakCard: true
+          breakCard: pairsStraight
         }
       }
     }
@@ -131,7 +216,7 @@ AIEngine.findGreaterThreesStraight = function(card, cardInfo) {
     if (cardUtil.compare(otherCard, card)) {
       return {
         card: otherCard,
-        breakCard: false
+        breakCard: null
       };
     }
 
@@ -145,7 +230,7 @@ AIEngine.findGreaterThreesStraight = function(card, cardInfo) {
   if (!!optionCard) {
     return {
       card: new Card(optionCard.pokeCards.slice(0, card.pokeCards.length)),
-      breakCard: true
+      breakCard: optionCard
     };
   }
 
@@ -161,7 +246,7 @@ AIEngine.findGreaterPairsStraight = function(card, cardInfo) {
     if (cardUtil.compare(otherCard, card)) {
       return {
         card: otherCard,
-        breakCard: false
+        breakCard: null
       };
     }
 
@@ -175,7 +260,7 @@ AIEngine.findGreaterPairsStraight = function(card, cardInfo) {
   if (!!optionCard) {
     return {
       card: new Card( optionCard.pokeCards.slice(0, card.pokeCards.length) ),
-      breakCard: true
+      breakCard: optionCard
     }
   }
 
@@ -189,7 +274,7 @@ AIEngine.findGreaterPairsStraight = function(card, cardInfo) {
       }
       return {
         card: new Card(pokes),
-        breakCard: true
+        breakCard: otherCard
       };
     }
   }
@@ -197,62 +282,226 @@ AIEngine.findGreaterPairsStraight = function(card, cardInfo) {
   return null;
 };
 
+/**
+ * 找出比card大的可能对子
+ * @param card
+ * @param cardInfo
+ * @returns {*}
+ */
 AIEngine.findGreaterPairs = function(card, cardInfo) {
   var plan = cardInfo.cardResults[0];
-  for (var cardIndex=0; cardIndex<plan.pairs.length; cardIndex++) {
-    var otherCard = plan.pairs[cardIndex];
+  // 先在对子里找最小对子
+  for (var cardIndex=0; cardIndex<plan.pairsCards.length; cardIndex++) {
+    var otherCard = plan.pairsCards[cardIndex];
     if (cardUtil.compare(otherCard, card)) {
       return {
         card: otherCard,
-        breakCard: false
+        breakCard: null
       };
     }
   }
 
+  // 拆三对以上的双顺的最大对子
   for (var cardIndex=plan.pairsStraightsCards.length-1; cardIndex>=0; cardIndex--) {
     var otherCard = plan.pairsStraightsCards[cardIndex];
     if (otherCard.cardLength >3 && otherCard.maxPokeValue > card.maxPokeValue) {
       return {
         card: new Card( otherCard.pokeCards.slice(-2) ),
-        breakCard: false
+        breakCard: otherCard
       };
     }
   }
-  
 
+  // 拆三张
+  for (var cardIndex=0; cardIndex<plan.threesCards.length; cardIndex++) {
+    var otherCard = plan.threesCards[index];
+    if (otherCard.maxPokeValue > card.maxPokeValue) {
+      return {
+        card: new Card( otherCard.pokeCards.slice(0,2)),
+        breakCard: otherCard
+      }
+    }
+  }
 
+  // 拆双顺
+  for (var cardIndex=plan.pairsStraightsCards.length-1; cardIndex>=0; cardIndex--) {
+    var otherCard = plan.pairsStraightsCards[cardIndex];
+    if (otherCard.maxPokeValue > card.maxPokeValue) {
+      return {
+        card: new Card( otherCard.pokeCards.slice(-2) ),
+        breakCard: otherCard
+      };
+    }
+  }
 
+  // 拆双顺
+  for (var cardIndex=0; cardIndex<plan.threesStraightsCards.length; cardIndex++) {
+    var otherCard = plan.threesStraightsCards[cardIndex];
+    if (otherCard.minPokeValue > card.maxPokeValue) {
+      return {
+        card: new Card( otherCard.pokeCard.slice(0, 2)),
+        breakCard: otherCard
+      };
+    }
+    if (otherCard.maxPokeValue > card.maxPokeValue) {
+      return {
+        card: new Card( otherCard.pokeCards.slice(-2) ),
+        breakCard: otherCard
+      };
+    }
+  }
 
+  return null;
+};
+
+AIEngine.findGreaterSingle = function(card, cardInfo) {
+  var plan = cardInfo.cardResults[0];
+  // 找最小单牌
+  for (var cardIndex=0; cardIndex<plan.singlesCards.length; cardIndex++) {
+    var otherCard = plan.singlesCards[cardIndex];
+    if (cardUtil.compare(otherCard, card)) {
+      return {
+        card: otherCard,
+        breakCard: null
+      };
+    }
+  }
+
+  // 拆二
+  var group = cardInfo.groups.getGroupByPokeValue(PokeCardValue.TWO);
+  if (!!group) {
+    return {
+      card: new Card(group.pokeCards.slice(0, 1)),
+      breakCard: plan.getCardByPoke(group.pokeCards[0])
+    };
+  }
+
+  // 拆对牌
+  for (var cardIndex=0; cardIndex<plan.pairsCards.length; cardIndex++) {
+    var otherCard = plan.pairsCards[cardIndex];
+    if (otherCard.maxPokeValue > card.maxPokeValue) {
+      return {
+        card: new Card(otherCard.pokeCards.slice(0,1)),
+        breakCard: otherCard
+      };
+    }
+  }
+
+  // 拆6张以上的单顺的顶张
+  for (var cardIndex=0; cardIndex<plan.straightsCards.length; cardIndex++) {
+    var otherCard = plan.straightsCards[cardIndex];
+    if (otherCard.cardLength > 5 && otherCard.maxPokeValue > card.maxPokeValue) {
+      return {
+        card: new Card(otherCard.pokeCards.slice(-1)),
+        breakCard: otherCard
+      };
+    }
+  }
+
+  // 拆三张
+  for (var cardIndex=0; cardIndex<plan.threesCards.length; cardIndex++) {
+    var otherCard = plan.threesCards[cardIndex];
+    if (otherCard.maxPokeValue > card.maxPokeValue) {
+      return {
+        card: new Card(otherCard.pokeCards.slice(0,1)),
+        breakCard: otherCard
+      };
+    }
+  }
+
+  // 拆三张
+  for (var cardIndex=0; cardIndex<plan.threesCards.length; cardIndex++) {
+    var otherCard = plan.threesCards[cardIndex];
+    if (otherCard.maxPokeValue > card.maxPokeValue) {
+      return {
+        card: new Card(otherCard.pokeCards.slice(0,1)),
+        breakCard: otherCard
+      };
+    }
+  }
+
+  for (var groupIndex=0; groupIndex<cardInfo.groups.length; groupIndex++) {
+    var group = cardInfo.groups[groupIndex];
+    if (group.pokeCards.length == 4)
+      continue;
+
+    if (group.pokeCards.length == 2
+      && group.pokeCards[0].value == PokeCardValue.SMALL_JOKER) {
+      continue;
+    }
+
+    if (group.pokeValue > card.maxPokeValue) {
+      return {
+        card: new Card(group.pokeCards.slice(0,1)),
+        breakCard: plan.getCardByPoke(group.pokeCards[0])
+      };
+    }
+  }
+
+  return null;
+};
+
+AIEngine.findGreaterBomb = function(card, cardInfo) {
+  var plan = cardInfo.cardResults[0];
+  for (var cardIndex=0; cardIndex<plan.bombsCards.length; cardIndex++) {
+    var otherCard = plan.bombsCards[cardIndex];
+    if (cardUtil.compare(otherCard, card)) {
+      return {
+        card: otherCard,
+        breakCard: null
+      };
+    }
+  }
+
+  return null;
 };
 
 AIEngine.findGreaterThan = function(card, cardInfo) {
-  var results = [];
+  var result = null;
+  var plan = cardInfo.cardResults[0];
+
+  var minBombCard = null;
+  var rocketCard = null;
+  if (plan.bombsCards.length>0) {
+    minBombCard = plan.bombsCards[0];
+  }
+  if (plan.rocketsCards.length>0) {
+    rocketCard = plan.rocketsCards[0];
+  }
 
   switch (card.cardType) {
     case CardType.BOMB:
-      for (var index=0; index<cardInfo.bombs; index++) {
-        if (cardInfo.bombs[index].pokeValue > card.maxPokeValue) {
-          results.push({card: new(cardInfo.bombs[index]), breakCard: false});
-        }
-      }
-      if (cardInfo.rockets.length > 0) {
-        results.push({card: new(cardInfo.rockets[0]), breakCard: false});
-      }
-      break;
-
     case CardType.FOUR_WITH_TWO_PAIRS:
-      for (var index=0; index<cardInfo.bombs; index++) {
-        results.push({card: new(cardInfo.bombs[index]), breakCard: false});
-      }
-      if (cardInfo.rockets.length > 0) {
-        results.push({pokecards: cardInfo.rockets[0], breakCard: false});
+      result = AIEngine.findGreaterBomb(card);
+      if(!!result)
+        return result;
+
+      if (!!rocketCard) {
+        results.push({card: new Card(rocketCard.pokeCards), breakCard: false});
       }
       break;
 
     case CardType.THREE_STRAIGHT:
-      ;
+      result = AIEngine.findGreaterThreesStraight(card, cardInfo);
+      break;
 
+    case CardType.THREE:
+    case CardType.THREE_WITH_ONE:
+    case CardType.THREE_WITH_PAIRS:
+      result = AIEngine.findGreaterThree(card, cardInfo);
+      break;
 
+    case CardType.PAIRS_STRAIGHT:
+      result = AIEngine.findGreaterPairsStraight(card, cardInfo);
+      break;
+
+    case CardType.PAIRS:
+      result = AIEngine.findGreaterPairs(card, cardInfo);
+      break;
+
+    case CardType.STRAIGHT:
+      result = AIEngine.findGreaterStraight(card, cardInfo);
+      break;
   }
 
   return result;
@@ -275,7 +524,7 @@ AIEngine.findLordFirstCard = function(lordCardInfo, prevFarmerCardInfo, nextFarm
 
   if (nextPokeHands == 1) {
     var nextCard = new Card(nextFarmerCardInfo.pokeCards);
-    switch()
+    //switch()
   }
 
 };

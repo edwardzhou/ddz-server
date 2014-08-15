@@ -100,8 +100,12 @@ console.timeEnd('CardAnalyzer.analyze');
 
 for (var index=0; index<cardResults.length; index++) {
   cardResults[index].dump();
-
+  cardResults[index].dumpSimple();
 }
+
+var testCard = new Card( PokeCard.getByIds("a03, b03") );
+var testResult;
+
 
 testcases = [
   'BCFGIKOPWZ\\_cfitv'

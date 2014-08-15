@@ -1,6 +1,6 @@
 var AIHelper = require('./AIHelper');
 
-var CardResult = function() {
+var CardPlan = function() {
   this.name = "no name";
   this.singlesCards = [];
   this.pairsCards = [];
@@ -16,7 +16,7 @@ var CardResult = function() {
   this.totalWeight = 0;
 };
 
-CardResult.prototype.calculate = function() {
+CardPlan.prototype.calculate = function() {
   var sumWeight = function(a, b) {
     return a + b.weight;
   };
@@ -58,7 +58,17 @@ CardResult.prototype.calculate = function() {
     .append(this.rocketsCards);
 };
 
-CardResult.prototype.dump = function() {
+CardPlan.prototype.getCardByPoke = function(poke) {
+  for (var cardIndex=0; cardIndex<this.allCards.length; cardIndex++) {
+    if (this.allCards[cardIndex].hasPokecard(poke)) {
+      return this.allCards[cardIndex];
+    }
+  }
+
+  return null;
+};
+
+CardPlan.prototype.dump = function() {
   console.log('========================================');
   console.log('方案: ' + this.name + ',  手数: ' + this.hands + ',  权重: ' + this.totalWeight);
   console.log('火箭: ' + AIHelper.cardsToString(this.rocketsCards));
@@ -73,4 +83,11 @@ CardResult.prototype.dump = function() {
 
 };
 
-module.exports = CardResult;
+CardPlan.prototype.dumpSimple = function() {
+  console.log('========================================');
+  console.log('方案: ' + this.name + ',  手数: ' + this.hands + ',  权重: ' + this.totalWeight);
+  console.log(this.allCards.map(function(card) { return card.getPokeValueChars(); }).join(', '));
+  console.log('========================================');
+};
+
+module.exports = CardPlan;
