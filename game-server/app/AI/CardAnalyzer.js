@@ -24,6 +24,17 @@ Array.prototype.preappend = function(otherArray) {
   return this;
 };
 
+Array.prototype.exclude = function(otherArray) {
+  for (var index=0; index<otherArray.length; index++) {
+    var foundIndex = this.indexOf(otherArray[index]);
+    if (foundIndex >= 0) {
+      this.splice(foundIndex, 1);
+    }
+  }
+
+  return this;
+};
+
 
 var CardAnalyzer = function() {
 };
@@ -281,7 +292,7 @@ CardAnalyzer.processStraights = function(cardInfo, cardResult) {
   buildStraights();
   //extendStraights();
 
-  console.log('[CardAnalyzer.processStraights] remaining pokes: ' , AIHelper.groupsToString(tmpGroups));
+  //console.log('[CardAnalyzer.processStraights] remaining pokes: ' , AIHelper.groupsToString(tmpGroups));
 
   // 在剩下牌子中，尝试拆三张，四对以上的双顺，继续组成顺子
   if (tmpGroups.length - cardInfo.threes.length > 2) {
@@ -446,7 +457,7 @@ CardAnalyzer.processStraights = function(cardInfo, cardResult) {
 
   // 扩展顺子
   extendStraights();
-  console.log('[CardAnalyzer.processStraights] remaining pokes: ' , AIHelper.groupsToString(tmpGroups));
+  //console.log('[CardAnalyzer.processStraights] remaining pokes: ' , AIHelper.groupsToString(tmpGroups));
 
   // 合成双顺
   var combinePairsStraight = function() {

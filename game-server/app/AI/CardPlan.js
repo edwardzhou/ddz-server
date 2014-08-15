@@ -68,26 +68,28 @@ CardPlan.prototype.getCardByPoke = function(poke) {
   return null;
 };
 
-CardPlan.prototype.dump = function() {
-  console.log('========================================');
-  console.log('方案: ' + this.name + ',  手数: ' + this.hands + ',  权重: ' + this.totalWeight);
-  console.log('火箭: ' + AIHelper.cardsToString(this.rocketsCards));
-  console.log('炸弹: ' + AIHelper.cardsToString(this.bombsCards));
-  console.log('三张: ' + AIHelper.cardsToString(this.threesCards));
-  console.log('三顺: ' + AIHelper.cardsToString(this.threesStraightsCards));
-  console.log('双顺: ' + AIHelper.cardsToString(this.pairsStraightsCards));
-  console.log('对子: ' + AIHelper.cardsToString(this.pairsCards));
-  console.log('单顺: ' + AIHelper.cardsToString(this.straightsCards));
-  console.log('单牌: ' + AIHelper.cardsToString(this.singlesCards) );
-  console.log('========================================');
+CardPlan.prototype.dump = function(prefix) {
+  prefix = prefix || "";
+  console.log( prefix+ '========================================');
+  console.log(prefix+ '方案: ' + this.name + ',  手数: ' + this.hands + ',  权重: ' + this.totalWeight);
+  console.log(prefix+ '火箭: ' + AIHelper.cardsToString(this.rocketsCards));
+  console.log(prefix+ '炸弹: ' + AIHelper.cardsToString(this.bombsCards));
+  console.log(prefix+ '三张: ' + AIHelper.cardsToString(this.threesCards));
+  console.log(prefix+ '三顺: ' + AIHelper.cardsToString(this.threesStraightsCards));
+  console.log(prefix+ '双顺: ' + AIHelper.cardsToString(this.pairsStraightsCards));
+  console.log(prefix+ '对子: ' + AIHelper.cardsToString(this.pairsCards));
+  console.log(prefix+ '单顺: ' + AIHelper.cardsToString(this.straightsCards));
+  console.log(prefix+ '单牌: ' + AIHelper.cardsToString(this.singlesCards) );
+  console.log(prefix+ '========================================');
 
 };
 
-CardPlan.prototype.dumpSimple = function() {
-  console.log('========================================');
-  console.log('方案: ' + this.name + ',  手数: ' + this.hands + ',  权重: ' + this.totalWeight);
-  console.log(this.allCards.map(function(card) { return card.getPokeValueChars(); }).join(', '));
-  console.log('========================================');
+CardPlan.prototype.dumpSimple = function(prefix) {
+  prefix = prefix || "";
+  console.log(prefix+ '========================================');
+  console.log(prefix+ '方案: ' + this.name + ',  手数: ' + this.hands + ',  权重: ' + this.totalWeight);
+  console.log(prefix+ this.allCards.map(function(card) { return card.getPokeValueChars(); }).join(', '));
+  console.log(prefix+ '========================================');
 };
 
 module.exports = CardPlan;

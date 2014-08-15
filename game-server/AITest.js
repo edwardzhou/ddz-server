@@ -29,7 +29,7 @@ testcases = [
 
 
 var pokes = PokeCard.shuffle().slice(0, 17);
-pokes = PokeCard.pokeCardsFromChars('ACEGJLMOQRghmnqstu');
+pokes = PokeCard.pokeCardsFromChars('DKOQRSVWZ]_chkmps');
 
 console.time('CardInfo create');
 ci = CardInfo.create(pokes);
@@ -64,11 +64,40 @@ for (var index=0; index<cardResults.length; index++) {
   cardResults[index].dumpSimple();
 }
 
-var testCard = new Card( PokeCard.getByIds("a03, b03") );
-var testResult;
+function testAICard(card, cardInfo) {
+  var testResult = AIEngine.findGreaterThan(card, cardInfo);
 
-testResult = AIEngine.findGreaterThan(testCard, ci);
-if (!!testResult) {
-  console.log('testResult: ', testResult.card.getPokeValueChars());
+  if (!!testResult) {
+    console.log('test ' + card.getPokeValueChars() + ', Result: ', testResult.dump());
+    var remainingPokes = cardInfo.pokeCards.slice(0).exclude(testResult.card.pokeCards);
+    var newCardInfo = CardInfo.create(remainingPokes);
+    CardAnalyzer.analyze(newCardInfo);
+    for (var index=0; index<newCardInfo.cardResults.length; index++) {
+      //newCardInfo.cardResults[index].dump("\t");
+      newCardInfo.cardResults[index].dumpSimple("\t");
+    }
+  } else {
+    console.log('no bigger than: ' , testCard.getPokeValueChars());
+  }
 }
 
+console.log('---------------------------------------------')
+var testCard = new Card( PokeCard.getByIds("a12, b12") );
+testAICard(testCard, ci);
+
+console.log('---------------------------------------------')
+testCard = new Card( PokeCard.getByIds("a04, b04, c04") );
+testAICard(testCard, ci);
+
+
+console.log('---------------------------------------------')
+testCard = new Card( PokeCard.getByIds("a03, b04, c05, a06, a07") );
+testAICard(testCard, ci);
+
+console.log('---------------------------------------------')
+testCard = new Card( PokeCard.getByIds("a03, b04, c05, a06, a07,a08") );
+testAICard(testCard, ci);
+
+console.log('---------------------------------------------')
+testCard = new Card( PokeCard.getByIds("a03, b04, c05, a06, a07,a08, a09") );
+testAICard(testCard, ci);
