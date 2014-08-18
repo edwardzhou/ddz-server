@@ -25,6 +25,10 @@ Array.prototype.preappend = function(otherArray) {
 };
 
 Array.prototype.exclude = function(otherArray) {
+  if (otherArray == null) {
+    return this;
+  }
+
   for (var index=0; index<otherArray.length; index++) {
     var foundIndex = this.indexOf(otherArray[index]);
     if (foundIndex >= 0) {

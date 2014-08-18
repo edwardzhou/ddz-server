@@ -502,6 +502,33 @@ AIEngine.findLordFirstCard = function(lordCardInfo, prevFarmerCardInfo, nextFarm
     if (lordPlan.bombsCards.length>0) {
       return new Card(lordCardInfo.pokeCards.slice(0).exclude(lordPlan.bombsCards[0].pokeCards));
     }
+
+    if (lordPlan.allCards.length == 2) {
+      var card1 = lordPlan.allCards[0];
+      var card2 = lordPlan.allCards[1];
+
+      cardResult = AIEngine.findGreaterThan(card1, nextFarmerCardInfo);
+      if (cardResult == null) {
+        cardResult = AIEngine.findGreaterThan(card1, prevFarmerCardInfo);
+        if (cardResult == null) {
+          return card1;
+        }
+      }
+
+      cardResult = AIEngine.findGreaterThan(card2, nextFarmerCardInfo);
+      if (cardResult == null) {
+        cardResult = AIEngine.findGreaterThan(card2, prevFarmerCardInfo);
+        if (cardResult == null) {
+          return card2;
+        }
+      }
+
+      if (card1.maxPokeValue < card2.maxPokeValue) {
+        return card1;
+      }
+
+      return card2;
+    }
   }
 
   if (lordPlan.straightsCards.length > 0) {

@@ -20,6 +20,7 @@ var Player = function(opts) {
   this.prevPlayer = opts.prevPlayer || null;
   this.nextPlayer = opts.nextPlayer || null;
   this.delegating = !!opts.delegating;
+  this.robot = opts.robot || false;
 };
 
 util.inherits(Player, EventEmitter);

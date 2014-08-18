@@ -34,6 +34,11 @@ exp.getRoom = function(roomId) {
 exp.enterRoom = function(player, roomId, lastTableId, cb) {
   var room = roomsMap[roomId];
 
+  if (!!room.userEnterTimeout) {
+    clearTimeout(room._userEnterTimeout);
+    room.userEnterTimeout = null;
+  }
+
   room.enter(player, lastTableId);
   room.playerReady(player, function(table) {
     utils.invokeCallback(cb, table);

@@ -19,6 +19,8 @@ var userSchema = new mongoose.Schema({
   oldAuthToken: String,
   appid: Number,
   appVersion: String,
+  robot: {type: Boolean, default: false},
+  robot_busy: {type: Boolean, default: false},
   locked: {type: Boolean, default: false},
   lockedAt: Date,
   comment: String,

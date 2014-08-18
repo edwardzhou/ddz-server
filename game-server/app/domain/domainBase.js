@@ -2,7 +2,7 @@ var EventEmitter = require('events').EventEmitter;
 var util = require('util');
 
 var mongoose = require('mongoose');
-var mpath = require('mpath');
+//var mpath = require('mpath');
 
 var DomainBase = function(opts) {
   EventEmitter.call(this);
