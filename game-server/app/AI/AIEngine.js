@@ -291,7 +291,7 @@ AIEngine.findGreaterPairs = function(card, cardInfo) {
 
   // 拆三张
   for (var cardIndex=0; cardIndex<plan.threesCards.length; cardIndex++) {
-    var otherCard = plan.threesCards[index];
+    var otherCard = plan.threesCards[cardIndex];
     if (otherCard.maxPokeValue > card.maxPokeValue) {
       return new CardResult(new Card( otherCard.pokeCards.slice(-2) ), otherCard);
     }
@@ -523,7 +523,8 @@ AIEngine.findLordFirstCard = function(lordCardInfo, prevFarmerCardInfo, nextFarm
   }
 
   if (lordPlan.threesStraightsCards.length > 0) {
-    if (lordPlan.threesStraightsCards[0].maxPokeValue < PokeCardValue.ACE) {
+    if ((lordPlan.threesStraightsCards[0].maxPokeValue < PokeCardValue.JACK)
+      || (lordPlan.hands<4)) {
       var cardLength = lordPlan.threesStraightsCards[0].cardLength;
       if (lordPlan.singlesCards.length >= cardLength) {
         if (lordPlan.singlesCards[cardLength - 1].maxPokeValue < PokeCardValue.TWO) {
@@ -539,7 +540,7 @@ AIEngine.findLordFirstCard = function(lordCardInfo, prevFarmerCardInfo, nextFarm
         }
       }
 
-      return new lordPlan.threesStraightsCards[0];
+      return lordPlan.threesStraightsCards[0];
     }
   }
 
@@ -588,6 +589,13 @@ AIEngine.findLordFirstCard = function(lordCardInfo, prevFarmerCardInfo, nextFarm
 AIEngine.findLordPlayCard = function(lordCardInfo, prevFarmerCardInfo, nextFarmerCardInfo, lastCard) {
   var cardResult = AIEngine.findGreaterThan(lastCard, lordCardInfo);
   if (!cardResult) {
+    var plan = lordCardInfo.cardPlans[0]
+    if (plan.bombsCards.length > 0) {
+      return plan.bombsCards[0];
+    }
+    if (plan.rocketsCards.length >0) {
+      return plan.rocketsCards[0];
+    }
     return null;
   }
 
@@ -595,11 +603,11 @@ AIEngine.findLordPlayCard = function(lordCardInfo, prevFarmerCardInfo, nextFarme
     var pokeCards = lordCardInfo.pokeCards.slice(0).exclude(cardResult.card.pokeCards);
     var newCardInfo = CardInfo.create(pokeCards);
     CardAnalyzer.analyze(newCardInfo);
-    if (newCardInfo.cardPlans[0].hands <= lordCardInfo.cardPlans[0].hands) {
-      return cardResult.card;
+    if (newCardInfo.cardPlans[0].hands > lordCardInfo.cardPlans[0].hands + 1) {
+      return null;
     }
 
-    return null;
+    return cardResult.card;
   }
 
   return cardResult.card;
