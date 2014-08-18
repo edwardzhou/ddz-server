@@ -64,7 +64,7 @@ CardAnalyzer.analyze = function(cardInfo) {
     }
   }
 
-  cardInfo.cardResults = plans;
+  cardInfo.cardPlans = plans;
 
   return plans;
 

@@ -1,6 +1,7 @@
 var PokeGroup = require('./PokeGroup');
 var PokeGroupArray = require('./PokeGroupArray');
 var AIHelper = require('./AIHelper');
+var cardUtil = require('../util/cardUtil');
 var PokeCardValue = require('../consts/consts').PokeCardValue;
 
 var CardInfo = function() {
@@ -15,6 +16,7 @@ var CardInfo = function() {
   this.rockets = [];
   this.possibleStraights = [];
   this.workingGroups = [];
+  this.cardPlans = [];
 };
 
 CardInfo.prototype.clone = function() {

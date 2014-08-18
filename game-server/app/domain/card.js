@@ -5,7 +5,7 @@ var PokeCard = require('./pokeCard');
 
 var Card = function(pokeCards) {
   this.pokeCards = pokeCards.slice(0);
-  cardUtil.sortPokeCards(this.pokeCards);
+  CardUtil.sortPokeCards(this.pokeCards);
   this.cardType = CardType.NONE;
   this.maxPokeValue = 0;
   this.minPokeValue = 0;
@@ -84,6 +84,10 @@ Card.prototype.getPokeCardIds = function() {
     return pokeCard.id;
   }).join(",");
 };
+
+Card.prototype.getPokeChars = function() {
+  return CardUtil.pokeCardsToPokeChars(this.pokeCards);
+}
 
 Card.prototype.getPokeCardString = function() {
   return CardUtil.pokeCardsToString(this.pokeCards);

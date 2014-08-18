@@ -93,7 +93,7 @@ utils.arrayIncludes = function(arrayA, arrayB) {
   if (arrayB.length < 1)
     return false;
 
-  for (var index in arrayB) {
+  for (var index=0; index<arrayB.length; index++) {
     var elem = arrayB[index];
     if (arrayA.indexOf(elem) < 0)
       return false;
@@ -103,7 +103,7 @@ utils.arrayIncludes = function(arrayA, arrayB) {
 };
 
 utils.arrayRemove = function(arrayA, arrayB) {
-  for (var index in arrayB) {
+  for (var index=0; index<arrayB.length; index++) {
     var elem = arrayB[index];
     var i = arrayA.indexOf(elem);
     if (i>=0) {

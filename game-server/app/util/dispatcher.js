@@ -19,7 +19,7 @@ module.exports.dispatch = function(uid, connectors) {
     var inets = os.networkInterfaces();
     for (var key in inets) {
       var addrs = inets[key];
-      for (var addrIndex in addrs) {
+      for (var addrIndex= 0; addrIndex<addrs.length; addrIndex++) {
         if (addrs[addrIndex].address.search(clientPattern)>=0) {
           hostIp = addrs[addrIndex].address;
           break;

@@ -30,6 +30,10 @@ cardUtil.pokeCardsToString = function(pokeCards) {
   return pokeCards.map(_pokeCardChar).join("");
 };
 
+cardUtil.pokeCardsToPokeChars = function(pokeCards) {
+  return pokeCards.map(_pokeCardFieldValue('pokeChar')).join('');
+};
+
 cardUtil.pokeCardsToIdChars = function(pokeCards) {
   return pokeCards.map(_pokeCardFieldValue('idChar')).join('');
 };

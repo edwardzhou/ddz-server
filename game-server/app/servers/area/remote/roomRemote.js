@@ -77,7 +77,7 @@ remoteHandler.enter = function(uid, sid, sessionId, room_id, cb) {
 //      });
 
       roomService.enterRoom(player, room_id, -1, function(table) {
-        for (var index in table.players) {
+        for (var index=0; index<table.players.length; index++) {
           var p = table.players[index];
           p.userSession.sset('roomId', table.room.roomId);
           p.userSession.sset('tableId', table.tableId);
@@ -114,7 +114,7 @@ remoteHandler.reenter = function(uid, sid, sessionId, room_id, table_id, msgNo, 
     if (!!table.pokeGame) {
       var playerMsgs = table.pokeGame.playerMsgs[uid];
       process.nextTick(function() {
-        for (var index in playerMsgs) {
+        for (var index=0; index<playerMsgs.length; index++) {
           var msg = playerMsgs[index];
           if (msg[1].msgNo > msgNo) {
             messageService.pushMessage(msg[0], msg[1], [player.getUidSid()], null);
@@ -184,7 +184,7 @@ remoteHandler.leave = function(msg, cb) {
 
 var getPlayerIds = function(table) {
   var ids = [];
-  for(var index in table.players) {
+  for(var index=0; index<table.players.length; index++) {
     var player = table.players[index];
     ids.push({uid: player.userId, sid: player.serverId});
   }

@@ -188,7 +188,7 @@ var __toParams = function(model, excludeAttrs) {
   };
 
   if (!!excludeAttrs) {
-    for (var index in excludeAttrs) {
+    for (var index=0; index<excludeAttrs.length; index++) {
       delete transObj[excludeAttrs[index]];
     }
   }

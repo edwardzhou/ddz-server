@@ -10,14 +10,14 @@ exp.area = function(session, msg, app, cb) {
   var area_servers = app.getServersByType("area");
 
   var serverId = null;
-  for (var index in area_servers) {
+  for (var index=0; index<area_servers.length; index++) {
     //logger.info("<Server: %s> area_servers[%d]: %j", app.getServerId(), index, area_servers[index]);
     if (area_servers[index].room_id == room_id) {
       serverId = area_servers[index].id;
     } else if(typeof(area_servers[index].room_id) == 'string') {
       var rid = area_servers[index].room_id;
       var room_ids = rid.substring(1, rid.length-1).split(',')
-      for (var room_index in room_ids) {
+      for (var room_index=0; index<room_ids.length; index++) {
         if (parseInt(room_ids[room_index]) == room_id) {
           serverId = area_servers[index].id;
           break;

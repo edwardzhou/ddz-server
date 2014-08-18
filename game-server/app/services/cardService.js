@@ -10,6 +10,9 @@ var GameAction = require('../consts/consts').GameAction;
 var async = require('async');
 var ErrorCode = require('../consts/errorCode');
 var Result = require('../domain/result');
+var CardInfo = require('../AI/CardInfo');
+var CardAnalyzer = require('../AI/CardAnalyzer');
+var AIEngine = require('../AI/AIEngine');
 
 // 游戏动作值与属性名对照表，用于简化 @configGameAction 的逻辑
 var GameActionNames = {};
@@ -54,7 +57,7 @@ var runAction = function(action, params, beforeFilters, afterFilters, cb) {
 
   // 压入beforeFilters
   if (!!beforeFilters) {
-    for (var index in beforeFilters) {
+    for (var index=0; index<beforeFilters.length; index++) {
       tasks.push(beforeFilters[index].execute);
     }
   }
@@ -64,7 +67,7 @@ var runAction = function(action, params, beforeFilters, afterFilters, cb) {
 
   // 压入afterFilters
   if (!!afterFilters) {
-    for (var index in afterFilters) {
+    for (var index=0; index<afterFilters.length; index++) {
       tasks.push(afterFilters[index].execute);
     }
   }
@@ -224,7 +227,7 @@ exp.startGame = function (table, next) {
         nextUserId: newPokeGame.grabbingLord.nextUserId,
         seqNo: (player.userId == newPokeGame.grabbingLord.nextUserId ? seqNo : 0),
         msgNo: msgNo,
-        timing: 20
+        timing: 10
       };
       //newPokeGame.playerMsgs[player.userId] = [];
       newPokeGame.playerMsgs[player.userId].push([eventName, eventData]);
@@ -301,7 +304,7 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
     }
     actionResult.seqNo = pokeGame.token.currentSeqNo;
     actionResult.msgNo = msgNo;
-    actionResult.timing = (!!pokeGame.lordPlayerId) ? 30 : 20;
+    actionResult.timing = (!!pokeGame.lordPlayerId) ? 30 : 10;
 
     pokeGame.playerMsgs[pokeGame.players[0].userId].push([eventName, actionResult]);
     pokeGame.playerMsgs[pokeGame.players[1].userId].push([eventName, actionResult]);
@@ -348,13 +351,17 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
         function(timeoutTable, timeoutPlayer, timeoutSeq){
           self.grabLord(timeoutTable, timeoutPlayer, 1, timeoutSeq, null);
         },
-        21);
+        10);
     } else {
       setupNextPlayerTimeout(table,
         function(timeoutTable, timeoutPlayer, timeoutSeq){
-          self.playCard(timeoutTable, timeoutPlayer, timeoutPlayer.pokeCards[0].pokeChar , timeoutSeq, true, null);
+          var cardInfo = CardInfo.create(timeoutPlayer.pokeCards);
+          CardAnalyzer.analyze(cardInfo);
+          var card = AIEngine.findLordFirstCard(cardInfo, cardInfo, cardInfo);
+
+          self.playCard(timeoutTable, timeoutPlayer, card.getPokeChars() , timeoutSeq, true, null);
         },
-        31);
+        10);
     }
 
 
@@ -480,7 +487,17 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
         var pokeGame = timeoutTable.pokeGame;
         if (!!pokeGame) {
           if (pokeGame.lastPlay.userId == timeoutPlayer.userId) {
-            pokeChars = timeoutPlayer.pokeCards[0].pokeChar;
+            //pokeChars = timeoutPlayer.pokeCards[0].pokeChar;
+            var cardInfo = CardInfo.create(timeoutPlayer.pokeCards);
+            CardAnalyzer.analyze(cardInfo);
+            var firstCard = AIEngine.findLordFirstCard(cardInfo, cardInfo, cardInfo);
+            pokeChars = firstCard.getPokeChars();
+          } else {
+            var cardInfo = CardInfo.create(timeoutPlayer.pokeCards);
+            CardAnalyzer.analyze(cardInfo);
+            var firstCard = AIEngine.findLordPlayCard(cardInfo, cardInfo, cardInfo, pokeGame.lastPlay.card);
+            if (!!firstCard)
+              pokeChars = firstCard.getPokeChars();
           }
           self.playCard(timeoutTable, timeoutPlayer, pokeChars, timeoutSeqNo, true, null);
         }

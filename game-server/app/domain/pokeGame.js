@@ -91,12 +91,12 @@ var __toParams = function(model, excludeAttrs) {
     grabbingLord: model.grabbingLord
   };
 
-  for (var index in model.players) {
+  for (var index=0; index<model.players.length; index++) {
     transObj.players.push( model.players[index].toParams() );
   }
 
   if (!!excludeAttrs) {
-    for (var index in excludeAttrs) {
+    for (var index=0; index<excludeAttrs.length; index++) {
       delete transObj[excludeAttrs[index]];
     }
   }

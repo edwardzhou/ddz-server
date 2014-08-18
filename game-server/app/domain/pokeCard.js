@@ -76,7 +76,7 @@ PokeCard.init = function() {
   allPokeCards.push(pokeCard);
 //  allPokeCardsMap[pokeCard.id] = pokeCard;
 
-  for(var index in allPokeCards) {
+  for(var index=0; index<allPokeCards.length; index++) {
     var pokeCard = allPokeCards[index];
     allPokeCardsMap[pokeCard.id] = pokeCard;
     allPokeCardsCharMap[pokeCard.pokeChar] = pokeCard;
@@ -139,7 +139,7 @@ PokeCard.getPokeValuesChars = function(pokeCards, sorted) {
   }
 
   var s = '';
-  for (var index in tmpPokeCards) {
+  for (var index=0; index<tmpPokeCards.length; index++) {
     s = s + tmpPokeCards[index].valueChar;
   }
 

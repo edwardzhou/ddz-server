@@ -17,7 +17,7 @@ app.set('name', 'ddz_server');
 app.configure('production|development', function () {
 
   app.set('proxyConfig', {
-    timeout: 10 * 60 * 1000
+    timeout: 100 * 60 * 1000
   });
 
   app.enable('systemMonitor');

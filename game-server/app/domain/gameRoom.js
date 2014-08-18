@@ -73,7 +73,7 @@ roomSchema.methods.initRoom = function(opts) {
   this.tableNextId = 1;
 
   if (!!opts.tables) {
-    for(var index in opts.tables) {
+    for(var index=0; index<opts.tables.length; index++) {
       var table = opts.tables[index]
       this.tables.push(table);
       this.tablesMap[table.tableId] = table;
@@ -231,7 +231,7 @@ var __toParams = function(model, excludeAttrs) {
   };
 
   if (!!excludeAttrs) {
-    for (var index in excludeAttrs) {
+    for (var index=0; index<excludeAttrs.length; index++) {
       delete transObj[excludeAttrs[index]];
     }
   }

@@ -27,8 +27,11 @@ testcases = [
   , 'ACEGJLMOQRghmnqstu'   // 44, 5, 66, 7, 8, 9, 0, J, QQQ, AA, 222, W
 ];
 
+var gamePokes = PokeCard.shuffle();
+var pokes = gamePokes.slice(0, 17);
+var farmer1_pokes = gamePokes.slice(17, 34);
+var farmer2_pokes = gamePokes.slice(34, 51);
 
-var pokes = PokeCard.shuffle().slice(0, 17);
 pokes = PokeCard.pokeCardsFromChars('DKOQRSVWZ]_chkmps');
 
 console.time('CardInfo create');
@@ -64,6 +67,8 @@ for (var index=0; index<cardResults.length; index++) {
   cardResults[index].dumpSimple();
 }
 
+
+
 function testAICard(card, cardInfo) {
   var testResult = AIEngine.findGreaterThan(card, cardInfo);
 
@@ -72,9 +77,9 @@ function testAICard(card, cardInfo) {
     var remainingPokes = cardInfo.pokeCards.slice(0).exclude(testResult.card.pokeCards);
     var newCardInfo = CardInfo.create(remainingPokes);
     CardAnalyzer.analyze(newCardInfo);
-    for (var index=0; index<newCardInfo.cardResults.length; index++) {
-      //newCardInfo.cardResults[index].dump("\t");
-      newCardInfo.cardResults[index].dumpSimple("\t");
+    for (var index=0; index<newCardInfo.cardPlans.length; index++) {
+      //newCardInfo.cardPlans[index].dump("\t");
+      newCardInfo.cardPlans[index].dumpSimple("\t");
     }
   } else {
     console.log('no bigger than: ' , testCard.getPokeValueChars());
@@ -101,3 +106,28 @@ testAICard(testCard, ci);
 console.log('---------------------------------------------')
 testCard = new Card( PokeCard.getByIds("a03, b04, c05, a06, a07,a08, a09") );
 testAICard(testCard, ci);
+
+
+function testFirstPlay() {
+  var f1_cardInfo = CardInfo.create(farmer1_pokes);
+  CardAnalyzer.analyze(f1_cardInfo);
+  var f2_cardInfo = CardInfo.create(farmer2_pokes);
+  CardAnalyzer.analyze(f2_cardInfo);
+
+  var index = 1;
+  var card = AIEngine.findLordFirstCard(ci, f1_cardInfo, f2_cardInfo);
+  while(!!card) {
+    console.log(index + ' Play: ' , card.getPokeValueChars());
+    var pokes = ci.pokeCards.slice(0).exclude(card.pokeCards);
+    if (pokes.length > 0) {
+      ci = CardInfo.create(pokes);
+      CardAnalyzer.analyze(ci);
+      card = AIEngine.findLordFirstCard(ci, f1_cardInfo, f2_cardInfo);
+    } else {
+      card = null;
+    }
+    index++;
+  }
+}
+
+testFirstPlay();

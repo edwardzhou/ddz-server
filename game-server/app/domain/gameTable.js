@@ -42,12 +42,12 @@ var __toParams = function(model, excludeAttrs) {
     players: []
   };
 
-  for (var index in model.players) {
+  for (var index=0; index<model.players.length; index++) {
     transObj.players.push( model.players[index].toParams() );
   }
 
   if (!!excludeAttrs) {
-    for (var index in excludeAttrs) {
+    for (var index=0; index<excludeAttrs.length; index++) {
       delete transObj[excludeAttrs[index]];
     }
   }
@@ -79,7 +79,7 @@ GameTable.prototype.release = function() {
 
 
 GameTable.prototype.getPlayerByUserId = function(userId) {
-  for (var index in this.players) {
+  for (var index=0; index < this.players.length; index++) {
     if (userId == this.players[index].playerId) {
       return this.players[index];
     }
