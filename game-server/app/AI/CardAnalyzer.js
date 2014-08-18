@@ -89,11 +89,11 @@ CardAnalyzer.analyzePlanA = function(cardInfo) {
   var tmpWorkingGroups = CardAnalyzer.processStraights(cardInfo, cardPlan);
 
   var remaingPokecards = tmpWorkingGroups.getPokecards();
-  var remaingCardInfo = CardInfo.create(remaingPokecards);
-
-
-  cardPlan.singlesCards = AIHelper.groupsToCards(remaingCardInfo.singles);
-  cardPlan.pairsCards.append(AIHelper.groupsToCards(remaingCardInfo.pairs));
+  if (remaingPokecards.length > 0) {
+    var remaingCardInfo = CardInfo.create(remaingPokecards);
+    cardPlan.singlesCards = AIHelper.groupsToCards(remaingCardInfo.singles);
+    cardPlan.pairsCards.append(AIHelper.groupsToCards(remaingCardInfo.pairs));
+  }
   cardPlan.calculate();
 
   return cardPlan;

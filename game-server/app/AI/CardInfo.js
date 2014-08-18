@@ -60,7 +60,8 @@ CardInfo.create = function(pokeCards) {
       group.push(pokeCards[index]);
     }
   }
-  pokeGroups.push(new PokeGroup(group));
+  if (group.length > 0)
+    pokeGroups.push(new PokeGroup(group));
 
   var cardInfo = new CardInfo();
   cardInfo.pokeCards = pokeCards;
