@@ -16,7 +16,7 @@ exp.area = function(session, msg, app, cb) {
       serverId = area_servers[index].id;
     } else if(typeof(area_servers[index].room_id) == 'string') {
       var rid = area_servers[index].room_id;
-      var room_ids = rid.substring(1, rid.length-1).split(',')
+      var room_ids = eval(rid);
       for (var room_index=0; index<room_ids.length; index++) {
         if (parseInt(room_ids[room_index]) == room_id) {
           serverId = area_servers[index].id;

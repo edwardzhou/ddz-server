@@ -4,6 +4,7 @@ var EventEmitter = require('events').EventEmitter;
 var PlayerState = require('../consts/consts').PlayerState;
 var PlayerRole = require('../consts/consts').PlayerRole;
 var cardUtil = require('../util/cardUtil');
+var DdzProfile = require('./ddzProfile');
 
 var Player = function(opts) {
   opts = opts || {};
@@ -103,6 +104,34 @@ Player.prototype.getUidSid = function() {
 
 Player.prototype.pokeCardsString = function() {
   return cardUtil.pokeCardsToString(this.pokeCards);
+};
+
+Player.prototype.updateCoins = function(coins) {
+  var self = this;
+  DdzProfile.findOneQ({userId: self.userId})
+    .then(function(ddzProfile) {
+      if (ddzProfile == null) {
+        ddzProfile = new DdzProfile();
+        ddzProfile.coins = 20000;
+        ddzProfile.userId = self.userId;
+      }
+
+      ddzProfile.coins = ddzProfile.coins || 20000;
+
+      ddzProfile.coins += coins;
+      if (coins > 0) {
+        ddzProfile.gameStat.won ++;
+      } else {
+        ddzProfile.gameStat.lose ++;
+      }
+      return ddzProfile.saveQ();
+    })
+    .then(function(ddzProfile) {
+      console.log('[Player.updateCoins] userId: ' + self.userId + ' , coins: ' + ddzProfile.coins);
+    })
+    .fail(function(err) {
+      console.error('[Player.updateCoins] ERROR userId: ' + self.userId + ', ', err);
+    });
 };
 
 Player.prototype.reset = function() {

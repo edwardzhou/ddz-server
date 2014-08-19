@@ -140,6 +140,7 @@ var calcNormalGameOver = function(table, player) {
 
   score.players = [];
   if (player.isLord()) {
+    player.updateCoins(score.raked_total);
     score.players.push({
       userId: player.userId,
       nickName: player.nickName,
@@ -159,6 +160,8 @@ var calcNormalGameOver = function(table, player) {
       score: score.total / -2,
       pokeCards: CardUtil.pokeCardsToString(player2.pokeCards)
     });
+    player1.updateCoins(score.total / -2);
+    player2.updateCoins(score.total / -2);
   } else {
     var lordUser, farmerUser;
     if (player1.isLord) {
@@ -169,6 +172,10 @@ var calcNormalGameOver = function(table, player) {
       farmerUser = player1;
     }
     var winScore = Math.round(score.raked_total / 2)
+
+    lordUser.updateCoins(-1 * score.total);
+    player.updateCoins(winScore);
+    farmerUser.updateCoins(winScore);
 
     score.players.push({
       userId: lordUser.userId,

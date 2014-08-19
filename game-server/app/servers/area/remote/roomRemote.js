@@ -27,6 +27,7 @@ var RoomRemote = function(app) {
   this.channelService = app.get('channelService');
   this.sessionService = app.get('localSessionService');
   this.cardService = app.get('cardService');
+  this._onStartNewGame = this.onStartNewGame.bind(this);
 };
 
 var remoteHandler = RoomRemote.prototype;
@@ -76,19 +77,7 @@ remoteHandler.enter = function(uid, sid, sessionId, room_id, cb) {
 //        messageService.pushTableMessage(table, "onPlayerJoin", msg, null);
 //      });
 
-      roomService.enterRoom(player, room_id, -1, function(table) {
-        for (var index=0; index<table.players.length; index++) {
-          var p = table.players[index];
-          p.userSession.sset('roomId', table.room.roomId);
-          p.userSession.sset('tableId', table.tableId);
-        }
-        var msg = table.toParams();
-        process.nextTick(function() {
-          messageService.pushTableMessage(table, "onPlayerJoin", msg, function() {
-            self.cardService.startGame(table);
-          });
-        });
-      });
+      roomService.enterRoom(player, room_id, -1, self._onStartNewGame);
 
       // 返回结果
       cb(null, thisServerId, {});
@@ -97,6 +86,24 @@ remoteHandler.enter = function(uid, sid, sessionId, room_id, cb) {
   });
 
 };
+
+remoteHandler.onStartNewGame = function(table) {
+  var self = this;
+
+  for (var index=0; index<table.players.length; index++) {
+    var p = table.players[index];
+    if (!p.robot) {
+      p.userSession.sset('roomId', table.room.roomId);
+      p.userSession.sset('tableId', table.tableId);
+    }
+  }
+  var msg = table.toParams();
+  process.nextTick(function() {
+    messageService.pushTableMessage(table, "onPlayerJoin", msg, function() {
+      self.cardService.startGame(table);
+    });
+  });
+}
 
 remoteHandler.reenter = function(uid, sid, sessionId, room_id, table_id, msgNo, cb) {
   var player = roomService.getRoom(room_id).getPlayer(uid);

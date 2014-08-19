@@ -47,6 +47,7 @@ DdzProfile = require('./app/domain/ddzProfile');
 userDao = require('./app/dao/userDao');
 UserSession = require('./app/domain/userSession');
 GameRoom = require('./app/domain/gameRoom');
+Card = require('./app/domain/card');
 UserService = require('./app/services/userService');
 cardUtil = require('./app/util/cardUtil');
 

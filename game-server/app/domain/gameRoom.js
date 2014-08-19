@@ -4,6 +4,7 @@ var utils = require('../util/utils');
 var GameTable = require('./gameTable');
 var PlayerState = require('../consts/consts').PlayerState;
 var Player = require('./player');
+var User = require("./user");
 
 /**
  * 房间Mongodb架构的字段定义
@@ -72,6 +73,9 @@ roomSchema.methods.initRoom = function(opts) {
   // 下一张新桌子的Id
   this.tableNextId = 1;
 
+  this.robots = [];
+  this.idle_robots = [];
+
   if (!!opts.tables) {
     for(var index=0; index<opts.tables.length; index++) {
       var table = opts.tables[index]
@@ -85,6 +89,25 @@ roomSchema.methods.initRoom = function(opts) {
   if(!!opts.tableNextId) {
     this.tableNextId = Number(opts.tableNextId);
   }
+
+  this.startNewGameCallback = null;
+
+  this.loadRobots();
+
+};
+
+roomSchema.methods.loadRobots = function() {
+  var self = this;
+  User.find({robot:true})
+    .limit(10)
+    .execQ()
+    .then(function(users) {
+      for (var index=0; index<users.length; index++) {
+        var robotPlayer = new Player(users[index]);
+        self.robots.push(robotPlayer);
+        self.idle_robots.push(robotPlayer);
+      }
+    });
 };
 
 /**
@@ -168,9 +191,47 @@ roomSchema.methods.releaseTable = function(table) {
   this.tables.splice(index, 1);
   delete this.tablesMap[table.tableId];
   table.room = null;
+
+  for (var playerIndex=0; playerIndex<table.players.length; playerIndex++) {
+    var player = table.players[playerIndex];
+    if (!!player && player.robot) {
+      this.idle_robots.push(player);
+    }
+  }
+};
+
+roomSchema.methods.clearPlayerReadyTimeout = function() {
+  if (!!this.playerReadyTimeout) {
+    clearTimeout(this.playerReadyTimeout);
+  }
+  this.playerReadyTimeout = null;
+};
+
+roomSchema.methods.onPlayerReadyTimeout = function() {
+  if (!!this.playerReadyTimeout) {
+    clearTimeout(this.playerReadyTimeout);
+    this.playerReadyTimeout = null;
+  }
+
+  if (this.readyPlayers.length < 3) {
+    if (this.idle_robots.length >= 3 - this.readyPlayers.length) {
+      var players = this.readyPlayers.splice(0, 3);
+      players = players.concat(this.idle_robots.splice(0, 3-players.length));
+      console.log('[roomSchema.methods.onPlayerReadyTimeout] arrange robots:', players);
+      var table = this.arrangeTable(players);
+      this.tables.push(table);
+      this.tablesMap[table.tableId] = table;
+
+      console.log('this.startNewGameCallback ', this.startNewGameCallback);
+      utils.invokeCallback(this.startNewGameCallback, table);
+    } else {
+      this.playerReadyTimeout = setTimeout(this.onPlayerReadyTimeout.bind(this), 10 * 1000);
+    }
+  }
 };
 
 roomSchema.methods.playerReady = function(player, callback) {
+  this.clearPlayerReadyTimeout();
   var player = this.playersMap[player.userId];
   player.state = PlayerState.READY;
   this.readyPlayers.push(player);
@@ -181,6 +242,10 @@ roomSchema.methods.playerReady = function(player, callback) {
     this.tablesMap[table.tableId] = table;
 
     utils.invokeCallback(callback, table);
+  }
+
+  if (this.readyPlayers.length >0) {
+    this.playerReadyTimeout = setTimeout(this.onPlayerReadyTimeout.bind(this), 10 * 1000);
   }
 };
 

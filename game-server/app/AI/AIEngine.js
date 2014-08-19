@@ -134,8 +134,6 @@ AIEngine.findGreaterStraight = function(card, cardInfo) {
     }
   }
 
-
-
   return null;
 };
 
@@ -436,7 +434,7 @@ AIEngine.findGreaterThan = function(card, cardInfo) {
   switch (card.cardType) {
     case CardType.BOMB:
     case CardType.FOUR_WITH_TWO_PAIRS:
-      result = AIEngine.findGreaterBomb(card);
+      result = AIEngine.findGreaterBomb(card, cardInfo);
       if(!!result)
         break;
 
@@ -562,7 +560,8 @@ AIEngine.findLordFirstCard = function(lordCardInfo, prevFarmerCardInfo, nextFarm
 
       if (lordPlan.pairsCards.length >= cardLength) {
         if (lordPlan.pairsCards[cardLength - 1].maxPokeValue < PokeCardValue.TWO) {
-          var pokes = lordPlan.pairsCards.slice(0, cardLength).map(function(card) { return card.pokeCards[0];});
+          var pokes = [];
+          lordPlan.pairsCards.slice(0, cardLength).reduce(function(p, card) { return p.append(card.pokeCards);}, pokes);
           return new Card(lordPlan.threesStraightsCards[0].pokeCards.concat(pokes));
         }
       }
@@ -617,7 +616,7 @@ AIEngine.findLordPlayCard = function(lordCardInfo, prevFarmerCardInfo, nextFarme
   var cardResult = AIEngine.findGreaterThan(lastCard, lordCardInfo);
   if (!cardResult) {
     var plan = lordCardInfo.cardPlans[0]
-    if (plan.bombsCards.length > 0) {
+    if (plan.bombsCards.length > 0 && cardUtil.compare(plan.bombsCards[0], lastCard)) {
       return plan.bombsCards[0];
     }
     if (plan.rocketsCards.length >0) {

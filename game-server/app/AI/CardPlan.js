@@ -42,9 +42,9 @@ CardPlan.prototype.calculate = function() {
   this.hands += this.pairsCards.length;
   var allThreesCount = this.threesCards.length + this.threesStraightsCards.length;
   var allSinglePairCount = this.singlesCards.length + this.pairsCards.length;
-  if ( allThreesCount > 0 && allThreesCount < allSinglePairCount) {
+  if ( allThreesCount > 0 && allThreesCount <= allSinglePairCount) {
     this.hands -= allThreesCount;
-  } else if (allThreesCount > 0 && allThreesCount>allSinglePairCount) {
+  } else if (allThreesCount > 0 && allThreesCount>=allSinglePairCount) {
     this.hands -= allSinglePairCount;
   }
 
