@@ -172,6 +172,10 @@ PokeGame.prototype.getPlayerByUserId = function(userId) {
   return null;
 };
 
+PokeGame.prototype.getTokenPlayer = function() {
+  return this.getPlayerByUserId(this.token.nextUserId);
+};
+
 PokeGame.prototype.getPlayerIndex = function(userId) {
   for (var index in this.players) {
     if (this.players[index].userId == userId)

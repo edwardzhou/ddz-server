@@ -202,6 +202,14 @@ exp.playerReadyTimeout = function(table, player, next) {
 
 };
 
+exp.getPlayerTiming = function(player, actionType) {
+  if (!!player.delegating || player.robot) {
+    return 2;
+  }
+
+  return 10;
+};
+
 /**
  * 开始牌局
  * @param table - 要开始牌局的桌子
@@ -240,12 +248,13 @@ exp.startGame = function (table, next) {
 
 //    var grabbingLordPlayer = newPokeGame.getPlayerByUserId(newPokeGame.grabbingLord.nextUserId);
 //    newPokeGame.actionTimeout
+    //var nextPlayer = newPokeGame.getTokenPlayer();
 
     setupNextPlayerTimeout(table,
       function(timeoutTable, timeoutPlayer, timeoutSeq){
         self.grabLord(timeoutTable, timeoutPlayer, 1, timeoutSeq, null);
       },
-    15);
+      self.getPlayerTiming(newPokeGame.getTokenPlayer()));
   });
 
 
@@ -351,7 +360,7 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
         function(timeoutTable, timeoutPlayer, timeoutSeq){
           self.grabLord(timeoutTable, timeoutPlayer, 1, timeoutSeq, null);
         },
-        10);
+        self.getPlayerTiming(pokeGame.getTokenPlayer()));
     } else {
       setupNextPlayerTimeout(table,
         function(timeoutTable, timeoutPlayer, timeoutSeq){
@@ -361,7 +370,7 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
 
           self.playCard(timeoutTable, timeoutPlayer, card.getPokeChars() , timeoutSeq, true, null);
         },
-        10);
+        self.getPlayerTiming(pokeGame.getTokenPlayer()));
     }
 
 
@@ -479,7 +488,7 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
     if (player.pokeCards.length > 0) {
       var nextPlayer = pokeGame.getPlayerByUserId(pokeGame.token.nextUserId);
       var nextTimeout = 10;
-      if (!!nextPlayer.delegating) {
+      if (!!nextPlayer.delegating || nextPlayer.robot) {
         nextTimeout = 2;
       }
       setupNextPlayerTimeout(table, function(timeoutTable, timeoutPlayer, timeoutSeqNo){
@@ -501,7 +510,7 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
           }
           self.playCard(timeoutTable, timeoutPlayer, pokeChars, timeoutSeqNo, true, null);
         }
-      }, nextTimeout);
+      }, self.getPlayerTiming(pokeGame.getTokenPlayer()));
     }
 //    setupNextPlayerTimeout(table, function(table, player, seqNo) {
 //        self.playCard(table, player, '', seqNo, true, null);

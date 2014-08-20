@@ -143,6 +143,8 @@ CardInfo.getRockets = function (pokeGroups) {
     group.push(pokeGroups.get(count-1).get(0));
     group.push(pokeGroups.get(count-2).get(0));
     rockets.push(new PokeGroup(group));
+    pokeGroups.remove(pokeGroups.get(count-1));
+    pokeGroups.remove(pokeGroups.get(count-2));
   }
 
   return rockets;

@@ -342,6 +342,11 @@ AIEngine.findGreaterSingle = function(card, cardInfo) {
   // 找最小单牌
   for (var cardIndex=0; cardIndex<plan.singlesCards.length; cardIndex++) {
     var otherCard = plan.singlesCards[cardIndex];
+    if (otherCard.maxPokeValue > PokeCardValue.TWO) {
+      var s = 5;
+      s ++;
+    }
+
     if (cardUtil.compare(otherCard, card)) {
       return new CardResult(otherCard, null);
     }
@@ -396,6 +401,12 @@ AIEngine.findGreaterSingle = function(card, cardInfo) {
     if (group.pokeCards.length == 2
       && group.pokeCards[0].value == PokeCardValue.SMALL_JOKER) {
       continue;
+    }
+
+    if (group.pokeCards[0].value > PokeCardValue.TWO) {
+      // for break point
+      var s2 = 0;
+      s2++;
     }
 
     if (group.pokeValue > card.maxPokeValue) {

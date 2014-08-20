@@ -25,6 +25,7 @@ testcases = [
   , 'ACEGJLMORU[]hlmntv' // 33, 44, 55, 66, 7, 8, 9, 0, Q, K, AA, 2, W
   , 'EFLMORU[]cfghmnqstu'   // 44, 5, 66, 7, 8, 9, 0, J, QQQ, AA, 222, W
   , 'ACEGJLMOQRghmnqstu'   // 44, 5, 66, 7, 8, 9, 0, J, QQQ, AA, 222, W
+  , 'AHKNTU\\`abqrstuv'
 ];
 
 var gamePokes = PokeCard.shuffle();
@@ -32,7 +33,7 @@ var pokes = gamePokes.slice(0, 17);
 var farmer1_pokes = gamePokes.slice(17, 34);
 var farmer2_pokes = gamePokes.slice(34, 51);
 
-pokes = PokeCard.pokeCardsFromChars('DKOQRSVWZ]_chkmps');
+pokes = PokeCard.pokeCardsFromChars('AHKNTU\\`abqrstuv');
 
 console.time('CardInfo create');
 ci = CardInfo.create(pokes);
