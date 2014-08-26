@@ -98,7 +98,8 @@
       "required uInt32 userId": 1,
       "required string nickName": 2,
       "required int32 score": 3,
-      "optional string pokeCards": 4
+      "optional DdzProfile ddzProfile": 4,
+      "optional string pokeCards": 5
     },
     "required float rake": 1,
     "required uInt32 ante": 2,

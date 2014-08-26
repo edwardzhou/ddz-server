@@ -27,14 +27,26 @@ app.configure('production|development', function () {
   var authConnection = require('./app/filters/authConnection');
   app.before(authConnection());
   app.before(require('./app/filters/signedIn')());
-});
 
-app.configure('production|development', 'userSystem|area|auth', function() {
-  app.enable('rpcDebugLog');
   var mongodbCfg = app.get('mongodb');
   var mongoose = require('mongoose');
   mongoose.connect(mongodbCfg.url, mongodbCfg.options, function(err) {
   });
+
+  var GameServerInstance = require('./app/domain/GameServerInstance');
+  GameServerInstance.findQ({})
+    .then(function(instances) {
+      app.set('gameInstances', instances);
+    })
+
+});
+
+app.configure('production|development', 'userSystem|area|auth', function() {
+  //app.enable('rpcDebugLog');
+//  var mongodbCfg = app.get('mongodb');
+//  var mongoose = require('mongoose');
+//  mongoose.connect(mongodbCfg.url, mongodbCfg.options, function(err) {
+//  });
 });
 
 // app configuration
@@ -59,23 +71,39 @@ app.configure('production|development', 'ddz|gate', function () {
 // Configure for area server
 app.configure('production|development', 'area', function () {
   require('./app/util/cardUtil').buildCardTypes();
+  var curServerId = app.getServerId();
+  logger.info("app.getServerId: %s", curServerId);
   var servers = app.getServersByType('area');
-  logger.info("app.getServerId: %s", app.getServerId());
-  logger.info("servers: %s", servers);
-  var room_id = app.getCurServer().room_id;
-  var room_ids = [];
-  logger.info('room_id: %s , typeof => %s', room_id, typeof room_id);
-  if (typeof room_id == 'string') {
-    room_id = room_id.substring(1, room_id.length-1);
-    room_ids = room_id.split(',');
-    for (var index in room_ids) {
-      room_ids[index] = parseInt(room_ids[index]);
-    }
-  } else if(!!room_id && parseInt(room_id) > 0) {
-    room_ids.push(room_id);
+  //logger.info("servers: %s", servers);
+
+  if (!!app.getCurServer().instance) {
+    var GameServerInstance = require('./app/domain/GameServerInstance');
+    GameServerInstance.findOneQ({serverId: curServerId})
+      .then(function(gameServer) {
+        logger.info('Server: %s init with rooms: %j', curServerId, gameServer.roomIds);
+        roomService.init(app, gameServer.roomIds);
+      })
+      .fail(function(error) {
+        logger.error('ERROR: failed to load GameServerInstance for [%s]', curServerId, error);
+      });
   }
 
-  roomService.init(app, room_ids);
+
+
+//  var room_id = app.getCurServer().room_id;
+//  var room_ids = [];
+//  logger.info('room_id: %s , typeof => %s', room_id, typeof room_id);
+//  if (typeof room_id == 'string') {
+//    room_id = room_id.substring(1, room_id.length-1);
+//    room_ids = room_id.split(',');
+//    for (var index in room_ids) {
+//      room_ids[index] = parseInt(room_ids[index]);
+//    }
+//  } else if(!!room_id && parseInt(room_id) > 0) {
+//    room_ids.push(room_id);
+//  }
+//
+//  roomService.init(app, room_ids);
   require('./app/services/messageService').init(app);
   var cardService = require('./app/services/cardServiceFactory').createNormalCardService();
   app.set('cardService', cardService);

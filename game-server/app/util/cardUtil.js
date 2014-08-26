@@ -150,7 +150,7 @@ cardUtil.buildCardTypes = function() {
       combChars.push(cmb);
     }
     return combChars;
-  }
+  };
 
   //cardUtil.getValidIdCharsCombination = getValidIdCharsCombination;
 
@@ -424,10 +424,26 @@ cardUtil.buildCardTypes = function() {
         };
 
         _allCardTypes[newId] = cardType;
-
-
       }
 
+      var pairIds = idChars.slice(0, 13);
+      pairIds.splice(index, 1);
+      for (var pindex=0; pindex<pairIds.length; pindex++) {
+        idArray = [pairIds[pindex], pairIds[pindex]];
+        newId = typeId;
+        if (idChars.indexOf(idArray[0]) < index) {
+          newId = idArray.join('') + newId;
+        } else {
+          newId = newId + idArray.join('');
+        }
+
+        cardType = {cardType: CardType.FOUR_WITH_TWO,
+          cardLength: 1,
+          maxPokeValue: idValues[ idChars[index] ]
+        };
+
+        _allCardTypes[newId] = cardType;
+      }
     }
   };
 
@@ -457,7 +473,7 @@ if (fs.existsSync(typesFile)) {
   console.log('cardUtil.buildCardTypes');
 }
 
-//cardUtil.allCardTypes = _allCardTypes;
+cardUtil.allCardTypes = _allCardTypes;
 
 module.exports = cardUtil;
 

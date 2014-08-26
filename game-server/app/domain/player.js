@@ -146,3 +146,14 @@ Player.prototype.reset = function() {
     this.userSession.sset('gameId', null);
   }
 };
+
+Player.prototype.fetchDdzProfile = function(callback) {
+  DdzProfile.fineOneQ({userId: this.userId})
+    .then(function(ddzProfile) {
+      utils.invokeCallback(callback, ddzProfile);
+    })
+    .failed(function(error) {
+      console.error('[Player.fetchDdzProfile] ERROR userId: ' + self.userId + ', ', err);
+      utils.invokeCallback(callback, null);
+    });
+};

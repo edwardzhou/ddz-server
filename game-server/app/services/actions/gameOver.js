@@ -4,6 +4,7 @@
 
 var utils = require('../../util/utils');
 var PokeCard = require('../../domain/pokeCard');
+var DdzProfile = require('../../domain/ddzProfile');
 var CardUtil = require('../../util/cardUtil');
 var PlayerRole = require('../../consts/consts').PlayerRole;
 var PlayerState = require('../../consts/consts').PlayerState;
@@ -224,10 +225,23 @@ GameOverAction.doGameOver = function(table, player, cb) {
   result.score.rakeValue = result.score.total - result.score.rakedTotal;
   result.score.players = pokeGame.score.players.slice(0);
 
-//
-//  table.players[0].reset();
-//  table.players[1].reset();
-//  table.players[2].reset();
+  DdzProfile.findQ({userId: {$in: pokeGame.score.players.map(function(u) {return u.userId}) }})
+    .then(function(ddzProfiles){
+      for (var index=0;index<result.score.players.length;index++) {
+        var p = result.score.players[index];
+        for (var pIndex=0; pIndex<ddzProfiles.length; pIndex++) {
+          var ddzProfile = ddzProfiles[pIndex];
+          if (ddzProfile.userId == p.userId) {
+            p.ddzProfile = ddzProfile.toParams();
+            break;
+          }
+        }
+      }
 
-  utils.invokeCallback(cb, null, result.score);
+      utils.invokeCallback(cb, null, result.score);
+    })
+    .then(function(error) {
+      utils.invokeCallback(cb, null, result.score);
+    });
+
 };
