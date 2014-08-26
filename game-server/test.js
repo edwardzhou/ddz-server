@@ -73,6 +73,23 @@ var pokes = PokeCard.shuffle().slice(0, 17);
 pokes = PokeCard.pokeCardsFromChars('jlt');
 console.log('first 5 pokes is ' + cardUtil.pokeCardsToValueString(pokes) + '\n');
 
+var checkDdzProfile = function(user) {
+  DdzProfile.findOneQ({userId: user.userId})
+    .then(function(ddzProfile) {
+      if (ddzProfile == null) {
+        console.log('create ddz profile for userId ', user.userId);
+        ddzProfile = new DdzProfile({userId: user.userId});
+        return ddzProfile.saveQ();
+      }
+    })
+    .done();
+};
+
+User.findQ({})
+  .then(function(users) {
+    users.forEach(checkDdzProfile);
+  });
+
 //for (var index=0; index<testcases.length; index++) {
 //  console.log('\n\n');
 //  var cardInfo = CardInfo.create( PokeCard.pokeCardsFromChars(testcases[index]));

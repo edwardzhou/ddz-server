@@ -6,7 +6,7 @@ var mongoose = require('mongoose-q')();
 
 var DdzProfileSchema = mongoose.Schema({
   userId: Number,
-  coins: Number,
+  coins: {type:Number, default: 10000},
   gameStat: {
     won: {type: Number, default: 0},
     lose: {type: Number, default: 0}
@@ -37,6 +37,7 @@ var DdzProfileSchema = mongoose.Schema({
   avatar: String
 });
 
+
 var __toParams = function(model, excludeAttrs) {
   var transObj = {
     coins: model.coins,
@@ -56,6 +57,15 @@ DdzProfileSchema.statics.toParams = __toParams;
 
 DdzProfileSchema.methods.toParams = function(excludeAttrs) {
   return __toParams(this, excludeAttrs);
+};
+
+DdzProfileSchema.methods.updateCoins = function(coins) {
+  this.coins += coins;
+  if (coins > 0) {
+    this.gameStat.won ++;
+  } else if (coins < 0) {
+    this.gameStat.lose ++;
+  }
 };
 
 

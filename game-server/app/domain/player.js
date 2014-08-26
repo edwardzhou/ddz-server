@@ -39,6 +39,14 @@ var __toParams = function(model, excludeAttrs) {
     role: model.role
   };
 
+  if (!!model.ddzProfile) {
+    if (!!model.ddzProfile.toParams) {
+      transObj.ddzProfile = model.ddzProfile.toParams();
+    } else {
+      transObj.ddzProfile = model.ddzProfile;
+    }
+  }
+
   if (!!excludeAttrs) {
     for (var index=0; index<excludeAttrs.length; index++) {
       delete transObj[excludeAttrs[index]];
@@ -107,31 +115,32 @@ Player.prototype.pokeCardsString = function() {
 };
 
 Player.prototype.updateCoins = function(coins) {
-  var self = this;
-  DdzProfile.findOneQ({userId: self.userId})
-    .then(function(ddzProfile) {
-      if (ddzProfile == null) {
-        ddzProfile = new DdzProfile();
-        ddzProfile.coins = 20000;
-        ddzProfile.userId = self.userId;
-      }
-
-      ddzProfile.coins = ddzProfile.coins || 20000;
-
-      ddzProfile.coins += coins;
-      if (coins > 0) {
-        ddzProfile.gameStat.won ++;
-      } else {
-        ddzProfile.gameStat.lose ++;
-      }
-      return ddzProfile.saveQ();
-    })
-    .then(function(ddzProfile) {
-      console.log('[Player.updateCoins] userId: ' + self.userId + ' , coins: ' + ddzProfile.coins);
-    })
-    .fail(function(err) {
-      console.error('[Player.updateCoins] ERROR userId: ' + self.userId + ', ', err);
-    });
+//  var self = this;
+//  if (this.ddzProfile)
+//  DdzProfile.findOneQ({userId: self.userId})
+//    .then(function(ddzProfile) {
+//      if (ddzProfile == null) {
+//        ddzProfile = new DdzProfile();
+//        ddzProfile.coins = 20000;
+//        ddzProfile.userId = self.userId;
+//      }
+//
+//      ddzProfile.coins = ddzProfile.coins || 20000;
+//
+//      ddzProfile.coins += coins;
+//      if (coins > 0) {
+//        ddzProfile.gameStat.won ++;
+//      } else {
+//        ddzProfile.gameStat.lose ++;
+//      }
+//      return ddzProfile.saveQ();
+//    })
+//    .then(function(ddzProfile) {
+//      console.log('[Player.updateCoins] userId: ' + self.userId + ' , coins: ' + ddzProfile.coins);
+//    })
+//    .fail(function(err) {
+//      console.error('[Player.updateCoins] ERROR userId: ' + self.userId + ', ', err);
+//    });
 };
 
 Player.prototype.reset = function() {
