@@ -34,6 +34,8 @@ PlayCardAction.doPlayCard = function(table, player, pokeChars, cb) {
     return false;
   }
 
+  logger.info('pokes: ', PokeCard.getPokeValuesChars(pokeCards));
+
   // 不是玩家手中的牌
   if (! utils.arrayIncludes(player.pokeCards, pokeCards)) {
     logger.error('%s is not owned by player [%d]', pokeChars, player.userId);

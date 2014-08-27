@@ -11,6 +11,7 @@ var Player = function(opts) {
   EventEmitter.call(this, opts);
   this.pokeCards = opts.pokeCards || [];
   this.initPokeCards = this.pokeCardsString();
+  this.gender = opts.gender;
   this.userId = opts.userId;
   this.nickName = opts.nickName;
   this.serverId = opts.serverId;

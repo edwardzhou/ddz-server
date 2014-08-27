@@ -170,7 +170,7 @@ var calcNormalGameOver = function(table, player) {
     });
   } else {
     var lordUser, farmerUser;
-    if (player1.isLord) {
+    if (player1.isLord()) {
       lordUser = player1;
       farmerUser = player2;
     } else {
