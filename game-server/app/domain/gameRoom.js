@@ -234,7 +234,9 @@ roomSchema.methods.playerReady = function(player, callback) {
   this.clearPlayerReadyTimeout();
   var player = this.playersMap[player.userId];
   player.state = PlayerState.READY;
-  this.readyPlayers.push(player);
+  if (this.readyPlayers.indexOf(player) < 0)
+    this.readyPlayers.push(player);
+
   while (this.readyPlayers.length > 2) {
     var players = this.readyPlayers.splice(0, 3);
     var table = this.arrangeTable(players);
@@ -277,6 +279,10 @@ roomSchema.methods.leave = function(playerId) {
   var table = this.getGameTable(player.tableId);
 //  table.removePlayer(playerId);
   delete this.playersMap[playerId];
+  var index = this.readyPlayers.indexOf(player);
+  if (index>=0) {
+    this.readyPlayers.splice(index, 1);
+  }
   player.tableId = -1;
   return table;
 };
