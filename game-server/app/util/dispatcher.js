@@ -31,6 +31,10 @@ module.exports.dispatch = function(uid, connectors) {
     }
   }
 
+  if (!hostIp) {
+    hostIp = connectors[index].clientHost;
+  }
+
   var result = {
     host: hostIp,
     port: connectors[index].clientPort
