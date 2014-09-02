@@ -18,7 +18,14 @@ var Handler = function(app) {
 };
 
 Handler.prototype.getShopItems = function(msg, session, next) {
-  DdzGoodsPackage.getGoodsPackagesQ().then(function(packages) {
+  this.app.rpc.area.hallRemote.getGoodsPackages.toServer('room-server', null, null, null, function(err, packages) {
+    logger.info('[Handler.prototype.getShopItems] hallRemote.getGoodsPackages =>', packages);
     utils.invokeCallback(next, null, packages);
+//    utils.invokeCallback(next, null, JSON.stringify(packages));
+//    next(null, {result: 'ok'});
   });
+};
+
+Handler.prototype.buyItem = function(msg, session, next) {
+
 };

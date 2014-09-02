@@ -39,6 +39,7 @@ GoodsItemSchema.methods.toParams = function(excludeAttrs) {
 };
 
 var ddzGoodsPackageSchema = new mongoose.Schema({
+  packageId: String,
   packageName: String,
   packageDesc: String,
   packageType: String,
@@ -64,19 +65,23 @@ var itemsToParams = function(items) {
 
 var __toParams = function(model, excludeAttrs) {
   var transObj = {
+    packageId: model.packageId,
     packageName: model.packageName,
     packageDesc: model.packageDesc,
     packageType: model.packageType,
     packageIcon: model.packageIcon,
     price: model.price,
-    sortIndex: model.sortIndex,
-    items: itemsToParams(model.items)
+    sortIndex: model.sortIndex
   };
 
   if (!!excludeAttrs) {
     for (var index=0; index<excludeAttrs.length; index++) {
       delete transObj[excludeAttrs[index]];
     }
+  }
+
+  if (!excludeAttrs || excludeAttrs.indexOf('items')<0 && !!model.items) {
+    transObj.items = itemsToParams(model.items);
   }
 
   return transObj;

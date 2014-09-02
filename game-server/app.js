@@ -41,8 +41,8 @@ app.configure('production|development', function () {
 
 });
 
-app.configure('production|development', 'userSystem|area|auth', function() {
-  //app.enable('rpcDebugLog');
+app.configure('production|development', 'userSystem|area|auth|ddz', function() {
+  app.enable('rpcDebugLog');
 //  var mongodbCfg = app.get('mongodb');
 //  var mongoose = require('mongoose');
 //  mongoose.connect(mongodbCfg.url, mongodbCfg.options, function(err) {

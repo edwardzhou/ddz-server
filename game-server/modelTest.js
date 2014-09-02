@@ -25,5 +25,52 @@ DdzGoodsPackage = require('./app/domain/ddzGoodsPackage');
 
 hall = require('./app/servers/area/remote/hallRemote')();
 
-hall.getGoodsPackages(null, null, null, cb);
+setTimeout(function(){
+  hall.getGoodsPackages(null, null, null, function(err, obj) {
+    console.log(err, JSON.stringify(obj));
+  });
+}, 1000);
 
+removeAllPackages = function () {
+  DdzGoodsPackage.remove({}, cb);
+};
+
+initPackages = function () {
+  var pkg = null;
+
+  pkg = new DdzGoodsPackage({
+    packageName: '黑铁宝箱',
+    packageDesc: '20,000金币',
+    packageIcon: 'bag1.png',
+    price: 200,
+    sortIndex: 1
+  });
+  pkg.save();
+
+  pkg = new DdzGoodsPackage({
+    packageName: '白银宝箱',
+    packageDesc: '40,000金币',
+    packageIcon: 'bag2.png',
+    price: 400,
+    sortIndex: 2
+  });
+  pkg.save();
+
+  pkg = new DdzGoodsPackage({
+    packageName: '钻石宝箱',
+    packageDesc: '200,000金币',
+    packageIcon: 'bag4.png',
+    price: 1000,
+    sortIndex: 4
+  });
+  pkg.save();
+
+  pkg = new DdzGoodsPackage({
+    packageName: '黄金宝箱',
+    packageDesc: '60,000金币',
+    packageIcon: 'bag3.png',
+    price: 600,
+    sortIndex: 3
+  });
+  pkg.save();
+};

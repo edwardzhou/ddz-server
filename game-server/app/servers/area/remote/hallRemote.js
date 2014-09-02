@@ -9,7 +9,7 @@ var format = require('util').format;
 var utils = require('../../../util/utils');
 var ErrorCode = require('../../../consts/errorCode');
 
-var _goodsPackages = null;
+var _goodsPackages = [];
 
 module.exports = function(app) {
   return new HallRemote(app);
@@ -48,16 +48,26 @@ remoteHandler.refreshGoodsPackages = function(cb) {
           var goodsItem = goodsPackage.items[itemIndex];
           goodsItem.goods = _goodsMap[goodsItem.goodsId];
         }
-        _goodsPackages.push(goodsPackage.toParams());
+        _goodsPackages.push(goodsPackage.toParams(['items']));
 
       }
     })
     .fail(function(error) {
       console.error(error);
+
     });
 
 };
 
 remoteHandler.getGoodsPackages = function(uid, frontendId, sessionId, cb) {
   utils.invokeCallback(cb, null, _goodsPackages);
+};
+
+remoteHandler.buyPackage = function(msg, cb) {
+  var frontendId = msg.frontendId;
+  var sessionId = msg.sessionId;
+  var userId = msg.uid;
+  var packageId = msg.pkgId;
+
+  
 };
