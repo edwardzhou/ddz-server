@@ -54,7 +54,9 @@ Handler.prototype.authConn = function(msg, session, next) {
     return;
   }
 
-  User.findOneQ({userId: userId})
+  User.findOne({userId: userId})
+    .populate('ddzProfile')
+    .execQ()
     .then(function(user){
       if (user == null) {
         results.error = {needSignUp: true};
@@ -97,12 +99,12 @@ Handler.prototype.authConn = function(msg, session, next) {
 
       return Q.nbind(session.pushAll, session)();
     })
-    .then(function() {
-      return DdzProfile.findOneQ({userId: results.user.userId});
-    })
-    .then(function(ddzProfile) {
-      results.user.ddzProfile = ddzProfile;
-    })
+//    .then(function() {
+//      return DdzProfile.findOneQ({userId: results.user.userId});
+//    })
+//    .then(function(ddzProfile) {
+//      results.user.ddzProfile = ddzProfile;
+//    })
     .then(function(){
       if (session.frontendId.indexOf('gate')>=0) {
         var connectors = self.app.getServersByType('ddz');

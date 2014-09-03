@@ -14,14 +14,18 @@ UserId = require('./app/domain/userId');
 
 mongoose.connections[0].on('error', cb);
 
-User = require('./app/domain/user');
 DdzProfile = require('./app/domain/ddzProfile');
+User = require('./app/domain/user');
 userDao = require('./app/dao/userDao');
 UserSession = require('./app/domain/userSession');
 GameRoom = require('./app/domain/gameRoom');
 UserService = require('./app/services/userService');
 DdzGoods = require('./app/domain/ddzGoods');
 DdzGoodsPackage = require('./app/domain/ddzGoodsPackage');
+PurchaseOrder = require('./app/domain/purchaseOrder');
+DdzGoodsPackageService = require('./app/services/ddzGoodsPackageService');
+
+DdzGoodsPackageService.init();
 
 hall = require('./app/servers/area/remote/hallRemote')();
 
@@ -74,3 +78,48 @@ initPackages = function () {
   });
   pkg.save();
 };
+
+fixUserProfiles = function() {
+  DdzProfile.findQ({})
+    .then( function(ddzProfiles) {
+      for (var index=0; index<ddzProfiles.length; index++) {
+        var profile = ddzProfiles[index];
+        console.log('profile: ', profile);
+        console.log('start to profile: ', profile.userId);
+        (function(p) {
+          User.findOneQ({userId: p.userId})
+            .then(function(user){
+              console.log('start to fix user ', user.userId);
+              user.ddzProfile = p;
+              user.saveQ()
+                .then(function(u) {
+                  console.log('update user %d ddzProfile ok.', u.userId);
+                })
+                .fail(function(error) {
+                  console.error('update user failed: ' , error);
+                })
+            });
+        })(profile);
+      }
+    })
+    .fail(function (error) {
+      console.error('find profiles error: ', error);
+    });
+};
+
+testDeliverPackage = function(poId) {
+  PurchaseOrder.findOneQ({_id: poId})
+    .then(function(po) {
+      return DdzGoodsPackageService.deliverPackageQ(po);
+    })
+    .then(function() {
+      console.log('ok');
+    })
+    .fail(function(error) {
+      console.error(error);
+    });
+};
+
+setTimeout(function(){
+  testDeliverPackage('5406cb143c5251a875ff59a3');
+}, 1000);

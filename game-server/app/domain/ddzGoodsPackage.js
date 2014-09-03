@@ -10,12 +10,12 @@ var utils = require('../util/utils');
 var GoodsItemSchema = new mongoose.Schema({
   goodsId: mongoose.Schema.Types.ObjectId,
   goodsCount: {type: Number, default: 1},
-  sorIndex: {type: Number, defualt: 255}
+  sortIndex: {type: Number, defualt: 255}
 });
 
 __GoodsItemToParams = function(model, excludeAttrs) {
   var transObj = {
-    goodsId: model.id,
+    goodsId: model.goodsId,
     goodsCount: model.goodsCount,
     sortIndex: model.sortIndex
   };
@@ -49,6 +49,8 @@ var ddzGoodsPackageSchema = new mongoose.Schema({
   sortIndex: {type: Number, default: 255},
   createdAt: {type: Date, default: Date.now},
   updatedAt: {type: Date, default: Date.now}
+}, {
+  collection: 'ddz_goods_packages'
 });
 
 ddzGoodsPackageSchema.statics.getGoodsPackagesQ = function() {

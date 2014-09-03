@@ -29,7 +29,7 @@ var roomSchemaFields = {
 };
 
 // 根据字段定义创建架构，再生成房间信息模型
-var roomSchema = new mongoose.Schema(roomSchemaFields);
+var roomSchema = new mongoose.Schema(roomSchemaFields, {collection: 'game_rooms'});
 
 /**
  * 找出玩家数量等于count的桌子，排除桌子id为excludeTableId的桌子

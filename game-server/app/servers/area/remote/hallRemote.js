@@ -5,11 +5,13 @@ var logger = require('pomelo-logger').getLogger('pomelo', __filename);
 var UserSession = require('../../../domain/userSession');
 var DdzGoodsPackage = require('../../../domain/ddzGoodsPackage');
 var DdzGoods = require('../../../domain/ddzGoods');
+var PurchaseOrder = require('../../../domain/purchaseOrder');
 var format = require('util').format;
 var utils = require('../../../util/utils');
 var ErrorCode = require('../../../consts/errorCode');
 
 var _goodsPackages = [];
+var _goodsPackagesMap = {};
 
 module.exports = function(app) {
   return new HallRemote(app);
@@ -28,8 +30,9 @@ var remoteHandler = HallRemote.prototype;
 
 remoteHandler.refreshGoodsPackages = function(cb) {
   _goodsPackages = [];
+  _goodsPackagesMap = {};
   _goodsMap = {};
-  var goodsPkgs = [];
+  //var goodsPkgs = [];
 
   DdzGoods.findQ({})
     .then(function(ddzGoods) {
@@ -48,6 +51,7 @@ remoteHandler.refreshGoodsPackages = function(cb) {
           var goodsItem = goodsPackage.items[itemIndex];
           goodsItem.goods = _goodsMap[goodsItem.goodsId];
         }
+        _goodsPackagesMap[goodsPackage.packageId] = goodsPackage;
         _goodsPackages.push(goodsPackage.toParams(['items']));
 
       }
@@ -69,5 +73,14 @@ remoteHandler.buyPackage = function(msg, cb) {
   var userId = msg.uid;
   var packageId = msg.pkgId;
 
-  
+  var package = _goodsPackagesMap[packageId];
+
+  PurchaseOrder.createOrderQ(userId, package, null, 1000)
+    .then(function(po) {
+      utils.invokeCallback(cb, null, po.toParams());
+    })
+    .fail(function(error) {
+      logger.error('[HallRemote.buyPackage] error: ', error)
+      utils.invokeCallback(cb, error, null);
+    });
 };

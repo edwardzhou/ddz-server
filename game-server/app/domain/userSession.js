@@ -11,11 +11,15 @@ var utils = require('../util/utils');
 var userSessionSchema = new mongoose.Schema({
   userId: Number,
   mac: String,
+  frontendId: String,
+  frontendSessionId: Number,
   sessionToken: {type:String, default: uuid.v1},
   sessionStart: {type:Date, default: Date.now},
   sessionData: {type: Schema.Types.Mixed, default: {_placeholder:0}},
   createdAt: {type: Date, default: Date.now},
   updatedAt: {type: Date, default: Date.now, expires: 60 * 60}
+}, {
+  collection: 'user_sessions'
 });
 
 userSessionSchema.index({sessionToken: 1});

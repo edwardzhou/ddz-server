@@ -35,6 +35,8 @@ var DdzProfileSchema = mongoose.Schema({
   },
   vipLevel: Number,
   avatar: String
+}, {
+  collection: 'ddz_user_profiles'
 });
 
 

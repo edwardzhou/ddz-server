@@ -4,7 +4,7 @@
 var format = require('util').format;
 var logger = require('pomelo-logger').getLogger(__filename);
 var utils = require('../../../util/utils');
-
+var Result = require('../../../domain/result');
 var DdzGoodsPackage = require('../../../domain/ddzGoodsPackage');
 
 
@@ -27,5 +27,16 @@ Handler.prototype.getShopItems = function(msg, session, next) {
 };
 
 Handler.prototype.buyItem = function(msg, session, next) {
+  msg.uid = session.uid;
 
+  this.app.rpc.area.hallRemote.buyPackage.toServer('room-server', msg, function(err, pkg) {
+    var result;
+    if (!err) {
+      result = new Result(0);
+      result.pkg = pkg;
+    } else {
+      result = new Result(1000, 0, err.toString());
+    }
+    utils.invokeCallback(next, null, result);
+  });
 };

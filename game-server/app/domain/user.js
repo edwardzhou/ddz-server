@@ -3,6 +3,7 @@ var mongoose = require('mongoose-q')();
 
 var crypto = require('crypto');
 var DomainBase = require('./domainBase');
+//var DdzProfile = require('./ddzProfile');
 
 //var signUpSchema = mongoose
 
@@ -65,6 +66,7 @@ var userSchema = new mongoose.Schema({
     },
     signedInTime: {type: Date, default: Date.now}
   },
+  ddzProfile: {type: mongoose.Schema.Types.ObjectId, ref: 'DdzProfile'},
   createdAt: {type: Date, default: Date.now},
   updatedAt: {type: Date, default: Date.now}
 });
@@ -185,9 +187,13 @@ var __toParams = function(model, excludeAttrs) {
     authToken: model.authToken,
     gender: model.gender,
     headIcon: model.headIcon,
-    ddzProfile: model.ddzProfile.toParams(),
     lastSignedInTime: model.lastSignedIn.signedInTime
   };
+  //ddzProfile: model.ddzProfile.toParams(),
+
+  if (!!model.ddzProfile && !!model.ddzProfile.toParams) {
+    transObj.ddzProfile = model.ddzProfile.toParams();
+  }
 
   if (!!excludeAttrs) {
     for (var index=0; index<excludeAttrs.length; index++) {

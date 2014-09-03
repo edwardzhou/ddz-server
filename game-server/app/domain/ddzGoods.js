@@ -16,6 +16,8 @@ var ddzGoodsSchema = new mongoose.Schema({
   sortIndex: {type: Number, default: 255},
   createdAt: {type: Date, default: Date.now},
   updatedAt: {type: Date, default: Date.now}
+}, {
+  collection: 'ddz_goods'
 });
 
 
@@ -26,6 +28,7 @@ var __toParams = function(model, excludeAttrs) {
     goodsDesc: model.goodsDesc,
     goodsType: model.goodsType,
     packageIcon: model.packageIcon,
+    goodsProps: model.goodsProps,
     sortIndex: model.sortIndex
   };
 

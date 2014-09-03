@@ -39,7 +39,9 @@ UserService.signInByAuthToken = function(signInParams, callback) {
   var mac = handsetInfo.mac;
   var result = {};
 
-  User.findOneQ({userId: userId})
+  User.findOne({userId: userId})
+    .populate('ddzProfile')
+    .execQ()
     .then(function(user) {
       if (user == null) {
         throw genError(ErrorCode.USER_NOT_FOUND);
@@ -65,12 +67,12 @@ UserService.signInByAuthToken = function(signInParams, callback) {
     .then(function(newUserSession){
       result.userSession = newUserSession;
     })
-    .then(function() {
-      return DdzProfile.findOneQ({userId: result.user.userId});
-    })
-    .then(function(ddzProfile) {
-      result.user.ddzProfile = ddzProfile;
-    })
+//    .then(function() {
+//      return DdzProfile.findOneQ({userId: result.user.userId});
+//    })
+//    .then(function(ddzProfile) {
+//      result.user.ddzProfile = ddzProfile;
+//    })
     .then(function(){
       utils.invokeCallback(callback, null, result);
     })
@@ -87,7 +89,9 @@ UserService.signInByPassword = function(signInParams, callback) {
   var handsetInfo = signInParams.handset || {};
   var result = {};
 
-  User.findOneQ({userId: userId})
+  User.findOne({userId: userId})
+    .populate('ddzProfile')
+    .execQ()
     .then(function(user) {
       if (user == null) {
         throw genError(ErrorCode.USER_NOT_FOUND);
@@ -116,12 +120,12 @@ UserService.signInByPassword = function(signInParams, callback) {
     .then(function(newUserSession){
       result.userSession = newUserSession;
     })
-    .then(function() {
-      return DdzProfile.findOneQ({userId: result.user.userId});
-    })
-    .then(function(ddzProfile) {
-      result.user.ddzProfile = ddzProfile;
-    })
+//    .then(function() {
+//      return DdzProfile.findOneQ({userId: result.user.userId});
+//    })
+//    .then(function(ddzProfile) {
+//      result.user.ddzProfile = ddzProfile;
+//    })
     .then(function(){
       utils.invokeCallback(callback, null, result);
     })
