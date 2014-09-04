@@ -42,7 +42,7 @@ app.configure('production|development', function () {
 });
 
 app.configure('production|development', 'userSystem|area|auth|ddz', function() {
-  app.enable('rpcDebugLog');
+//  auth.enable('rpcDebugLog');
 //  var mongodbCfg = app.get('mongodb');
 //  var mongoose = require('mongoose');
 //  mongoose.connect(mongodbCfg.url, mongodbCfg.options, function(err) {
@@ -70,11 +70,9 @@ app.configure('production|development', 'ddz|gate', function () {
 
 // Configure for area server
 app.configure('production|development', 'area', function () {
-  require('./app/util/cardUtil').buildCardTypes();
+  // require('./app/util/cardUtil').buildCardTypes();
   var curServerId = app.getServerId();
   logger.info("app.getServerId: %s", curServerId);
-  var servers = app.getServersByType('area');
-  //logger.info("servers: %s", servers);
 
   if (!!app.getCurServer().instance) {
     var GameServerInstance = require('./app/domain/GameServerInstance');
@@ -88,22 +86,6 @@ app.configure('production|development', 'area', function () {
       });
   }
 
-
-
-//  var room_id = app.getCurServer().room_id;
-//  var room_ids = [];
-//  logger.info('room_id: %s , typeof => %s', room_id, typeof room_id);
-//  if (typeof room_id == 'string') {
-//    room_id = room_id.substring(1, room_id.length-1);
-//    room_ids = room_id.split(',');
-//    for (var index in room_ids) {
-//      room_ids[index] = parseInt(room_ids[index]);
-//    }
-//  } else if(!!room_id && parseInt(room_id) > 0) {
-//    room_ids.push(room_id);
-//  }
-//
-//  roomService.init(app, room_ids);
   require('./app/services/messageService').init(app);
   var cardService = require('./app/services/cardServiceFactory').createNormalCardService();
   app.set('cardService', cardService);

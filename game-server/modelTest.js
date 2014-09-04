@@ -24,6 +24,7 @@ DdzGoods = require('./app/domain/ddzGoods');
 DdzGoodsPackage = require('./app/domain/ddzGoodsPackage');
 PurchaseOrder = require('./app/domain/purchaseOrder');
 DdzGoodsPackageService = require('./app/services/ddzGoodsPackageService');
+PubSubEvent = require('./app/domain/pubSubEvent');
 
 DdzGoodsPackageService.init();
 
@@ -120,6 +121,20 @@ testDeliverPackage = function(poId) {
     });
 };
 
-setTimeout(function(){
-  testDeliverPackage('5406cb143c5251a875ff59a3');
-}, 1000);
+//setTimeout(function(){
+//  testDeliverPackage('');
+//}, 1000);
+//
+
+_subs = [];
+testSubscribe = function(query) {
+  query = query || {active: 1};
+  s = PubSubEvent.find(query)
+    .tailable({awaitdata:true})
+    .setOptions({numberOfRetries: 100000})
+    .stream().on('data', cb)
+    .on('close', function(){ console.log('closed'); })
+    .on('error', function(err) { console.error(err); });
+  _subs.push(s);
+};
+

@@ -3,6 +3,8 @@
  */
 var mongoose = require('mongoose-q')();
 
+var uuid = require('node-uuid');
+
 var PurchaseOrderSchema = mongoose.Schema({
   orderId: String,
   userId: Number,
@@ -23,6 +25,7 @@ var PurchaseOrderSchema = mongoose.Schema({
 
 PurchaseOrderSchema.statics.createOrderQ = function(userId, goodsPackage, payMethod, appid) {
   var newOrder = new this();
+  newOrder.orderId = uuid.v4().replace(/-/g, '').substr(0, 16);
   newOrder.userId = userId;
   newOrder.appid = appid;
   newOrder.packageId = goodsPackage.packageId;
