@@ -49,6 +49,8 @@ Handler.prototype.signIn = function(msg, session, next) {
   loginInfo.authToken = msg.authToken;
   loginInfo.password = msg.password;
   loginInfo.handset = msg.handsetInfo;
+  loginInfo.frontendId = session.frontendId;
+  loginInfo.frontendSessionId = session.id;
 
   if (!msg.authToken && !msg.password) {
     // 参数无效
@@ -93,7 +95,7 @@ Handler.prototype.signUp = function(msg, session, next) {
     .then(function(user) {
       // 2. 创建userSession用于跨链接共享用户数据
       results.user = user;
-      return createUserSessionQ(user.userId, handsetInfo.mac);
+      return createUserSessionQ(user.userId, handsetInfo.mac, session.frontendId, session.id);
     })
     .then(function(newUserSession) {
       // 3. 绑定到session

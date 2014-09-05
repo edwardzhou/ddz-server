@@ -90,6 +90,13 @@ app.configure('production|development', 'area', function () {
   var cardService = require('./app/services/cardServiceFactory').createNormalCardService();
   app.set('cardService', cardService);
   tableService.init();
+
+  if (curServerId == 'room-server') {
+    var chargeEventService = require('./app/services/chargeEventService');
+    chargeEventService.init(app, {});
+    //app.use(chargeServer, {});
+  }
+
 });
 
 app.configure('production|development', function () {

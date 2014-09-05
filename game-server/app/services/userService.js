@@ -37,6 +37,8 @@ UserService.signInByAuthToken = function(signInParams, callback) {
   var authToken = signInParams.authToken;
   var handsetInfo = signInParams.handset || {};
   var mac = handsetInfo.mac;
+  var frontendId = signInParams.frontendId;
+  var frontendSessionId = signInParams.frontendSessionId;
   var result = {};
 
   User.findOne({userId: userId})
@@ -62,7 +64,8 @@ UserService.signInByAuthToken = function(signInParams, callback) {
       return UserSession.removeQ({userId: result.user.userId});
     })
     .then(function(){
-      return createUserSessionQ(result.user.userId, mac);
+      return createUserSessionQ(result.user.userId, handsetInfo.mac, frontendId, frontendSessionId);
+      //return createUserSessionQ(result.user.userId, mac);
     })
     .then(function(newUserSession){
       result.userSession = newUserSession;
@@ -86,6 +89,8 @@ UserService.signInByAuthToken = function(signInParams, callback) {
 UserService.signInByPassword = function(signInParams, callback) {
   var userId = signInParams.userId;
   var password = signInParams.password;
+  var frontendId = signInParams.frontendId;
+  var frontendSessionId = signInParams.frontendSessionId;
   var handsetInfo = signInParams.handset || {};
   var result = {};
 
@@ -115,7 +120,7 @@ UserService.signInByPassword = function(signInParams, callback) {
       return UserSession.removeQ({userId: result.user.userId});
     })
     .then(function() {
-      return createUserSessionQ(result.user.userId, handsetInfo.mac);
+      return createUserSessionQ(result.user.userId, handsetInfo.mac, frontendId, frontendSessionId);
     })
     .then(function(newUserSession){
       result.userSession = newUserSession;
@@ -150,8 +155,6 @@ UserService.signUp = function(signUpParams, cb) {
 
   var userId = null;
   var results = {};
-
-
 
   retrieveNextUserId()
     .then(function(newUserId) {

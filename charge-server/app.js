@@ -10,11 +10,15 @@ var dummy = require('./app/routes/dummy');
 
 var mongoose = require('mongoose');
 
-var app = express();
 
 mongoose.connect("mongodb://dev/new_ddz_dev", {}, function(err) {
-  console.error('connect to mongodb failed:' , err);
+  if (!!err)
+    console.error('connect to mongodb failed:' , err);
+  else
+    console.info('mongodb connected.');
 });
+
+var app = express();
 
 
 // view engine setup
@@ -67,5 +71,8 @@ app.use(function(err, req, res, next) {
 module.exports = app;
 
 console.log("Charge server has started.\nPlease log on http://127.0.0.1:8001");
+process.on('uncaughtException', function (err) {
+  console.error(' Caught exception: ' + err.stack);
+});
 
 app.listen(8001);

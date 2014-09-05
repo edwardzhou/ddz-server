@@ -78,6 +78,8 @@ Handler.prototype.authConn = function(msg, session, next) {
       }
 
       results.userSession = usersession;
+      results.userSession.frontendId = session.frontendId;
+      results.userSession.frontendSessionId = session.id;
       return results.userSession.touchQ();
     })
     .then(function() {

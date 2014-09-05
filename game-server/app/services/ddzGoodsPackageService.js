@@ -3,6 +3,7 @@
  */
 var logger = require('pomelo-logger').getLogger('pomelo', __filename);
 var DdzGoods = require('../domain/ddzGoods');
+var User = require('../domain/user');
 var pomeloApp = null;
 var DdzGoodsPackageService = module.exports;
 
@@ -35,6 +36,10 @@ DdzGoodsPackageService.deliverPackageQ = function(purchaseOrder) {
       return user.ddzProfile.saveQ();
     })
     .then(function() {
+      purchaseOrder.status = 1;
+      return purchaseOrder.saveQ();
+    })
+    .then(function(po) {
       return user;
     });
 };

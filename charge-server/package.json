@@ -16,6 +16,7 @@
     "mongodb": "*",
     "mongoose": "3.x",
     "mongoose-q": "*",
-    "q": "*"
+    "q": "*",
+    "node-uuid": "*"
   }
 }
