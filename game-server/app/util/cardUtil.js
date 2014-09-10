@@ -128,10 +128,14 @@ cardUtil.buildCardTypes = function() {
     var seedIdChars = idChars.slice(0, idChars.length-2);
     seedIdChars.splice(exIndex, exLength);
     var addIdChars = [];
-    for (var _i in seedIdChars) {
+    for (var _i=0; _i<seedIdChars.length; _i++) {
       addIdChars.push(seedIdChars[_i]);
-      if (!!dup)
+      if (!!dup) {
         addIdChars.push(seedIdChars[_i]);
+        if (combLength > 3) {
+          addIdChars.push(seedIdChars[_i]);
+        }
+      }
     }
     if (!!includeJoker) {
       addIdChars.push('w');
@@ -289,7 +293,7 @@ cardUtil.buildCardTypes = function() {
 
   // 生成飞机（三顺带单张）牌型
   var buildPlaneCardType = function () {
-    for (var pairsLength=2; pairsLength <= 3; pairsLength++) {
+    for (var pairsLength=2; pairsLength <= 4; pairsLength++) {
       for (var index=0; index <= 12 - pairsLength; index++) {
         var typeId = '';
         for (var id = index; id < index + pairsLength; id++) {
@@ -326,7 +330,7 @@ cardUtil.buildCardTypes = function() {
 
   // 生成飞机带翅膀（三顺带对子）牌型
   var buildPlaneWithWingCardType = function () {
-    for (var pairsLength=2; pairsLength <= 3; pairsLength++) {
+    for (var pairsLength=2; pairsLength <= 4; pairsLength++) {
       for (var index=0; index <= 12 - pairsLength; index++) {
         var typeId = '';
         for (var id = index; id < index + pairsLength; id++) {

@@ -3,6 +3,7 @@
  */
 var User = require('../domain/user');
 var UserId = require('../domain/userId');
+var DataKeyId = require('../domain/dataKeyId');
 var DdzProfile = require('../domain/ddzProfile');
 var UserSession = require('../domain/userSession');
 var ErrorCode = require('../consts/errorCode');
@@ -156,7 +157,7 @@ UserService.signUp = function(signUpParams, cb) {
   var userId = null;
   var results = {};
 
-  retrieveNextUserId()
+  DataKeyId.nextUserIdQ()
     .then(function(newUserId) {
       var nickName = userInfo.nickName || newUserId.toString();
       var user = new User({
@@ -188,6 +189,9 @@ UserService.signUp = function(signUpParams, cb) {
     .then(function(ddzProfile) {
       results.ddzProfile = ddzProfile;
       results.user.ddzProfile = ddzProfile;
+      return results.user.saveQ();
+    })
+    .then(function(){
       utils.invokeCallback(cb, null, results.user);
     })
     .fail(function(error) {

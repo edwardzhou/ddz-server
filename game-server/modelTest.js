@@ -26,6 +26,8 @@ PurchaseOrder = require('./app/domain/purchaseOrder');
 DdzGoodsPackageService = require('./app/services/ddzGoodsPackageService');
 PubSubEvent = require('./app/domain/pubSubEvent');
 
+DataKeyId = require('./app/domain/dataKeyId');
+
 DdzGoodsPackageService.init();
 
 hall = require('./app/servers/area/remote/hallRemote')();
@@ -34,7 +36,7 @@ setTimeout(function(){
   hall.getGoodsPackages(null, null, null, function(err, obj) {
     console.log(err, JSON.stringify(obj));
   });
-}, 1000);
+}, 2000);
 
 removeAllPackages = function () {
   DdzGoodsPackage.remove({}, cb);
