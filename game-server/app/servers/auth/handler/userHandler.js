@@ -38,6 +38,8 @@ var Handler = function(app) {
 Handler.prototype.signIn = function(msg, session, next) {
   var self = this;
 
+  var results = null;
+
   if (msg == null) {
     utils.invokeCallback(next, null, {err: 500});
     return;
@@ -64,17 +66,30 @@ Handler.prototype.signIn = function(msg, session, next) {
     } else {
       return signInByPasswordQ(loginInfo);
     }
-  }).then(function(result) {
-      var resp = {};
-      resp.user = result.user.toParams();
-      resp.sessionToken = result.userSession.sessionToken;
-      var connectors = self.app.getServersByType('ddz');
-      if(!connectors || connectors.length === 0) {
-        utils.invokeCallback(callback, null, {err:Code.GATE.NO_SERVER_AVAILABLE} );
-        return;
-      }
+  })
+    .then(function(r) {
+      results = r;
 
-      resp.server = dispatcher.dispatch(result.user.userId, connectors);
+      session.set('userId', results.user.userId);
+      session.set('sessionToken', results.userSession.sessionToken);
+      session.bind(results.user.userId);
+      logger.info('[auth.userHandler.signIn] session => ', session);
+      return Q.nbind(session.pushAll, session)();
+    })
+    .then(function() {
+      var resp = {};
+      resp.user = results.user.toParams();
+      resp.sessionToken = results.userSession.sessionToken;
+
+      if (session.frontendId.indexOf('gate')>=0) {
+        var connectors = self.app.getServersByType('ddz');
+        if(!connectors || connectors.length === 0) {
+          utils.invokeCallback(callback, null, {err:Code.GATE.NO_SERVER_AVAILABLE} );
+          return;
+        }
+
+        resp.server = dispatcher.dispatch(results.user.userId, connectors);
+      }
 
       utils.invokeCallback(next, null, resp);
     })
@@ -101,7 +116,7 @@ Handler.prototype.signUp = function(msg, session, next) {
       // 3. 绑定到session
       results.userSession = newUserSession;
       session.bind(results.user.userId);
-      session.set('userId', results.user.UserId);
+      session.set('userId', results.user.userId);
       session.set('sessionToken', results.userSession.sessionToken);
       return Q.nbind(session.pushAll, session)();
     })
@@ -111,14 +126,24 @@ Handler.prototype.signUp = function(msg, session, next) {
         sessionToken : results.userSession.sessionToken
       };
 
-      var connectors = self.app.getServersByType('ddz');
-      if(!connectors || connectors.length === 0) {
-        utils.invokeCallback(next, null, {err:Code.GATE.NO_SERVER_AVAILABLE} );
-        return;
+      if (session.frontendId.indexOf('gate')>=0) {
+        var connectors = self.app.getServersByType('ddz');
+        if(!connectors || connectors.length === 0) {
+          utils.invokeCallback(callback, null, {err:Code.GATE.NO_SERVER_AVAILABLE} );
+          return;
+        }
+
+        resp.server = dispatcher.dispatch(results.user.userId, connectors);
       }
 
-      // 成功返回用户信息
-      resp.server = dispatcher.dispatch(results.user.userId, connectors);
+//      var connectors = self.app.getServersByType('ddz');
+//      if(!connectors || connectors.length === 0) {
+//        utils.invokeCallback(next, null, {err:Code.GATE.NO_SERVER_AVAILABLE} );
+//        return;
+//      }
+//
+//      // 成功返回用户信息
+//      resp.server = dispatcher.dispatch(results.user.userId, connectors);
       utils.invokeCallback(next, null, resp);
     })
     .fail(function(error) {
