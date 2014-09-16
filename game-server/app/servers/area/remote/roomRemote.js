@@ -120,14 +120,31 @@ remoteHandler.reenter = function(uid, sid, sessionId, room_id, table_id, msgNo, 
 
     if (!!table.pokeGame) {
       var playerMsgs = table.pokeGame.playerMsgs[uid];
-      process.nextTick(function() {
-        for (var index=0; index<playerMsgs.length; index++) {
-          var msg = playerMsgs[index];
-          if (msg[1].msgNo > msgNo) {
-            messageService.pushMessage(msg[0], msg[1], [player.getUidSid()], null);
-          }
+      var index = 0;
+      var next = function() {
+        if (index >= playerMsgs.length) {
+          return;
         }
-      });
+
+        var msg = playerMsgs[index++];
+        if (msg[1].msgNo > msgNo) {
+          messageService.pushMessage(msg[0], msg[1], [player.getUidSid()], null);
+          setTimeout(next, 200);
+        } else {
+          next();
+        }
+      };
+
+      process.nextTick(next);
+
+//      process.nextTick(function() {
+//        for (var index=0; index<playerMsgs.length; index++) {
+//          var msg = playerMsgs[index];
+//          if (msg[1].msgNo > msgNo) {
+//            messageService.pushMessage(msg[0], msg[1], [player.getUidSid()], null);
+//          }
+//        }
+//      });
     }
     cb(null, []);
   } else {

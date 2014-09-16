@@ -204,10 +204,10 @@ exp.playerReadyTimeout = function(table, player, next) {
 
 exp.getPlayerTiming = function(player, actionType) {
   if (!!player.delegating || player.robot) {
-    return 2;
+    return 5;
   }
 
-  return 10;
+  return 30;
 };
 
 /**
