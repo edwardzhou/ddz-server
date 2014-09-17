@@ -213,9 +213,11 @@ roomSchema.methods.onPlayerReadyTimeout = function() {
     this.playerReadyTimeout = null;
   }
 
-  if (this.readyPlayers.length < 3) {
+  var readyPlayers = this.readyPlayers.filter(function(p) {return !p.left;});
+
+  if (this.readyPlayers.length < 3 && this.readyPlayers.length>0) {
     if (this.idle_robots.length >= 3 - this.readyPlayers.length) {
-      var players = this.readyPlayers.splice(0, 3);
+      var players = readyPlayers.splice(0, 3);
       players = players.concat(this.idle_robots.splice(0, 3-players.length));
       console.log('[roomSchema.methods.onPlayerReadyTimeout] arrange robots:', players);
       var table = this.arrangeTable(players);
@@ -277,6 +279,7 @@ roomSchema.methods.getPlayer = function(playerId) {
 roomSchema.methods.leave = function(playerId) {
   var player = this.getPlayer(playerId);
   var table = this.getGameTable(player.tableId);
+  player.left = true;
 //  table.removePlayer(playerId);
   delete this.playersMap[playerId];
   var index = this.readyPlayers.indexOf(player);

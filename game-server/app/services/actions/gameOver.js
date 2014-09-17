@@ -231,13 +231,19 @@ GameOverAction.doGameOver = function(table, player, cb) {
 //      return Q.all( pokeGame.players.map(function(player){return player.ddzProfile.saveQ();}))
     })
     .then(function() {
-      return pokeGame.players[0].ddzProfile.saveQ();
+      return (!!pokeGame.players[0])
+        && (!!pokeGame.players[0].ddzProfile)
+        && pokeGame.players[0].ddzProfile.saveQ();
     })
     .then(function() {
-      return pokeGame.players[1].ddzProfile.saveQ();
+      return (!!pokeGame.players[1])
+        && (!!pokeGame.players[1].ddzProfile)
+        && pokeGame.players[1].ddzProfile.saveQ();
     })
     .then(function() {
-      return pokeGame.players[2].ddzProfile.saveQ();
+      return (!!pokeGame.players[2])
+        && (!!pokeGame.players[2].ddzProfile)
+        && pokeGame.players[2].ddzProfile.saveQ();
     })
     .then(function() {
       var result = pokeGame.toParams(['players', 'grabbingLord']);

@@ -3,10 +3,10 @@
   "version": "0.0.1",
   "private": false,
   "dependencies": {
-    "pomelo": "1.0.3",
+    "pomelo": "1.1.0",
     "pomelo-logger": "*",
     "mongodb": "*",
-    "mongoose": "3.8.14",
+    "mongoose": "3.8.16",
     "async": "0.2.9",
     "mess": "0.1.1",
     "js-combinatorics": "*",
