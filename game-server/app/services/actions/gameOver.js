@@ -27,10 +27,14 @@ var calcPlayerEscape = function(table, player) {
   }
 
   if (!pokeGame.lordValue || pokeGame.lordValue < 3) {
-    pokeGame.lordValue = 3;
+    if (!!pokeGame.grabbingLord.lordValue && pokeGame.grabbingLord.lordValue > 0) {
+      pokeGame.lordValue = pokeGame.grabbingLord.lordValue;
+    } else {
+      pokeGame.lordValue = 3;
+    }
   }
 
-  if (player.isLord()) {
+  if (player.isLord() && player.plays <= 1) {
     pokeGame.score.spring = -1;
     pokeGame.lordValue *= 2;
     pokeGame.lordWon = false;
