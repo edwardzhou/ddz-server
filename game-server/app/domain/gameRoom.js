@@ -233,7 +233,7 @@ roomSchema.methods.onPlayerReadyTimeout = function() {
 };
 
 roomSchema.methods.playerReady = function(player, callback) {
-  this.clearPlayerReadyTimeout();
+  // this.clearPlayerReadyTimeout();
   var player = this.playersMap[player.userId];
   player.state = PlayerState.READY;
   if (this.readyPlayers.indexOf(player) < 0)
@@ -249,7 +249,9 @@ roomSchema.methods.playerReady = function(player, callback) {
   }
 
   if (this.readyPlayers.length >0) {
-    this.playerReadyTimeout = setTimeout(this.onPlayerReadyTimeout.bind(this), 10 * 1000);
+    if (!this.playerReadyTimeout) {
+      this.playerReadyTimeout = setTimeout(this.onPlayerReadyTimeout.bind(this), 10 * 1000);
+    }
   }
 };
 

@@ -10,6 +10,7 @@ var CardUtil = require('../../util/cardUtil');
 var PlayerRole = require('../../consts/consts').PlayerRole;
 var PlayerState = require('../../consts/consts').PlayerState;
 var Q = require('q');
+var CardInfo = require('../../AI/CardInfo');
 
 var GameOverAction = function(opts) {
 
@@ -34,13 +35,41 @@ var calcPlayerEscape = function(table, player) {
     }
   }
 
-  if (player.isLord() && player.plays <= 1) {
-    pokeGame.score.spring = -1;
-    pokeGame.lordValue *= 2;
+  var cardInfo;
+  cardInfo = CardInfo.create(PokeCard.pokeCardsFromChars(player.initPokeCards));
+  pokeGame.lordValue <<= cardInfo.bombs.length + cardInfo.rockets.length;
+
+  cardInfo = CardInfo.create(PokeCard.pokeCardsFromChars(player1.initPokeCards));
+  pokeGame.lordValue <<= cardInfo.bombs.length + cardInfo.rockets.length;
+
+  cardInfo = CardInfo.create(PokeCard.pokeCardsFromChars(player2.initPokeCards));
+  pokeGame.lordValue <<= cardInfo.bombs.length + cardInfo.rockets.length;
+
+  // 如果未产生地主，则逃跑的player为地主，
+  if (pokeGame.lordUserId <= 0) {
+    player.role = PlayerRole.LORD;
+  }
+
+  if (player.isLord()) {
+    // 如果只出过一手牌以下，判为反春
+    if (!player.plays || player.plays <= 1) {
+      pokeGame.score.spring = -1;
+      pokeGame.lordValue *= 2;
+    }
     pokeGame.lordWon = false;
+
   } else {
-    pokeGame.score.spring = 1;
-    pokeGame.lordValue *= 2;
+    var farmerUser = null;
+    if (!player1.isLord()) {
+      farmerUser = player1;
+    } else {
+      farmerUser = player2;
+    }
+    if ( (!farmerUser.plays || farmerUser.plays <=0) && (!player.plays || player.plays <=0) ) {
+      // 两农民都未出过牌，判春天
+      pokeGame.score.spring = 1;
+      pokeGame.lordValue <<= 1;
+    }
     pokeGame.lordWon = true;
   }
 
@@ -55,27 +84,34 @@ var calcPlayerEscape = function(table, player) {
     score.raked_total = score.total * (1 - score.rake);
   }
 
+  pokeGame.playersResults = {};
+
   score.players = [];
   if (player.isLord()) {
-    score.players.push({
-      userId: player.userId,
-      nickName: player.nickName,
-      score: -1 * score.total,
-      pokeCards: CardUtil.pokeCardsToString(player.pokeCards)
-    });
-    score.players.push({
-      userId: player1.userId,
-      nickName: player1.nickName,
-      score: score.raked_total / 2,
-      pokeCards: CardUtil.pokeCardsToString(player1.pokeCards)
-
-    });
-    score.players.push({
-      userId: player2.userId,
-      nickName: player2.nickName,
-      score: score.raked_total / 2,
-      pokeCards: CardUtil.pokeCardsToString(player2.pokeCards)
-    });
+    pokeGame.playersResults[player.userId] = -1 * score.total;
+    pokeGame.playersResults[player1.userId] = score.raked_total / 2;
+    pokeGame.playersResults[player2.userId] = score.raked_total / 2;
+//
+//
+//    score.players.push({
+//      userId: player.userId,
+//      nickName: player.nickName,
+//      score: -1 * score.total,
+//      pokeCards: CardUtil.pokeCardsToString(player.pokeCards)
+//    });
+//    score.players.push({
+//      userId: player1.userId,
+//      nickName: player1.nickName,
+//      score: score.raked_total / 2,
+//      pokeCards: CardUtil.pokeCardsToString(player1.pokeCards)
+//
+//    });
+//    score.players.push({
+//      userId: player2.userId,
+//      nickName: player2.nickName,
+//      score: score.raked_total / 2,
+//      pokeCards: CardUtil.pokeCardsToString(player2.pokeCards)
+//    });
   } else {
     var lordUser, farmerUser;
     if (player1.isLord()) {
@@ -86,26 +122,30 @@ var calcPlayerEscape = function(table, player) {
       farmerUser = player1;
     }
 
-    score.players.push({
-      userId: lordUser.userId,
-      nickName: lordUser.nickName,
-      score:  score.raked_total,
-      pokeCards: CardUtil.pokeCardsToString(lordUser.pokeCards)
+    pokeGame.playersResults[player.userId] = -1 * score.total;
+    pokeGame.playersResults[lordUser.userId] = score.raked_total;
+    pokeGame.playersResults[farmerUser.userId] = 0;
 
-    });
-    score.players.push({
-      userId: player.userId,
-      nickName: player.nickName,
-      score: -1 * score.total,
-      pokeCards: CardUtil.pokeCardsToString(player.pokeCards)
-
-    });
-    score.players.push({
-      userId: farmerUser.userId,
-      nickName: farmerUser.nickName,
-      score: 0,
-      pokeCards: CardUtil.pokeCardsToString(farmerUser.pokeCards)
-    });
+//    score.players.push({
+//      userId: lordUser.userId,
+//      nickName: lordUser.nickName,
+//      score:  score.raked_total,
+//      pokeCards: CardUtil.pokeCardsToString(lordUser.pokeCards)
+//
+//    });
+//    score.players.push({
+//      userId: player.userId,
+//      nickName: player.nickName,
+//      score: -1 * score.total,
+//      pokeCards: CardUtil.pokeCardsToString(player.pokeCards)
+//
+//    });
+//    score.players.push({
+//      userId: farmerUser.userId,
+//      nickName: farmerUser.nickName,
+//      score: 0,
+//      pokeCards: CardUtil.pokeCardsToString(farmerUser.pokeCards)
+//    });
   }
 
 };
@@ -280,6 +320,7 @@ GameOverAction.doGameOver = function(table, player, cb) {
           nickName: player.nickName,
           score: pokeGame.playersResults[player.userId],
           ddzProfile: player.ddzProfile.toParams(),
+          initPokeCards: player.initPokeCards,
           pokeCards: CardUtil.pokeCardsToString(player.pokeCards)
         });
       }
