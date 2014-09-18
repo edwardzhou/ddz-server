@@ -134,6 +134,8 @@ var calcNormalGameOver = function(table, player) {
     }
   }
 
+  pokeGame.playersResults = {};
+
   var score = pokeGame.score;
   score.rake = pokeGame.gameRake;
   score.ante = pokeGame.gameAnte;
@@ -147,31 +149,35 @@ var calcNormalGameOver = function(table, player) {
 
   score.players = [];
   if (player.isLord()) {
-    player.ddzProfile.updateCoins(score.raked_total);
-    player1.ddzProfile.updateCoins(score.total / -2);
-    player2.ddzProfile.updateCoins(score.total / -2);
-    score.players.push({
-      userId: player.userId,
-      nickName: player.nickName,
-      score: score.raked_total,
-      ddzProfile: player.ddzProfile.toParams(),
-      pokeCards: CardUtil.pokeCardsToString(player.pokeCards)
-    });
-    score.players.push({
-      userId: player1.userId,
-      nickName: player1.nickName,
-      score: score.total / -2,
-      ddzProfile: player1.ddzProfile.toParams(),
-      pokeCards: CardUtil.pokeCardsToString(player1.pokeCards)
+//    player.ddzProfile.updateCoins(score.raked_total);
+//    player1.ddzProfile.updateCoins(score.total / -2);
+//    player2.ddzProfile.updateCoins(score.total / -2);
+    pokeGame.playersResults[player.userId] = score.raked_total;
+    pokeGame.playersResults[player1.userId] = score.total / -2;
+    pokeGame.playersResults[player2.userId] = score.total / -2;
 
-    });
-    score.players.push({
-      userId: player2.userId,
-      nickName: player2.nickName,
-      score: score.total / -2,
-      ddzProfile: player2.ddzProfile.toParams(),
-      pokeCards: CardUtil.pokeCardsToString(player2.pokeCards)
-    });
+//    score.players.push({
+//      userId: player.userId,
+//      nickName: player.nickName,
+//      score: score.raked_total,
+//      //ddzProfile: player.ddzProfile.toParams(),
+//      pokeCards: CardUtil.pokeCardsToString(player.pokeCards)
+//    });
+//    score.players.push({
+//      userId: player1.userId,
+//      nickName: player1.nickName,
+//      score: score.total / -2,
+//      //ddzProfile: player1.ddzProfile.toParams(),
+//      pokeCards: CardUtil.pokeCardsToString(player1.pokeCards)
+//
+//    });
+//    score.players.push({
+//      userId: player2.userId,
+//      nickName: player2.nickName,
+//      score: score.total / -2,
+//      //ddzProfile: player2.ddzProfile.toParams(),
+//      pokeCards: CardUtil.pokeCardsToString(player2.pokeCards)
+//    });
   } else {
     var lordUser, farmerUser;
     if (player1.isLord()) {
@@ -183,34 +189,37 @@ var calcNormalGameOver = function(table, player) {
     }
     var winScore = Math.round(score.raked_total / 2)
 
-    lordUser.ddzProfile.updateCoins(-1 * score.total);
-    player.ddzProfile.updateCoins(winScore);
-    farmerUser.ddzProfile.updateCoins(winScore);
+//    lordUser.ddzProfile.updateCoins(-1 * score.total);
+//    player.ddzProfile.updateCoins(winScore);
+//    farmerUser.ddzProfile.updateCoins(winScore);
+    pokeGame.playersResults[lordUser.userId] = -1 * score.total;
+    pokeGame.playersResults[player.userId] = winScore;
+    pokeGame.playersResults[farmerUser.userId] = winScore;
 
-    score.players.push({
-      userId: lordUser.userId,
-      nickName: lordUser.nickName,
-      score:  -1 * score.total,
-      ddzProfile: lordUser.ddzProfile.toParams(),
-      pokeCards: CardUtil.pokeCardsToString(lordUser.pokeCards)
-
-    });
-    score.players.push({
-      userId: player.userId,
-      nickName: player.nickName,
-      score: winScore,
-      ddzProfile: player.ddzProfile.toParams(),
-      pokeCards: CardUtil.pokeCardsToString(player.pokeCards)
-
-    });
-    score.players.push({
-      userId: farmerUser.userId,
-      nickName: farmerUser.nickName,
-      score: winScore,
-      ddzProfile: farmerUser.ddzProfile.toParams(),
-      pokeCards: CardUtil.pokeCardsToString(farmerUser.pokeCards)
-
-    });
+//    score.players.push({
+//      userId: lordUser.userId,
+//      nickName: lordUser.nickName,
+//      score:  -1 * score.total,
+//      //ddzProfile: lordUser.ddzProfile.toParams(),
+//      pokeCards: CardUtil.pokeCardsToString(lordUser.pokeCards)
+//
+//    });
+//    score.players.push({
+//      userId: player.userId,
+//      nickName: player.nickName,
+//      score: winScore,
+//      //ddzProfile: player.ddzProfile.toParams(),
+//      pokeCards: CardUtil.pokeCardsToString(player.pokeCards)
+//
+//    });
+//    score.players.push({
+//      userId: farmerUser.userId,
+//      nickName: farmerUser.nickName,
+//      score: winScore,
+//      //ddzProfile: farmerUser.ddzProfile.toParams(),
+//      pokeCards: CardUtil.pokeCardsToString(farmerUser.pokeCards)
+//
+//    });
   }
 };
 
@@ -218,14 +227,14 @@ GameOverAction.doGameOver = function(table, player, cb) {
   var pokeGame = table.pokeGame;
 
   var playerIds = pokeGame.players.map(function(player) { return player.userId; });
-  DdzProfile.findQ({userId: {$in: playerIds }})
-    .then(function(ddzProfiles) {
-      for (var index=0; index<ddzProfiles.length; index++) {
-        var profile = ddzProfiles[index];
-        pokeGame.getPlayerByUserId(profile.userId).ddzProfile = profile;
-      }
-    })
-    .then(function() {
+//  DdzProfile.findQ({userId: {$in: playerIds }})
+//    .then(function(ddzProfiles) {
+//      for (var index=0; index<ddzProfiles.length; index++) {
+//        var profile = ddzProfiles[index];
+//        pokeGame.getPlayerByUserId(profile.userId).ddzProfile = profile;
+//      }
+//    })
+    Q.fcall(function() {
       if (player.pokeCards.length == 0) {
         calcNormalGameOver(table, player);
       } else {
@@ -235,21 +244,46 @@ GameOverAction.doGameOver = function(table, player, cb) {
 //      return Q.all( pokeGame.players.map(function(player){return player.ddzProfile.saveQ();}))
     })
     .then(function() {
-      return (!!pokeGame.players[0])
-        && (!!pokeGame.players[0].ddzProfile)
-        && pokeGame.players[0].ddzProfile.saveQ();
+//      return (!!pokeGame.players[0])
+//        && (!!pokeGame.players[0].ddzProfile)
+//        && pokeGame.players[0].ddzProfile.saveQ();
+      var p = pokeGame.players[0];
+      return DdzProfile.updateCoinsByUserIdQ(p.userId, pokeGame.playersResults[p.userId]);
     })
-    .then(function() {
-      return (!!pokeGame.players[1])
-        && (!!pokeGame.players[1].ddzProfile)
-        && pokeGame.players[1].ddzProfile.saveQ();
+    .then(function(ddzProfile) {
+      pokeGame.players[0].ddzProfile = ddzProfile;
+
+      var p = pokeGame.players[1];
+      return DdzProfile.updateCoinsByUserIdQ(p.userId, pokeGame.playersResults[p.userId]);
+
+//      return (!!pokeGame.players[1])
+//        && (!!pokeGame.players[1].ddzProfile)
+//        && pokeGame.players[1].ddzProfile.saveQ();
     })
-    .then(function() {
-      return (!!pokeGame.players[2])
-        && (!!pokeGame.players[2].ddzProfile)
-        && pokeGame.players[2].ddzProfile.saveQ();
+    .then(function(ddzProfile) {
+//      return (!!pokeGame.players[2])
+//        && (!!pokeGame.players[2].ddzProfile)
+//        && pokeGame.players[2].ddzProfile.saveQ();
+      pokeGame.players[1].ddzProfile = ddzProfile;
+
+      var p = pokeGame.players[2];
+      return DdzProfile.updateCoinsByUserIdQ(p.userId, pokeGame.playersResults[p.userId]);
     })
-    .then(function() {
+    .then(function(ddzProfile) {
+      pokeGame.players[2].ddzProfile = ddzProfile;
+
+      pokeGame.score.players = [];
+      for (var index=0; index<pokeGame.players.length; index++) {
+        var player = pokeGame.players[index];
+        pokeGame.score.players.push({
+          userId: player.userId,
+          nickName: player.nickName,
+          score: pokeGame.playersResults[player.userId],
+          ddzProfile: player.ddzProfile.toParams(),
+          pokeCards: CardUtil.pokeCardsToString(player.pokeCards)
+        });
+      }
+
       var result = pokeGame.toParams(['players', 'grabbingLord']);
       result.lordWon = pokeGame.lordWon;
       result.score = {};
