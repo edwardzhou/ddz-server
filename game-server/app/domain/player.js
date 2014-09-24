@@ -16,6 +16,7 @@ var Player = function(opts) {
   this.nickName = opts.nickName;
   this.serverId = opts.serverId;
   this.headIcon = opts.headIcon;
+  this.userSession = opts.userSession;
   this.role = opts.role || PlayerRole.NONE;
   this.state = opts.state || PlayerState.PREPARE_READY;
   this.plays = opts.plays || 0;
@@ -110,6 +111,9 @@ Player.prototype.getUidSid = function() {
   return {uid: this.userId, sid: this.serverId};
 };
 
+Player.prototype.isRobot = function() {
+  return !!this.robot;
+};
 
 Player.prototype.pokeCardsString = function() {
   return cardUtil.pokeCardsToString(this.pokeCards);

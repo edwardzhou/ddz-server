@@ -54,7 +54,8 @@ app.configure('production|development', 'ddz|gate', function () {
   app.set('connectorConfig',
     {
       connector: pomelo.connectors.hybridconnector,
-      heartbeat: 240,
+      heartbeat: 10,
+      disconnectOnTimeout: true,
       useDict: true,
       useProtobuf: true,
       handshake: function(msg, cb) {

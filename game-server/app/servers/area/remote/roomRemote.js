@@ -110,6 +110,7 @@ remoteHandler.reenter = function(uid, sid, sessionId, room_id, table_id, msgNo, 
   var table = roomService.getTable(room_id, table_id);
 
   console.log('[remoteHandler.reenter] client msgNo: ', msgNo);
+  var hasGame = false;
   if (!!player) {
     if (!!player.connectionRestoreTimeout) {
       clearTimeout(player.connectionRestoreTimeout);
@@ -136,20 +137,11 @@ remoteHandler.reenter = function(uid, sid, sessionId, room_id, table_id, msgNo, 
       };
 
       process.nextTick(next);
-
-//      process.nextTick(function() {
-//        for (var index=0; index<playerMsgs.length; index++) {
-//          var msg = playerMsgs[index];
-//          if (msg[1].msgNo > msgNo) {
-//            messageService.pushMessage(msg[0], msg[1], [player.getUidSid()], null);
-//          }
-//        }
-//      });
+      hasGame = true;
     }
-    cb(null, []);
-  } else {
-    cb(null, []);
   }
+
+  cb(null, {hasGame: hasGame});
 };
 
 /**

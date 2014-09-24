@@ -35,8 +35,10 @@ remoteHandler.readyGame = function(msg, cb) {
   room.playerReady(player, function(table) {
     for (var index=0; index<table.players.length; index++) {
       var p = table.players[index];
-      p.userSession.sset('roomId', table.room.roomId);
-      p.userSession.sset('tableId', table.tableId);
+//      p.userSession.sset('roomId', table.room.roomId);
+//      p.userSession.sset('tableId', table.tableId);
+//      p.userSession.sset('table')
+      p.userSession.sset({roomId: table.room.roomId, tableId: table.tableId, gameId: table.pokeGame.gameId});
     }
     var msg = table.toParams();
     process.nextTick(function() {

@@ -100,7 +100,7 @@ Handler.prototype.restoreGame = function(msg, session, next) {
   var table_id = session.get('table_id');
   var uid = session.uid;
   var sid = session.frontendId;
-  var msgNo = msg.msgNo;
+  var msgNo = msg.msgNo || -1;
   this.app.rpc.area.roomRemote.reenter(session, uid, sid, session.id, room_id, table_id, msgNo, function(err, data) {
     utils.invokeCallback(next, err, data);
   });

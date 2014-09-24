@@ -97,6 +97,8 @@ Handler.prototype.authConn = function(msg, session, next) {
         session.set('room_id', roomId);
       if (!!tableId)
         session.set('table_id', tableId);
+      if (!!gameId)
+        session.set('game_id', gameId);
       session.bind(results.user.userId);
 
       return Q.nbind(session.pushAll, session)();

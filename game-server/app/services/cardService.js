@@ -203,7 +203,11 @@ exp.playerReadyTimeout = function(table, player, next) {
 };
 
 exp.getPlayerTiming = function(player, actionType) {
-  if (!!player.delegating || player.robot) {
+  if (player.robot) {
+    return Math.floor(Math.random() * 10000) % 7 + 3;
+  }
+
+  if (!!player.delegating) {
     return 5;
   }
 
@@ -573,6 +577,13 @@ exp.gameOver = function(table, player, cb) {
         null );
 
       pokeGame.save();
+
+      for (var pIndex=0; pIndex< pokeGame.players.length; pIndex++) {
+        var p = pokeGame.players[pIndex];
+        if (!p.isRobot()) {
+          p.userSession.sset({pokeGameId: null, tableId: null});
+        }
+      }
 
       table.release();
 

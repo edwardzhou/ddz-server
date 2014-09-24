@@ -56,10 +56,18 @@ userSessionSchema.methods.sget = function(key) {
 };
 
 userSessionSchema.methods.sset = function(key, value) {
-  this.sessionData[key] = value;
-  this.updatedAt = Date.now();
   var updateFields = {};
-  updateFields['sessionData.' + key] = value;
+  this.updatedAt = Date.now();
+  if (!!key && !!value) {
+    this.sessionData[key] = value;
+    updateFields['sessionData.' + key] = value;
+  } else if (!!key) {
+    var map = key;
+    for (var k in map) {
+      this.sessionData[k] = map[k];
+      updateFields['sessionData.' + k] = map[k];
+    }
+  }
   updateFields['updatedAt'] = this.updatedAt;
   this.update(updateFields, function(err, affected) {
     console.log('update: ', err, affected);
