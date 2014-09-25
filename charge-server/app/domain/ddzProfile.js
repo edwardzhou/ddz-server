@@ -61,6 +61,19 @@ DdzProfileSchema.methods.toParams = function(excludeAttrs) {
   return __toParams(this, excludeAttrs);
 };
 
+DdzProfileSchema.statics.updateCoinsByUserIdQ = function(userId, coins) {
+  var won, lose;
+  if (coins > 0 ) {
+    won = 1;
+    lose = 0;
+  } else {
+    won = 0;
+    lose = 1;
+  }
+
+  return this.findOneAndUpdateQ({userId: userId}, {$inc: {coins: coins, won: won, lose: lose}});
+};
+
 DdzProfileSchema.methods.updateCoins = function(coins) {
   this.coins += coins;
   if (coins > 0) {

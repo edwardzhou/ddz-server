@@ -24,6 +24,7 @@ var Player = function(opts) {
   this.nextPlayer = opts.nextPlayer || null;
   this.delegating = !!opts.delegating;
   this.robot = opts.robot || false;
+  this.roomId = opts.roomId || null;
 };
 
 util.inherits(Player, EventEmitter);
@@ -156,8 +157,8 @@ Player.prototype.reset = function() {
   this.tableId = null;
   this.delegating = false;
   if (!!this.userSession) {
-    this.userSession.sset('tableId', null);
-    this.userSession.sset('gameId', null);
+    this.userSession.sset({tableId: null, gameId: null});
+    //this.userSession.sset('gameId', null);
   }
 };
 

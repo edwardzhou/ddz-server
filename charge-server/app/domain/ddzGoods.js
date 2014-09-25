@@ -6,7 +6,7 @@ var mongoose = require('mongoose-q')();
 var Schema = mongoose.Schema;
 var crypto = require('crypto');
 var uuid = require('node-uuid');
-var utils = require('../util/utils');
+
 
 var ddzGoodsSchema = new mongoose.Schema({
   goodsName: String,

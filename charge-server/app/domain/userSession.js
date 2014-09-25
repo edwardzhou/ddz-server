@@ -24,10 +24,12 @@ var userSessionSchema = new mongoose.Schema({
 
 userSessionSchema.index({sessionToken: 1});
 
-userSessionSchema.statics.createSession = function(userId, mac, cb) {
+userSessionSchema.statics.createSession = function(userId, mac, frontendId, frontendSessionId, cb) {
   var newSession = new this();
   newSession.userId = userId;
   newSession.mac = mac;
+  newSession.frontendId = frontendId;
+  newSession.frontendSessionId = frontendSessionId;
   newSession.save(function(err, session) {
     utils.invokeCallback(cb, err, session);
   });

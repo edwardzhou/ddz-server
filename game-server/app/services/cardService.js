@@ -13,6 +13,7 @@ var Result = require('../domain/result');
 var CardInfo = require('../AI/CardInfo');
 var CardAnalyzer = require('../AI/CardAnalyzer');
 var AIEngine = require('../AI/AIEngine');
+//var roomService = require('./roomService');
 
 // 游戏动作值与属性名对照表，用于简化 @configGameAction 的逻辑
 var GameActionNames = {};

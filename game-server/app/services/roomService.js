@@ -2,7 +2,6 @@ var logger = require('pomelo-logger').getLogger('pomelo', __filename);
 var util = require('util');
 var GameRoom = require('../domain/gameRoom');
 var utils = require('../util/utils');
-var cardService = require('./cardService');
 
 var exp = module.exports;
 

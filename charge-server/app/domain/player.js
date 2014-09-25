@@ -16,6 +16,7 @@ var Player = function(opts) {
   this.nickName = opts.nickName;
   this.serverId = opts.serverId;
   this.headIcon = opts.headIcon;
+  this.userSession = opts.userSession;
   this.role = opts.role || PlayerRole.NONE;
   this.state = opts.state || PlayerState.PREPARE_READY;
   this.plays = opts.plays || 0;
@@ -23,6 +24,7 @@ var Player = function(opts) {
   this.nextPlayer = opts.nextPlayer || null;
   this.delegating = !!opts.delegating;
   this.robot = opts.robot || false;
+  this.roomId = opts.roomId || null;
 };
 
 util.inherits(Player, EventEmitter);
@@ -110,6 +112,9 @@ Player.prototype.getUidSid = function() {
   return {uid: this.userId, sid: this.serverId};
 };
 
+Player.prototype.isRobot = function() {
+  return !!this.robot;
+};
 
 Player.prototype.pokeCardsString = function() {
   return cardUtil.pokeCardsToString(this.pokeCards);
@@ -152,8 +157,8 @@ Player.prototype.reset = function() {
   this.tableId = null;
   this.delegating = false;
   if (!!this.userSession) {
-    this.userSession.sset('tableId', null);
-    this.userSession.sset('gameId', null);
+    this.userSession.sset({tableId: null, gameId: null});
+    //this.userSession.sset('gameId', null);
   }
 };
 

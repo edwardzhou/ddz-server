@@ -176,6 +176,7 @@ roomSchema.methods.enter = function (player, lastTableId) {
   }
 
   this.playersMap[player.userId] = player;
+  player.roomId = this.roomId;
 
   return player;
 };
@@ -194,8 +195,15 @@ roomSchema.methods.releaseTable = function(table) {
 
   for (var playerIndex=0; playerIndex<table.players.length; playerIndex++) {
     var player = table.players[playerIndex];
-    if (!!player && player.robot) {
-      this.idle_robots.push(player);
+    if (!!player) {
+      player.reset();
+      var pIndex = this.readyPlayers.indexOf(player);
+      if (pIndex >=0 ) {
+        this.readyPlayers.splice(pIndex, 1);
+      }
+
+      if (player.robot)
+        this.idle_robots.push(player);
     }
   }
 };
@@ -215,9 +223,10 @@ roomSchema.methods.onPlayerReadyTimeout = function() {
 
   var readyPlayers = this.readyPlayers.filter(function(p) {return !p.left;});
 
-  if (this.readyPlayers.length < 3 && this.readyPlayers.length>0) {
-    if (this.idle_robots.length >= 3 - this.readyPlayers.length) {
+  if (readyPlayers.length < 3 && readyPlayers.length>0) {
+    if (this.idle_robots.length >= 3 - readyPlayers.length) {
       var players = readyPlayers.splice(0, 3);
+      utils.arrayRemove(this.readyPlayers, players);
       players = players.concat(this.idle_robots.splice(0, 3-players.length));
       console.log('[roomSchema.methods.onPlayerReadyTimeout] arrange robots:', players);
       var table = this.arrangeTable(players);
@@ -289,7 +298,13 @@ roomSchema.methods.leave = function(playerId) {
     this.readyPlayers.splice(index, 1);
   }
   player.tableId = -1;
+  jplayer.roomId = null;
   return table;
+};
+
+roomSchema.methods.gameOver = function(playerId) {
+  var player = this.getPlayer(playerId);
+  player.reset();
 };
 
 var __toParams = function(model, excludeAttrs) {
