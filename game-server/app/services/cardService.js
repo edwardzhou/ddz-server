@@ -412,6 +412,9 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
 
   if (!!isTimeout) {
     player.delegating = true;
+  } else if(!player.isRobot()) {
+    // 玩家主动打牌，自动取消托管状态
+    player.delegating = false;
   }
 
   var self = this;
