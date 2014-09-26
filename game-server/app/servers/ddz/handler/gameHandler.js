@@ -101,7 +101,11 @@ Handler.prototype.restoreGame = function(msg, session, next) {
   var uid = session.uid;
   var sid = session.frontendId;
   var msgNo = msg.msgNo || -1;
-  this.app.rpc.area.roomRemote.reenter(session, uid, sid, session.id, room_id, table_id, msgNo, function(err, data) {
-    utils.invokeCallback(next, err, data);
-  });
+  if (!!room_id) {
+    this.app.rpc.area.roomRemote.reenter(session, uid, sid, session.id, room_id, table_id, msgNo, function(err, data) {
+      utils.invokeCallback(next, err, data);
+    });
+  } else {
+    utils.invokeCallback(next, null, {hasGame: false});
+  }
 };

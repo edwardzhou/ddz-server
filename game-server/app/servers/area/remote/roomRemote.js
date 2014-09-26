@@ -138,7 +138,12 @@ remoteHandler.reenter = function(uid, sid, sessionId, room_id, table_id, msgNo, 
 
       process.nextTick(next);
       hasGame = true;
+    } else {
+      roomService.enterRoom(player, room_id, -1, self._onStartNewGame);
     }
+  } else {
+    this.enter(uid, sid, sessionId, room_id, cb);
+    return;
   }
 
   cb(null, {hasGame: hasGame});
