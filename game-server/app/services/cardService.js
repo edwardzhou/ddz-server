@@ -205,7 +205,17 @@ exp.playerReadyTimeout = function(table, player, next) {
 
 exp.getPlayerTiming = function(player, actionType) {
   if (player.robot) {
-    return Math.floor(Math.random() * 10000) % 7 + 3;
+    var r1 = Math.floor(Math.random() * 1000) % 10;
+    if (r1 <= 4) {
+      return Math.floor(Math.random() * 1000) % 3 + 1;
+    } else if (r1 <= 6) {
+      return Math.floor(Math.random() * 1000) % 3 + 3;
+    } else if (r1 <= 8) {
+      return Math.floor(Math.random() * 1000) % 5 + 5;
+    } else{
+      return Math.floor(Math.random() * 1000) % 5 + 8;
+    }
+    //return Math.floor(Math.random() * 10000) % 7 + 3;
   }
 
   if (!!player.delegating) {
@@ -240,7 +250,7 @@ exp.startGame = function (table, next) {
         nextUserId: newPokeGame.grabbingLord.nextUserId,
         seqNo: (player.userId == newPokeGame.grabbingLord.nextUserId ? seqNo : 0),
         msgNo: msgNo,
-        timing: 10
+        timing: 30
       };
       //newPokeGame.playerMsgs[player.userId] = [];
       newPokeGame.playerMsgs[player.userId].push([eventName, eventData]);
@@ -259,7 +269,7 @@ exp.startGame = function (table, next) {
       function(timeoutTable, timeoutPlayer, timeoutSeq){
         self.grabLord(timeoutTable, timeoutPlayer, 1, timeoutSeq, null);
       },
-      self.getPlayerTiming(newPokeGame.getTokenPlayer()));
+      self.getPlayerTiming(newPokeGame.getTokenPlayer()) + 2);
   });
 
 
