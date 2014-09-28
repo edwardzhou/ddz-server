@@ -34,7 +34,7 @@ ChargeEventService.init = function(app, opts) {
         console.error('[ChargeEventService] event tail stream error: ', err);
       });
     console.log('start to subscribe charge events.');
-  }, 2000);
+  }, 3000);
 };
 
 ChargeEventService.onChargeEvent = function(event) {
@@ -83,8 +83,8 @@ ChargeEventService.onChargeEvent = function(event) {
     })
     .then(function(pomeloSession) {
       if (!!pomeloSession) {
-        return pushMessageQ('onChargeOk',
-          user.toParams(),
+        return pushMessageQ('onChargeResult',
+          {success: true, user: user.toParams()},
           [{uid: user.userId, sid:userSession.frontendId}]);
       } else {
         console.log('[ChargeEventService.onChargeEvent] user not online');

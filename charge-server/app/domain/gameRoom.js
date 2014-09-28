@@ -298,7 +298,7 @@ roomSchema.methods.leave = function(playerId) {
     this.readyPlayers.splice(index, 1);
   }
   player.tableId = -1;
-  jplayer.roomId = null;
+  player.roomId = null;
   return table;
 };
 

@@ -5,7 +5,6 @@ var mongoose = require('mongoose-q')();
 var Schema = mongoose.Schema;
 var crypto = require('crypto');
 var uuid = require('node-uuid');
-var utils = require('../util/utils');
 
 var pubSubEventSchema = new mongoose.Schema({
   eventName: String,
