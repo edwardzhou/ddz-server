@@ -13,6 +13,9 @@ var ErrorCode = require('../../../consts/errorCode');
 var _goodsPackages = [];
 var _goodsPackagesMap = {};
 
+var http = require('http');
+var util = require('util');
+
 module.exports = function(app) {
   return new HallRemote(app);
 };
@@ -78,9 +81,13 @@ remoteHandler.buyPackage = function(msg, cb) {
   PurchaseOrder.createOrderQ(userId, package, null, 1000)
     .then(function(po) {
       utils.invokeCallback(cb, null, po.toParams());
+      setTimeout(function() {
+        var url = util.format("http://charge-server:8001/dummy?orderId=%s", po.orderId);
+        http.get(url);
+      }, 2000);
     })
     .fail(function(error) {
-      logger.error('[HallRemote.buyPackage] error: ', error)
+      logger.error('[HallRemote.buyPackage] error: ', error);
       utils.invokeCallback(cb, error, null);
     });
 };
