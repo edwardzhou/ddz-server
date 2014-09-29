@@ -10,8 +10,10 @@ var dummy = require('./app/routes/dummy');
 
 var mongoose = require('mongoose');
 
+var mongodb_cfg = require('./config/mongodb.json');
 
-mongoose.connect("mongodb://dev/new_ddz_dev", {}, function(err) {
+
+mongoose.connect(mongodb_cfg.development.url, {}, function(err) {
   if (!!err)
     console.error('connect to mongodb failed:' , err);
   else

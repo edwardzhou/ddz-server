@@ -25,7 +25,7 @@ router.get('/', function(req, res) {
 
   PurchaseOrder.findOneQ({orderId: orderId})
     .then(function(po) {
-      console.log(po)
+      console.log(po);
       var error = null;
       if (po == null) {
         throw genError(util.format('PurchaseOrder [orderId: %s] is not exists.', orderId), 0x001);
