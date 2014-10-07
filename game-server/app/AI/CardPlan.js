@@ -40,12 +40,38 @@ CardPlan.prototype.calculate = function() {
   this.hands += this.threesCards.length;
   this.hands += this.singlesCards.length;
   this.hands += this.pairsCards.length;
-  var allThreesCount = this.threesCards.length + this.threesStraightsCards.length;
-  var allSinglePairCount = this.singlesCards.length + this.pairsCards.length;
-  if ( allThreesCount > 0 && allThreesCount <= allSinglePairCount) {
-    this.hands -= allThreesCount;
-  } else if (allThreesCount > 0 && allThreesCount>=allSinglePairCount) {
-    this.hands -= allSinglePairCount;
+//  var allThreesCount = this.threesCards.length + this.threesStraightsCards.reduce(function(p, c) { return p + c.cardLength; }, 0);
+//  var allSinglePairCount = this.singlesCards.length + this.pairsCards.length;
+//  if ( allThreesCount > 0 && allThreesCount <= allSinglePairCount) {
+//    this.hands -= allThreesCount;
+//  } else if (allThreesCount > 0 && allThreesCount>=allSinglePairCount) {
+//    this.hands -= allSinglePairCount;
+//  }
+  var allSingleCount = this.singlesCards.length;
+  var allPairsCount = this.pairsCards.length;
+  if (this.threesStraightsCards.length > 0) {
+    for (var index=0; index <this.threesStraightsCards.length; index++) {
+      var card = this.threesStraightsCards[index];
+      if (allSingleCount >= card.cardLength) {
+        this.hands --;
+        allSingleCount -= card.cardLength;
+      } else if (allPairsCount >= card.cardLength ) {
+        this.hands --;
+        allPairsCount -= card.cardLength;
+      }
+    }
+  }
+
+  if (this.threesCards.length > 0) {
+    var threesCount = this.threesCards.length;
+    var comb = Math.min(threesCount, allSingleCount);
+    threesCount -= comb;
+    allSingleCount -= comb;
+    this.hands -= comb;
+    comb = Math.min(threesCount, allPairsCount);
+    threesCount -= comb;
+    allPairsCount -= comb;
+    this.hands -= comb;
   }
 
   this.allCards.append(this.singlesCards)

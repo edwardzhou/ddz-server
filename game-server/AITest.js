@@ -132,3 +132,12 @@ function testFirstPlay() {
 }
 
 testFirstPlay();
+
+pokes = PokeCard.pokeCardsFromChars('Abcdfgh');
+ci = CardInfo.create(pokes);
+cardResults = CardAnalyzer.analyze(ci);
+ci.dump();
+cardResults[0].dump();
+
+testFirstPlay();
+
