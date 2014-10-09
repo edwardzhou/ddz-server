@@ -7,13 +7,14 @@ cb = function(err, obj) {
 };
 
 mongoose = require('mongoose');
-mongoose.connect('mongodb://dev/new_ddz_dev');
+mongoose.connect('mongodb://dev2/new_ddz_dev');
 console.log('after connected');
 
 UserId = require('./app/domain/userId');
 
 mongoose.connections[0].on('error', cb);
 
+Q = require('q');
 DdzProfile = require('./app/domain/ddzProfile');
 User = require('./app/domain/user');
 userDao = require('./app/dao/userDao');
@@ -25,6 +26,10 @@ DdzGoodsPackage = require('./app/domain/ddzGoodsPackage');
 PurchaseOrder = require('./app/domain/purchaseOrder');
 DdzGoodsPackageService = require('./app/services/ddzGoodsPackageService');
 PubSubEvent = require('./app/domain/pubSubEvent');
+Channel = require('./app/domain/channel');
+
+require('./init/channelsInit');
+
 
 DataKeyId = require('./app/domain/dataKeyId');
 
@@ -123,20 +128,4 @@ testDeliverPackage = function(poId) {
     });
 };
 
-//setTimeout(function(){
-//  testDeliverPackage('');
-//}, 1000);
-//
-
-_subs = [];
-testSubscribe = function(query) {
-  query = query || {active: 1};
-  s = PubSubEvent.find(query)
-    .tailable({awaitdata:true})
-    .setOptions({numberOfRetries: 100000})
-    .stream().on('data', cb)
-    .on('close', function(){ console.log('closed'); })
-    .on('error', function(err) { console.error(err); });
-  _subs.push(s);
-};
 

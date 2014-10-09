@@ -9,6 +9,9 @@
     "auth": [
       {"id": "auth-server-1", "host": "127.0.0.1", "port": 4201, "args": " --debug=32220 "}
     ],
+    "events": [
+      {"id": "events-server-1", "host": "127.0.0.1", "port": 4301, "args": " --debug=32221 "}
+    ],
     "area": [
       {"id": "room-server", "host": "127.0.0.1", "port": 3200, "args": " --debug=32310 " },
       {"id": "area-server-1", "host": "127.0.0.1", "port": 3201, "room_id": 1, "args": " --debug=32312 ", "instance": true},

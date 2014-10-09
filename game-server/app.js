@@ -24,6 +24,8 @@ app.configure('production|development', function () {
 
   app.loadConfig('mongodb', app.getBase() + "/config/mongodb.json");
 
+  require('./app/services/messageService').init(app);
+
   var authConnection = require('./app/filters/authConnection');
   app.before(authConnection());
   app.before(require('./app/filters/signedIn')());
@@ -87,17 +89,21 @@ app.configure('production|development', 'area', function () {
       });
   }
 
-  require('./app/services/messageService').init(app);
   var cardService = require('./app/services/cardServiceFactory').createNormalCardService();
   app.set('cardService', cardService);
   tableService.init();
 
-  if (curServerId == 'room-server') {
-    var chargeEventService = require('./app/services/chargeEventService');
-    chargeEventService.init(app, {});
-    //app.use(chargeServer, {});
-  }
+//  if (curServerId == 'room-server') {
+//    var chargeEventService = require('./app/services/chargeEventService');
+//    chargeEventService.init(app, {});
+//    //app.use(chargeServer, {});
+//  }
 
+});
+
+app.configure('production|development', 'events', function() {
+  var chargeEventService = require('./app/services/chargeEventService');
+  chargeEventService.init(app, {});
 });
 
 app.configure('production|development', function () {
