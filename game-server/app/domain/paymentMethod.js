@@ -16,20 +16,47 @@ var paymentMethodSchema = new mongoose.Schema({
   collection: 'payment_methods'
 });
 
-paymentMethodSchema.methods.getPackagePaymentQ = function(populate, onlyEnabled) {
+paymentMethodSchema.methods.getPackagePaymentsQ = function(populate, onlyEnabled) {
   var PackagePayment = require('./packagePayment');
-  var query  = {paymentMethod: this.id};
+  var criteria  = {paymentMethod: this.id};
   if (!!onlyEnabled) {
-    query.enabled = true;
+    criteria.enabled = true;
   }
 
-  var promise = PackagePayment.find(query);
+  var query = PackagePayment.find(criteria);
   if (!!populate) {
-    promise = promise.populate('paymentMethod package')
+    query = query.populate('paymentMethod package')
   }
 
-  return promise.execQ();
+  return query.execQ();
 };
+
+
+var __toParams = function(model, excludeAttrs) {
+  var transObj = {
+    methodId: model.methodId,
+    methodName: model.methodName,
+    description: model.description,
+    config: model.config,
+    enabled: model.enabled
+  };
+
+  if (!!excludeAttrs) {
+    for (var index=0; index<excludeAttrs.length; index++) {
+      delete transObj[excludeAttrs[index]];
+    }
+  }
+
+  return transObj;
+};
+
+paymentMethodSchema.statics.toParams = __toParams;
+
+paymentMethodSchema.methods.toParams = function(excludeAttrs) {
+  return __toParams(this, excludeAttrs);
+};
+
+
 
 var PaymentMethod = mongoose.model('PaymentMethod', paymentMethodSchema);
 

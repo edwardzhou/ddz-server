@@ -44,6 +44,7 @@ var ddzGoodsPackageSchema = new mongoose.Schema({
   packageType: String,
   packageIcon: String,
   price: Number,
+  enabled: {type: Boolean, default: true},
   items: [GoodsItemSchema],
   sortIndex: {type: Number, default: 255},
   createdAt: {type: Date, default: Date.now},

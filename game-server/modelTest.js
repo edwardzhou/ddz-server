@@ -35,7 +35,9 @@ DataKeyId = require('./app/domain/dataKeyId');
 
 DdzGoodsPackageService.init();
 
+HallRemote = require('./app/servers/area/remote/hallRemote');
 hall = require('./app/servers/area/remote/hallRemote')();
+cache = HallRemote.cache;
 
 setTimeout(function(){
   hall.getGoodsPackages(null, null, null, function(err, obj) {
@@ -129,3 +131,13 @@ testDeliverPackage = function(poId) {
 };
 
 
+x = Channel.getEnabledChannelsQ().
+  then(function(channels) {
+    var pps = channels.map(function(channel) {
+      return channel.paymentMethod.getPackagePaymentsQ();
+    });
+    return Q.all(pps);
+  }).
+  then(function(cpps) {
+    mycpps = cpps;
+  });

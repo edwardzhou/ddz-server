@@ -17,6 +17,43 @@ var channelSchema = new mongoose.Schema({
   collection: 'channels'
 });
 
+channelSchema.statics.getEnabledChannelsQ = function() {
+  return this.find({enabled: true})
+    .populate('paymentMethod')
+    .execQ();
+};
+
+
+
+var __toParams = function(model, excludeAttrs) {
+  var transObj = {
+    channelId: model.channelId,
+    channelName: model.channelName,
+    description: model.description,
+    paymentMethod: model.paymentMethod,
+    enabled: model.enabled
+  };
+
+  if (!!excludeAttrs) {
+    for (var index=0; index<excludeAttrs.length; index++) {
+      delete transObj[excludeAttrs[index]];
+    }
+  }
+
+  if (!!transObj.paymentMethod && !!transObj.paymentMethod.toParams) {
+    transObj.paymentMethod = transObj.paymentMethod.toParams();
+  }
+
+  return transObj;
+};
+
+channelSchema.statics.toParams = __toParams;
+
+channelSchema.methods.toParams = function(excludeAttrs) {
+  return __toParams(this, excludeAttrs);
+};
+
+
 var Channel = mongoose.model('Channel', channelSchema);
 
 module.exports = Channel;
