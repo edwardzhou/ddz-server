@@ -7,6 +7,7 @@ var DdzGoodsPackage = require('../../../domain/ddzGoodsPackage');
 var DdzGoods = require('../../../domain/ddzGoods');
 var PurchaseOrder = require('../../../domain/purchaseOrder');
 var PackagePayment = require('../../../domain/packagePayment');
+var PaymentMethod = require('../../../domain/paymentMethod');
 var Channel = require('../../../domain/channel');
 var format = require('util').format;
 var utils = require('../../../util/utils');
