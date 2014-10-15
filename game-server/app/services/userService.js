@@ -159,7 +159,7 @@ UserService.signUp = function(signUpParams, cb) {
 
   DataKeyId.nextUserIdQ()
     .then(function(newUserId) {
-      var nickName = userInfo.nickName || newUserId.toString();
+      var nickName = userInfo.nickName || (!!userInfo.handsetInfo && userInfo.handsetInfo.model) || newUserId.toString() ;
       var user = new User({
         userId: newUserId,
         nickName: nickName,
