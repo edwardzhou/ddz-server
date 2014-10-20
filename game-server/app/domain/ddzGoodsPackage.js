@@ -6,6 +6,10 @@ var Schema = mongoose.Schema;
 var crypto = require('crypto');
 var uuid = require('node-uuid');
 
+/**
+ * 道具包的细项
+ * @type {Mongoose.Schema}
+ */
 var GoodsItemSchema = new mongoose.Schema({
   goodsId: mongoose.Schema.Types.ObjectId,
   goodsCount: {type: Number, default: 1},
@@ -37,21 +41,28 @@ GoodsItemSchema.methods.toParams = function(excludeAttrs) {
   return __GoodsItemToParams(this, excludeAttrs);
 };
 
+
+/**
+ * 道具包，用户可直接购买的物品
+ * @type {Mongoose.Schema}
+ */
 var ddzGoodsPackageSchema = new mongoose.Schema({
-  packageId: String,
-  packageName: String,
-  packageDesc: String,
-  packageType: String,
-  packageIcon: String,
-  price: Number,
-  enabled: {type: Boolean, default: true},
-  items: [GoodsItemSchema],
-  sortIndex: {type: Number, default: 255},
+  packageId: String,    // 道具包ID
+  packageName: String,  // 道具包名称
+  packageDesc: String,  // 道具包描述
+  packageType: String,  // 道具包类型
+  packageIcon: String,  // 道具包Icon
+  price: Number,        // 价格
+  enabled: {type: Boolean, default: true},  // 是否启用
+  items: [GoodsItemSchema],                 // 道具明细
+  sortIndex: {type: Number, default: 255},  // 显示顺序
   createdAt: {type: Date, default: Date.now},
   updatedAt: {type: Date, default: Date.now}
 }, {
   collection: 'ddz_goods_packages'
 });
+
+
 
 ddzGoodsPackageSchema.statics.getGoodsPackagesQ = function() {
   return this.find({}).sort('sortIndex').execQ();

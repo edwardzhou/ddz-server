@@ -5,18 +5,26 @@
 var mongoose = require('mongoose-q')();
 var PaymentMethod = require('./paymentMethod');
 
+/**
+ * 渠道
+ */
 var channelSchema = new mongoose.Schema({
-  channelId: Number,
-  channelName: String,
-  description: String,
-  paymentMethod: {type: mongoose.Schema.Types.ObjectId, ref: 'PaymentMethod'},
-  enabled: {type: Boolean, default: true},
+  channelId: Number,    // 渠道ID
+  channelName: String,  // 渠道名称
+  description: String,  // 渠道说明
+  paymentMethod: {type: mongoose.Schema.Types.ObjectId, ref: 'PaymentMethod'}, // 所用支付方式
+  enabled: {type: Boolean, default: true},  // 是否启用
   createdAt: {type: Date, default: Date.now},
   updatedAt: {type: Date, default: Date.now}
 }, {
-  collection: 'channels'
+  collection: 'channels' // 对应mongodb的集合名
 });
 
+
+/**
+ * 获取启用的渠道
+ * @returns {*}
+ */
 channelSchema.statics.getEnabledChannelsQ = function() {
   return this.find({enabled: true})
     .populate('paymentMethod')

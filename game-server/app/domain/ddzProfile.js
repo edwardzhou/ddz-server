@@ -4,18 +4,23 @@
 
 var mongoose = require('mongoose-q')();
 
+
+/**
+ * 斗地主用户资料
+ */
 var DdzProfileSchema = mongoose.Schema({
-  userId: Number,
-  coins: {type:Number, default: 10000},
-  gameStat: {
+  userId: Number,   // 用户Id
+  coins: {type:Number, default: 10000}, // 金币数
+  gameStat: {     // 输赢统计
     won: {type: Number, default: 0},
     lose: {type: Number, default: 0}
   },
-  lastSignedIn: {
-    appid: Number,
-    appVersion: Number,
-    resVersion: String,
-    signedInTime: {type: Date, default: Date.now},
+  lastSignedIn: {   // 上次登录信息
+    appid: Number,  // 渠道id
+    appNumber: Number, // apk版本数
+    appVersion: String, // apk主版本号
+    resVersion: String, // 资源包版本号
+    signedInTime: {type: Date, default: Date.now},  // 登录时间
     handset: {
       model: String,
       os_ver: String,

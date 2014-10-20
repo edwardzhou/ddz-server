@@ -2,7 +2,6 @@
  * Created by edwardzhou on 14-7-23.
  */
 var User = require('../domain/user');
-var UserId = require('../domain/userId');
 var DataKeyId = require('../domain/dataKeyId');
 var DdzProfile = require('../domain/ddzProfile');
 var UserSession = require('../domain/userSession');
@@ -13,7 +12,6 @@ var crypto = require('crypto');
 var Q = require('q');
 
 var createUserSessionQ = Q.nbind(UserSession.createSession, UserSession);
-var retrieveNextUserId = Q.nbind(UserId.retrieveNextUserId, UserId);
 
 var pomeloApp = null;
 var UserService = module.exports;

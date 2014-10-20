@@ -21,9 +21,9 @@ var roomSchemaFields = {
   maxCoinsQty: {type: Number, default: 0}, // 准入资格, 最大金币数, 0 代表无限制
   roomType: String,   // 房间类型
   sortIndex: Number,  // 排序
-  readyTimeout: {type: Number, default: 15},
-  grabbingLordTimeout: {type: Number, default: 20},
-  playCardTimeout: {type: Number, default: 30},
+  readyTimeout: {type: Number, default: 15},  // 就绪超时
+  grabbingLordTimeout: {type: Number, default: 20}, // 叫地主超时
+  playCardTimeout: {type: Number, default: 30}, // 出牌超时
   createdAt: {type: Date, default: Date.now},
   updatedAt: {type: Date, default: Date.now}
 };

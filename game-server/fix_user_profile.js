@@ -15,7 +15,7 @@ mongoose = require('mongoose');
 mongoose.connect('mongodb://dev/new_ddz_dev');
 console.log('after connected');
 
-UserId = require('./app/domain/userId');
+//UserId = require('./app/domain/userId');
 User = require('./app/domain/user');
 DdzProfile = require('./app/domain/ddzProfile');
 

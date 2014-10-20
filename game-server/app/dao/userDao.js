@@ -5,8 +5,8 @@ var ObjectID = require('mongodb').ObjectID;
 var ErrorCode = require('../consts/errorCode');
 var async = require('async');
 var SignInType = require('../consts/consts').SignInType;
-var UserId = require('../domain/userId');
 var DdzProfile = require('../domain/ddzProfile');
+var DataKeyId = require('../domain/dataKeyId');
 
 var Q = require('q');
 
@@ -34,7 +34,7 @@ userDao.createUser = function (userInfo, cb) {
 
   var userId = null;
 
-  var retrieveNextUserId = Q.nbind(UserId.retrieveNextUserId, UserId);
+  var retrieveNextUserId = DataKeyId.nextUserIdQ;
 
   var saveNewUser = function(newUserId, cb) {
     var nickName = userInfo.nickName || newUserId.toString();

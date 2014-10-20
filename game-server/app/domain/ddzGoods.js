@@ -7,13 +7,16 @@ var Schema = mongoose.Schema;
 var crypto = require('crypto');
 var uuid = require('node-uuid');
 
-
+/**
+ * 道具
+ * @type {Mongoose.Schema}
+ */
 var ddzGoodsSchema = new mongoose.Schema({
-  goodsName: String,
-  goodsDesc: String,
-  goodsType: String,
-  goodsProps: {},
-  sortIndex: {type: Number, default: 255},
+  goodsName: String,    // 道具名称
+  goodsDesc: String,    // 道具描述
+  goodsType: String,    // 道具类型 (金币，道具，等级等等)
+  goodsProps: {},       // 道具属性 (自定义配置)
+  sortIndex: {type: Number, default: 255},  // 显示排序
   createdAt: {type: Date, default: Date.now},
   updatedAt: {type: Date, default: Date.now}
 }, {

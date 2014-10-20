@@ -4,18 +4,31 @@
 
 var mongoose = require('mongoose-q')();
 
+
+/**
+ * 支付方式
+ * 支付方式对应多个支持该支付方式的道具包
+ * @type {Mongoose.Schema}
+ */
 var paymentMethodSchema = new mongoose.Schema({
-  methodId: String,
-  methodName: String,
-  description: String,
-  enabled: {type: Boolean, default: true},
-  config: {type: mongoose.Schema.Types.Mixed, default: {_placeholder:0}},
+  methodId: String,       // 支付方式ID
+  methodName: String,     // 支付方式名称
+  description: String,    // 描述
+  enabled: {type: Boolean, default: true}, // 是否启用
+  config: {type: mongoose.Schema.Types.Mixed, default: {_placeholder:0}}, // 支付方式配置信息
   createdAt: {type: Date, default: Date.now},
   updatedAt: {type: Date, default: Date.now}
 }, {
   collection: 'payment_methods'
 });
 
+
+/**
+ * 获取该支付方式所支持的道具包
+ * @param populate
+ * @param onlyEnabled
+ * @returns {*}
+ */
 paymentMethodSchema.methods.getPackagePaymentsQ = function(populate, onlyEnabled) {
   var PackagePayment = require('./packagePayment');
   var criteria  = {paymentMethod: this.id};

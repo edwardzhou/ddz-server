@@ -6,10 +6,15 @@ var Schema = mongoose.Schema;
 var crypto = require('crypto');
 var uuid = require('node-uuid');
 
+
+/**
+ * 事件订阅发布
+ * @type {Mongoose.Schema}
+ */
 var pubSubEventSchema = new mongoose.Schema({
-  eventName: String,
-  eventData: {},
-  active: {type: Number, default: 1},
+  eventName: String,                            // 事件名称
+  eventData: {},                                // 事件数据，不可修改
+  active: {type: Number, default: 1},           // 是否有效, 未处理的事件为true, 处理过的事件为false
   createdAt: {type: Date, default: Date.now},
   updatedAt: {type: Date, default: Date.now}
 }, {

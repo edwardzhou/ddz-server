@@ -38,7 +38,7 @@ mongoose = require('mongoose');
 mongoose.connect('mongodb://dev/new_ddz_dev');
 console.log('after connected');
 
-UserId = require('./app/domain/userId');
+//UserId = require('./app/domain/userId');
 
 mongoose.connections[0].on('error', cb);
 

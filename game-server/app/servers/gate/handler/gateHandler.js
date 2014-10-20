@@ -1,7 +1,6 @@
 var Code = require('../../../../../shared/code');
 var dispatcher = require('../../../util/dispatcher');
 var logger = require('pomelo-logger').getLogger('pomelo', __filename);
-var UserId = require('../../../domain/userId');
 var utils = require('../../../util/utils');
 
 /**

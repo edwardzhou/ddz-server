@@ -5,17 +5,21 @@ var mongoose = require('mongoose-q')();
 
 var uuid = require('node-uuid');
 
+
+/**
+ * 道具购买订单
+ */
 var PurchaseOrderSchema = mongoose.Schema({
-  orderId: String,
-  userId: Number,
-  packageId: String,
-  packageData: {},
-  price: Number,
-  paidPrice: Number,
-  payment: {},
-  appid: Number,
-  retryTimes: Number,
-  status: Number,
+  orderId: String,      // 订单编号
+  userId: Number,       // 用户id
+  packageId: String,    // 道具包id
+  packageData: {},      // 道具包数据副本
+  price: Number,        // 价格
+  paidPrice: Number,    // 支付价格 (渠道有可能做活动打折)
+  payment: {},          // 支付数据
+  appid: Number,        // 渠道号
+  retryTimes: Number,   // 重试次数
+  status: Number,       // 状态
   createdAt: {type: Date, default: Date.now},
   updatedAt: {type: Date, default: Date.now}
 }, {
@@ -23,6 +27,14 @@ var PurchaseOrderSchema = mongoose.Schema({
 });
 
 
+/**
+ * 创建订单
+ * @param userId - 用户id
+ * @param goodsPackage - 道具包
+ * @param payMethod - 支付方式
+ * @param appid - 渠道ID
+ * @returns {*}
+ */
 PurchaseOrderSchema.statics.createOrderQ = function(userId, goodsPackage, payMethod, appid) {
   var newOrder = new this();
   newOrder.orderId = uuid.v4().replace(/-/g, '').substr(0, 16);

@@ -6,16 +6,20 @@ var mongoose = require('mongoose-q')();
 var DdzGoodsPackage = require('./ddzGoodsPackage');
 var PaymentMethod = require('./paymentMethod');
 
+
+/**
+ * 支付方式与道具包的关联表
+ */
 var packagePaymentSchema = mongoose.Schema({
-  package: {type: mongoose.Schema.Types.ObjectId, ref: 'DdzGoodsPackage'},
-  paymentMethod: {type: mongoose.Schema.Types.ObjectId, ref: 'PaymentMethod'},
-  paymentCode: String,
-  packageName: String,
-  description: String,
-  price: Number,
-  actual_price: {type: Number},
-  memo: String,
-  enabled: {type: Boolean, default: true },
+  package: {type: mongoose.Schema.Types.ObjectId, ref: 'DdzGoodsPackage'},  // 道具包
+  paymentMethod: {type: mongoose.Schema.Types.ObjectId, ref: 'PaymentMethod'},  // 支付方式
+  paymentCode: String,  // 支付代码
+  packageName: String,  // 道具包名称，用于支持同一个道具包在不同支付方式中用不用的名称, 如为空，则用原来的道具包名称
+  description: String,  // 道具包描述, 作用同上
+  price: Number,        // 道具包价格, 作用同上
+  actual_price: {type: Number}, // 实际价格，应对渠道打折的情况
+  memo: String,         // 本关系的备注
+  enabled: {type: Boolean, default: true },  // 是否启用
   createdAt: {type: Date, default: Date.now},
   updatedAt: {type: Date, default: Date.now}
 }, {
@@ -58,6 +62,10 @@ packagePaymentSchema.methods.toParams = function(excludeAttrs) {
   return __toParams(this, excludeAttrs);
 };
 
+/**
+ * 调整道具包在支付方式中的信息
+ * @param packagePayment
+ */
 packagePaymentSchema.statics.fixAttributes = function(packagePayment) {
   if (!packagePayment.packageName) {
     packagePayment.packageName = packagePayment.package.packageName;
