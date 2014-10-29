@@ -87,6 +87,11 @@ remoteHandler.enter = function(uid, sid, sessionId, room_id, cb) {
 
 };
 
+remoteHandler.onPreStartNewGame = function(table) {
+  var self = this;
+
+};
+
 remoteHandler.onStartNewGame = function(table) {
   var self = this;
 

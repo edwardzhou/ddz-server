@@ -19,6 +19,11 @@ exp.pushTableMessage = function(table, route, msg, cb) {
 
 exp.pushMessage = function(route, msg, uids, cb) {
   var channelService = theApp.get('channelService');
-  channelService.pushMessageByUids(route, msg, uids, cb);
+  var validUids = uids.filter(function(uid) {return !!uid.sid});
+  if (validUids.length > 0) {
+    channelService.pushMessageByUids(route, msg, validUids, cb);
+  } else {
+    utils.invokeCallback(cb, null);
+  }
 };
 
