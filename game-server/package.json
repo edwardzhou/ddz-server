@@ -6,7 +6,7 @@
     "pomelo": "1.1.0",
     "pomelo-logger": "*",
     "mongodb": "*",
-    "mongoose": "3.8.16",
+    "mongoose": "~3.8",
     "async": "0.2.9",
     "mess": "0.1.1",
     "js-combinatorics": "*",

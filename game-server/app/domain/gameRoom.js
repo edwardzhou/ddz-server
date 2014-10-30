@@ -187,6 +187,33 @@ roomSchema.methods.arrangeTable = function(players) {
   return newTable;
 };
 
+roomSchema.methods.cancelTable = function(table) {
+  var self = this;
+  var index = this.tables.indexOf(table);
+  this.tables.splice(index, 1);
+  delete this.tablesMap[table.tableId];
+  table.room = null;
+
+  for (var playerIndex=0; playerIndex<table.players.length; playerIndex++) {
+    var player = table.players[playerIndex];
+    player.reset();
+    var pIndex = this.readyPlayers.indexOf(player);
+    if (pIndex >=0 ) {
+      this.readyPlayers.splice(pIndex, 1);
+    }
+
+    if (!!player.robot) {
+      this.idle_robots.push(player);
+    } else if (!!this.playersMap[player.userId] && !player.connectionLost) {
+      this.readyPlayers.unshift(player);
+    }
+  }
+
+  process.nextTick(function(){
+    self.onPlayerReadyTimeout();
+  });
+};
+
 roomSchema.methods.releaseTable = function(table) {
   var index = this.tables.indexOf(table);
   this.tables.splice(index, 1);
@@ -227,7 +254,12 @@ roomSchema.methods.onPlayerReadyTimeout = function() {
     if (this.idle_robots.length >= 3 - readyPlayers.length) {
       var players = readyPlayers.splice(0, 3);
       utils.arrayRemove(this.readyPlayers, players);
-      players = players.concat(this.idle_robots.splice(0, 3-players.length));
+      var robotPlayers = this.idle_robots.splice(0, 3-players.length);
+      players = players.concat(robotPlayers);
+      for (var robotIndex=0; robotIndex<robotPlayers.length; robotIndex++) {
+        robotPlayers[robotIndex].readyForStartGame = true;
+      }
+
       console.log('[roomSchema.methods.onPlayerReadyTimeout] arrange robots:', players);
       var table = this.arrangeTable(players);
       this.tables.push(table);

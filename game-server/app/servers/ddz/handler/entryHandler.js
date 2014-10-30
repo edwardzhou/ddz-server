@@ -158,6 +158,27 @@ Handler.prototype.updateUserInfo = function(msg, session, next) {
   });
 };
 
+Handler.prototype.ackPreStartGame = function(msg, session, next) {
+  var self = this;
+  var room_id = msg.roomId;
+  var uid = session.uid;
+  var table_id = msg.tableId;
+
+  this.app.rpc.area.roomRemote.ackPreStartGame(session, uid, this.app.get('serverId'), session.id, room_id, table_id, function(err) {
+    logger.info('ackPreStartGame result: ', err);
+    if (!!err) {
+      next(null, {err: err});
+      return;
+    }
+    var resp = {};
+    resp.result = new Result(ErrorCode.SUCCESS);
+    logger.info("[enterRoom] area.roomRemote.ackPreStartGame return resp: %j", resp);
+
+    next(null, resp);
+  });
+
+};
+
 var getUser = function(uid) {
 //  return {
 //    uid: uid,

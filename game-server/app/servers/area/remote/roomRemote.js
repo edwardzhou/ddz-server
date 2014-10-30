@@ -11,6 +11,7 @@ var cardService = require('../../../services/cardService');
 var ErrorCode = require('../../../consts/errorCode');
 var userDao = require('../../../dao/userDao');
 var GameState = require('../../../consts/consts').GameState;
+var TableState = require('../../../consts/consts').TableState;
 
 module.exports = function(app) {
   return new RoomRemote(app);
@@ -28,6 +29,7 @@ var RoomRemote = function(app) {
   this.sessionService = app.get('localSessionService');
   this.cardService = app.get('cardService');
   this._onStartNewGame = this.onStartNewGame.bind(this);
+  this._onPreStartNewGame = this.onPreStartNewGame.bind(this);
 };
 
 var remoteHandler = RoomRemote.prototype;
@@ -77,7 +79,7 @@ remoteHandler.enter = function(uid, sid, sessionId, room_id, cb) {
 //        messageService.pushTableMessage(table, "onPlayerJoin", msg, null);
 //      });
 
-      roomService.enterRoom(player, room_id, -1, self._onStartNewGame);
+      roomService.enterRoom(player, room_id, -1, self._onPreStartNewGame);
 
       // 返回结果
       cb(null, thisServerId, {});
@@ -90,6 +92,57 @@ remoteHandler.enter = function(uid, sid, sessionId, room_id, cb) {
 remoteHandler.onPreStartNewGame = function(table) {
   var self = this;
 
+  var tableId = table.tableId;
+  var roomId = table.room.roomId;
+  var realPlayers = [];
+
+  for(var index=0; index<table.players.length; index++) {
+    var player = table.players[index];
+    if (!player.robot && !player.connectionLost) {
+      realPlayers.push(player);
+    }
+  }
+
+  if (realPlayers.length == 0) {
+    logger.warn("no real player for the table: %d, will cancel the table.", tableId);
+    table.room.cancelTable(table);
+  } else {
+    messageService.pushTableMessage(table, 'onPreStartGame', {tableId: tableId, roomId: roomId}, null);
+    setTimeout( function(){
+      var timeoutTable = roomService.getTable(roomId, tableId);
+      logger.info('[roomRemote.onPreStartNewGame] [timeout] table => ', timeoutTable);
+      if (timeoutTable == null) {
+        logger.info('[roomRemote.onPreStartNewGame] [timeout] the table is no longer exists.');
+        return;
+      }
+
+      if (timeoutTable.state == TableState.BUSY) {
+        logger.info('[roomRemote.onPreStartNewGame] [timeout] the table is BUSY now.');
+        return;
+      }
+
+      logger.info('[roomRemote.onPreStartNewGame] [timeout] the table do not BUSY in time, cancel it.');
+      timeoutTable.room.cancelTable(timeoutTable);
+    }, 4 * 1000);
+  }
+};
+
+remoteHandler.ackPreStartGame = function(uid, sid, sessionId, roomId, tableId, cb) {
+  var self = this;
+  var room = roomService.getRoom(roomId);
+  var table = roomService.getTable(roomId, tableId);
+  if (table == null) {
+    utils.invokeCallback(cb, null);
+    return;
+  }
+
+  var player = table.getPlayerByUserId(uid);
+  player.readyForStartGame = true;
+  var count = table.players.filter(function(p) {return !!p.readyForStartGame;}).length;
+  if (count == 3) {
+    this.onStartNewGame(table);
+  }
+  utils.invokeCallback(cb, null);
 };
 
 remoteHandler.onStartNewGame = function(table) {
@@ -102,6 +155,7 @@ remoteHandler.onStartNewGame = function(table) {
       p.userSession.sset('tableId', table.tableId);
     }
   }
+  table.state = TableState.BUSY;
   var msg = table.toParams();
   process.nextTick(function() {
     messageService.pushTableMessage(table, "onPlayerJoin", msg, function() {
@@ -144,7 +198,7 @@ remoteHandler.reenter = function(uid, sid, sessionId, room_id, table_id, msgNo, 
       process.nextTick(next);
       hasGame = true;
     } else {
-      roomService.enterRoom(player, room_id, -1, self._onStartNewGame);
+      roomService.enterRoom(player, room_id, -1, self._onPreStartNewGame);
     }
   } else {
     this.enter(uid, sid, sessionId, room_id, cb);

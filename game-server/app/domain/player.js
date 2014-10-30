@@ -25,6 +25,7 @@ var Player = function(opts) {
   this.delegating = !!opts.delegating;
   this.robot = opts.robot || false;
   this.roomId = opts.roomId || null;
+  this.readyForStartGame = opts.readyForStartGame || false;
 };
 
 util.inherits(Player, EventEmitter);
@@ -156,6 +157,7 @@ Player.prototype.reset = function() {
   this.plays = 0;
   this.tableId = null;
   this.delegating = false;
+  this.readyForStartGame = false;
   if (!!this.userSession) {
     this.userSession.sset({tableId: null, gameId: null});
     //this.userSession.sset('gameId', null);
