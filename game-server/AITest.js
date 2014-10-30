@@ -109,6 +109,7 @@ testCard = new Card( PokeCard.getByIds("a03, b04, c05, a06, a07,a08, a09") );
 testAICard(testCard, ci);
 
 
+
 function testFirstPlay() {
   var f1_cardInfo = CardInfo.create(farmer1_pokes);
   CardAnalyzer.analyze(f1_cardInfo);
@@ -139,5 +140,14 @@ cardResults = CardAnalyzer.analyze(ci);
 ci.dump();
 cardResults[0].dump();
 
+
+
 testFirstPlay();
 
+
+
+pokes = PokeCard.pokeCardsFromChars('EKMOPZ]^acfgkmopq');
+ci = CardInfo.create(pokes);
+cardResults = CardAnalyzer.analyze(ci);
+testCard = new Card(PokeCard.pokeCardsFromChars('FGHeh'));
+testAICard(testCard, ci);

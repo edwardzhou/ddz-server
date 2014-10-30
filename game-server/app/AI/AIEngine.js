@@ -162,7 +162,7 @@ AIEngine.findGreaterThree = function(card, cardInfo) {
       // 没对子，尝试拆连对
       var pairsStraight = AIEngine.findFeasibleStraight(plan.pairsStraightsCards);
       if (!!pairsStraight) {
-        return new CardResult(new Card(otherCard.pokeCards.concat(pairsStraight.pokeCards.pokeCards)), pairsStraight);
+        return new CardResult(new Card(otherCard.pokeCards.concat(pairsStraight.pokeCards.slice(0,2))), pairsStraight);
       }
 
       // 没对子、连对，拆小的三张
