@@ -88,7 +88,8 @@
     "required uInt32 seqNo": 4,
     "required uInt32 msgNo": 5,
     "required uInt32 timing": 6,
-    "optional uInt32 delegating": 7
+    "optional uInt32 delegating": 7,
+    "optional string tipPokeChars": 8
   },
   "onLordValueUpgrade" : {
     "required uInt32 lordValue": 1,

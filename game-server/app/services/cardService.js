@@ -467,14 +467,46 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
       delegating: (!!player.delegating? 1 : 0)
     };
 
-    self.messageService.pushTableMessage(table,
-      eventName,
-      eventData,
-      null );
+    var isGameOver = player.pokeCards.length == 0;
+    var nextPlayer = pokeGame.getPlayerByUserId(pokeGame.token.nextUserId);
+    var tipPokeChars = '';
+    for (var playerIndex=0; playerIndex<pokeGame.players.length; playerIndex++) {
+      var p = pokeGame.players[playerIndex];
+      if (!isGameOver // 牌局未结束
+            && (p.userId == nextPlayer.userId) // 是下一玩家?
+            && (!nextPlayer.robot)) { // 且不是机器人和
+        // 真人玩家, 添加提示牌
+        var cardInfo = CardInfo.create(nextPlayer.pokeCards);
+        var tipCard = null;
+        CardAnalyzer.analyze(cardInfo);
+        if (pokeGame.lastPlay.userId == nextPlayer.userId) {
+          tipCard = AIEngine.findLordFirstCard(cardInfo, cardInfo, cardInfo);
+        } else {
+          tipCard = AIEngine.findLordPlayCard(cardInfo, cardInfo, cardInfo, pokeGame.lastPlay.card);
+        }
+        if (tipCard) {
+          tipPokeChars = tipCard.getPokeChars();
+        }
+      } else {
+        tipPokeChars = '';
+      }
 
-    pokeGame.playerMsgs[pokeGame.players[0].userId].push([eventName, eventData]);
-    pokeGame.playerMsgs[pokeGame.players[1].userId].push([eventName, eventData]);
-    pokeGame.playerMsgs[pokeGame.players[2].userId].push([eventName, eventData]);
+      eventData.tipPokeChars = tipPokeChars;
+
+      if (!p.robot && !p.connectionLost) {
+        self.messageService.pushMessage(eventName, eventData, [p.getUidSid()], null);
+      }
+      pokeGame.playerMsgs[p.userId].push([eventName, utils.clone(eventData)]);
+    }
+
+//    self.messageService.pushTableMessage(table,
+//      eventName,
+//      eventData,
+//      null );
+//
+//    pokeGame.playerMsgs[pokeGame.players[0].userId].push([eventName, eventData]);
+//    pokeGame.playerMsgs[pokeGame.players[1].userId].push([eventName, eventData]);
+//    pokeGame.playerMsgs[pokeGame.players[2].userId].push([eventName, eventData]);
 
     if (!!actionResult.lordValueUpgrade) {
       eventName = GameEvent.lordValueUpgrade;
@@ -509,6 +541,7 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
       if (!!nextPlayer.delegating || nextPlayer.robot) {
         nextTimeout = 2;
       }
+
       setupNextPlayerTimeout(table, function(timeoutTable, timeoutPlayer, timeoutSeqNo){
         var timeoutPokeChars = ''; // 不出
         var pokeGame = timeoutTable.pokeGame;
@@ -541,9 +574,6 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
         }
       }, self.getPlayerTiming(pokeGame.getTokenPlayer()));
     }
-//    setupNextPlayerTimeout(table, function(table, player, seqNo) {
-//        self.playCard(table, player, '', seqNo, true, null);
-//      });
   });
 };
 
