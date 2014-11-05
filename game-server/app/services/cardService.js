@@ -330,15 +330,35 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
     actionResult.msgNo = msgNo;
     actionResult.timing = (!!pokeGame.lordPlayerId) ? 30 : 10;
 
-    pokeGame.playerMsgs[pokeGame.players[0].userId].push([eventName, actionResult]);
-    pokeGame.playerMsgs[pokeGame.players[1].userId].push([eventName, actionResult]);
-    pokeGame.playerMsgs[pokeGame.players[2].userId].push([eventName, actionResult]);
+    if (actionResult.lordUserId == 0) {
+      pokeGame.playerMsgs[pokeGame.players[0].userId].push([eventName, actionResult]);
+      pokeGame.playerMsgs[pokeGame.players[1].userId].push([eventName, actionResult]);
+      pokeGame.playerMsgs[pokeGame.players[2].userId].push([eventName, actionResult]);
 
-    // 推送叫地主结果
-    self.messageService.pushTableMessage(table,
-      eventName,
-      actionResult,
-      null );
+      // 推送叫地主结果
+      self.messageService.pushTableMessage(table,
+        eventName,
+        actionResult,
+        null);
+    } else {
+      for (var playerIndex=0; playerIndex<pokeGame.players.length; playerIndex++) {
+        var p = pokeGame.players[playerIndex];
+        var tipPokeChars = '';
+        if (p.userId == actionResult.lordUserId && !p.robot) {
+          var cardInfo = CardInfo.create(p.pokeCards);
+          CardAnalyzer.analyze(cardInfo);
+          var tipCard = AIEngine.findLordFirstCard(cardInfo, cardInfo, cardInfo);
+          tipPokeChars = tipCard.getPokeChars();
+        }
+        actionResult.tipPokeChars = tipPokeChars;
+
+        var msgBack = utils.clone(actionResult);
+        pokeGame.playerMsgs[pokeGame.players[0].userId].push([eventName, msgBack]);
+        if (!p.robot && !p.connectionLost) {
+          self.messageService.pushMessage(eventName, msgBack, [p.getUidSid()], null );
+        }
+      }
+    }
 
     if (pokeGame.grabbingLord.lordValue > lordValue) {
       eventName = GameEvent.lordValueUpgrade;
@@ -463,6 +483,7 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
       nextUserId: pokeGame.token.nextUserId,
       seqNo: pokeGame.token.currentSeqNo,
       msgNo: msgNo,
+      tipPokeChars: '',
       timing: 30,
       delegating: (!!player.delegating? 1 : 0)
     };
@@ -491,12 +512,14 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
         tipPokeChars = '';
       }
 
-      eventData.tipPokeChars = tipPokeChars;
+      var msgBack = utils.clone(eventData);
+
+      msgBack.tipPokeChars = tipPokeChars;
 
       if (!p.robot && !p.connectionLost) {
-        self.messageService.pushMessage(eventName, eventData, [p.getUidSid()], null);
+        self.messageService.pushMessage(eventName, msgBack, [p.getUidSid()], null);
       }
-      pokeGame.playerMsgs[p.userId].push([eventName, utils.clone(eventData)]);
+      pokeGame.playerMsgs[p.userId].push([eventName, msgBack]);
     }
 
 //    self.messageService.pushTableMessage(table,

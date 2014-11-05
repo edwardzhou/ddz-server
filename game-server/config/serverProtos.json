@@ -79,7 +79,8 @@
     "repeated Player players": 7,
     "required uInt32 msgNo": 8,
     "required uInt32 timing": 9,
-    "optional uInt32 grabState": 10
+    "optional uInt32 grabState": 10,
+    "optional string tipPokeChars": 11
   },
   "onPlayCard" : {
     "required Player player": 1,
