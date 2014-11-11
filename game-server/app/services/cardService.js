@@ -648,6 +648,13 @@ exp.gameOver = function(table, player, cb) {
       for (var pIndex=0; pIndex< pokeGame.players.length; pIndex++) {
         var p = pokeGame.players[pIndex];
         if (!p.isRobot()) {
+          self.messageService.pushMessage('onUserInfoUpdate', {user: p.toParams()}, [p.getUidSid()]);
+          if (!!pokeGame.escapeUserId && pokeGame.escapeUserId == p.userId) {
+            self.messageService.pushMessage('onMessage',
+              {
+                msg: util.format('由于您强行中止牌局, 系统根据牌局信息扣除您 %d 个金币。', pokeGame.playersResults[p.userId] * -1)
+              }, [p.getUidSid()]);
+          }
           p.userSession.sset({pokeGameId: null, tableId: null});
         }
       }

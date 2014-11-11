@@ -73,6 +73,8 @@ var calcPlayerEscape = function(table, player) {
     pokeGame.lordWon = true;
   }
 
+  pokeGame.escapeUserId = player.userId;
+
   var score = pokeGame.score;
   score.rake = pokeGame.gameRake;
   score.ante = pokeGame.gameAnte;
