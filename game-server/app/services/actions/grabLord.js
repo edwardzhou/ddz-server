@@ -61,7 +61,7 @@ GrabLordAction.doGrabLord = function(gameTable, player, lordAction, cb) {
       player.state = PlayerState.NO_GRAB_LORD;
     } else {
       player.state = PlayerState.GRAB_LORD;
-      pokeGame.grabbingLord.lordValue = 3;
+      pokeGame.grabbingLord.lordValue = 1;
       pokeGame.grabbingLord.firstLordPlayer = player;
       pokeGame.grabbingLord.lordPlayer = player;
     }
@@ -82,9 +82,9 @@ GrabLordAction.doGrabLord = function(gameTable, player, lordAction, cb) {
   nextPlayer = pokeGame.getNextPlayer(player.userId);
 
   var isGrabLordFinish = false;
-  if (pokeGame.grabbingLord.lordValue == 3) {
+  if (pokeGame.grabbingLord.lordValue == 1) {
     isGrabLordFinish = pokeGame.grabbingLord.firstPlayer == nextPlayer;
-  } else if (pokeGame.grabbingLord.lordValue > 3) {
+  } else if (pokeGame.grabbingLord.lordValue > 1) {
     isGrabLordFinish = pokeGame.grabbingLord.firstLordPlayer == player;
   }
 

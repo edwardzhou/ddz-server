@@ -395,7 +395,7 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
         function(timeoutTable, timeoutPlayer, timeoutSeq){
           self.grabLord(timeoutTable, timeoutPlayer, 1, timeoutSeq, null);
         },
-        self.getPlayerTiming(pokeGame.getTokenPlayer()));
+        self.getPlayerTiming(pokeGame.getTokenPlayer()) + 5);
     } else {
       setupNextPlayerTimeout(table,
         function(timeoutTable, timeoutPlayer, timeoutSeq){
@@ -405,7 +405,7 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
 
           self.playCard(timeoutTable, timeoutPlayer, card.getPokeChars() , timeoutSeq, true, null);
         },
-        self.getPlayerTiming(pokeGame.getTokenPlayer()));
+        self.getPlayerTiming(pokeGame.getTokenPlayer()) + 5);
     }
 
 
@@ -595,7 +595,7 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
           }
           self.playCard(timeoutTable, timeoutPlayer, timeoutPokeChars, timeoutSeqNo, true, null);
         }
-      }, self.getPlayerTiming(pokeGame.getTokenPlayer()));
+      }, self.getPlayerTiming(pokeGame.getTokenPlayer()) + 5);
     }
   });
 };

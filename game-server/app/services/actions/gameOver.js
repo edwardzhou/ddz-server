@@ -27,11 +27,11 @@ var calcPlayerEscape = function(table, player) {
     player.role = PlayerRole.LORD;
   }
 
-  if (!pokeGame.lordValue || pokeGame.lordValue < 3) {
+  if (!pokeGame.lordValue || pokeGame.lordValue < 1) {
     if (!!pokeGame.grabbingLord.lordValue && pokeGame.grabbingLord.lordValue > 0) {
       pokeGame.lordValue = pokeGame.grabbingLord.lordValue;
     } else {
-      pokeGame.lordValue = 3;
+      pokeGame.lordValue = 1;
     }
   }
 
