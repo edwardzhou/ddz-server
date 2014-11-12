@@ -660,15 +660,6 @@ exp.gameOver = function(table, player, cb) {
       }
 
       table.release();
-
-//      process.nextTick(function() {
-//        table.pokeGame = null;
-//        table.release();
-//      });
-
-//      setupPlayerReadyTimeout(table, table.players[0], self.playerReadyTimeout.bind(self), 35);
-//      setupPlayerReadyTimeout(table, table.players[1], self.playerReadyTimeout.bind(self), 35);
-//      setupPlayerReadyTimeout(table, table.players[2], self.playerReadyTimeout.bind(self), 35);
     }
   });
 
