@@ -1,7 +1,7 @@
 class PaymentMethod
   include Mongoid::Document
 
-  has_many :packagePayments, class_name: "PackagePayment", foreign_key: 'package'
+  has_many :packagePayments, class_name: "PackagePayment", foreign_key: 'paymentMethod_id'
   field :methodId, type: String
   field :methodName, type: String
   field :description, type: String

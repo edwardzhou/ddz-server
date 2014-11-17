@@ -11,8 +11,8 @@ var PaymentMethod = require('./paymentMethod');
  * 支付方式与道具包的关联表
  */
 var packagePaymentSchema = mongoose.Schema({
-  package: {type: mongoose.Schema.Types.ObjectId, ref: 'DdzGoodsPackage'},  // 道具包
-  paymentMethod: {type: mongoose.Schema.Types.ObjectId, ref: 'PaymentMethod'},  // 支付方式
+  package_id: {type: mongoose.Schema.Types.ObjectId, ref: 'DdzGoodsPackage'},  // 道具包
+  paymentMethod_id: {type: mongoose.Schema.Types.ObjectId, ref: 'PaymentMethod'},  // 支付方式
   paymentCode: String,  // 支付代码
   packageName: String,  // 道具包名称，用于支持同一个道具包在不同支付方式中用不用的名称, 如为空，则用原来的道具包名称
   description: String,  // 道具包描述, 作用同上
@@ -61,6 +61,23 @@ packagePaymentSchema.statics.toParams = __toParams;
 packagePaymentSchema.methods.toParams = function(excludeAttrs) {
   return __toParams(this, excludeAttrs);
 };
+
+packagePaymentSchema.virtual('package')
+  .get(function(){
+    return this.get('package_id');
+  })
+  .set(function(v) {
+    return this.set('package_id', v);
+  });
+
+packagePaymentSchema.virtual('paymentMethod')
+  .get(function(){
+    return this.get('paymentMethod_id');
+  })
+  .set(function(v) {
+    return this.set('paymentMethod_id', v);
+  });
+
 
 /**
  * 调整道具包在支付方式中的信息

@@ -31,14 +31,14 @@ var paymentMethodSchema = new mongoose.Schema({
  */
 paymentMethodSchema.methods.getPackagePaymentsQ = function(populate, onlyEnabled) {
   var PackagePayment = require('./packagePayment');
-  var criteria  = {paymentMethod: this.id};
+  var criteria  = {paymentMethod_id: this.id};
   if (!!onlyEnabled) {
     criteria.enabled = true;
   }
 
   var query = PackagePayment.find(criteria);
   if (!!populate) {
-    query = query.populate('paymentMethod package')
+    query = query.populate('paymentMethod_id package_id')
   }
 
   return query.execQ();
