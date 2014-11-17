@@ -45,7 +45,8 @@ DdzGoodsPackageService.deliverPackageQ = function(purchaseOrder) {
 };
 
 DdzGoodsPackageService.doIncreaseCoins = function(user, goodsItem) {
-  for (var i=0; i<goodsItem.goodsCount; i++) {
-    user.ddzProfile.coins += goodsItem.goods.goodsProps.coins;
-  }
+  user.ddzProfile.coins += goodsItem.goods.goodsProps.coins * goodsItem.goodsCount;
+  // for (var i=0; i<goodsItem.goodsCount; i++) {
+  //   user.ddzProfile.coins += goodsItem.goods.goodsProps.coins;
+  // }
 };
