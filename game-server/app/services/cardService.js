@@ -203,7 +203,7 @@ exp.playerReadyTimeout = function(table, player, next) {
 
 };
 
-exp.getPlayerTiming = function(player, actionType) {
+exp.getPlayerTiming = function(player, table, actionType) {
   if (player.robot) {
     var r1 = Math.floor(Math.random() * 1000) % 10;
     if (r1 <= 4) {
@@ -222,7 +222,13 @@ exp.getPlayerTiming = function(player, actionType) {
     return 5;
   }
 
-  return 30;
+  if (actionType == 'grabLord') {
+    return table.room.grabbingLordTimeout || 20;
+  } else {
+    return table.room.playCardTimeout || 30;
+  }
+
+  // return 30;
 };
 
 /**
@@ -250,7 +256,7 @@ exp.startGame = function (table, next) {
         nextUserId: newPokeGame.grabbingLord.nextUserId,
         seqNo: (player.userId == newPokeGame.grabbingLord.nextUserId ? seqNo : 0),
         msgNo: msgNo,
-        timing: 30
+        timing: table.room.grabbingLordTimeout || 20
       };
       //newPokeGame.playerMsgs[player.userId] = [];
       newPokeGame.playerMsgs[player.userId].push([eventName, eventData]);
@@ -265,11 +271,18 @@ exp.startGame = function (table, next) {
 //    newPokeGame.actionTimeout
     //var nextPlayer = newPokeGame.getTokenPlayer();
 
+    var tokenPlayer = pokeGame.getTokenPlayer();
+    var nextTimeout = self.getPlayerTiming(tokenPlayer, table, 'grabLord');
+
+    if (!tokenPlayer.robot && !tokenPlayer.delegating) {
+      nextTimeout += 5;
+    }
+
     setupNextPlayerTimeout(table,
       function(timeoutTable, timeoutPlayer, timeoutSeq){
         self.grabLord(timeoutTable, timeoutPlayer, 1, timeoutSeq, null);
       },
-      self.getPlayerTiming(newPokeGame.getTokenPlayer()) + 2);
+      nextTimeout);
   });
 
 
@@ -319,6 +332,10 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
     var pokeGame = table.pokeGame;
     var eventName = GameEvent.grabLord;
     var msgNo = pokeGame.msgNo++;
+    var timing = table.room.grabbingLordTimeout || 20;
+    if (!!pokeGame.lordPlayerId) {
+      timing = table.room.playCardTimeout;
+    }
 
     //如果pokeGame被清空了，说明流局
     var gameAbandoned = actionResult.abandoned == true;
@@ -328,7 +345,7 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
     }
     actionResult.seqNo = pokeGame.token.currentSeqNo;
     actionResult.msgNo = msgNo;
-    actionResult.timing = (!!pokeGame.lordPlayerId) ? 30 : 10;
+    actionResult.timing = timing;
 
     if (actionResult.lordUserId == 0) {
       pokeGame.playerMsgs[pokeGame.players[0].userId].push([eventName, actionResult]);
@@ -390,12 +407,20 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
       return;
     }
 
+    var tmpAction =(!pokeGame.lordPlayerId || pokeGame.lordValue < 1)? 'grabLord' : 'playCard';
+    var tokenPlayer = pokeGame.getTokenPlayer();
+    var nextTimeout = self.getPlayerTiming(tokenPlayer, table, tmpAction);
+
+    if (!tokenPlayer.robot && !tokenPlayer.delegating) {
+      nextTimeout += 5;
+    }
+
     if (!pokeGame.lordPlayerId || pokeGame.lordValue < 1) {
-      setupNextPlayerTimeout(table,
+       setupNextPlayerTimeout(table,
         function(timeoutTable, timeoutPlayer, timeoutSeq){
           self.grabLord(timeoutTable, timeoutPlayer, 1, timeoutSeq, null);
         },
-        self.getPlayerTiming(pokeGame.getTokenPlayer()) + 5);
+        nextTimeout);
     } else {
       setupNextPlayerTimeout(table,
         function(timeoutTable, timeoutPlayer, timeoutSeq){
@@ -405,7 +430,7 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
 
           self.playCard(timeoutTable, timeoutPlayer, card.getPokeChars() , timeoutSeq, true, null);
         },
-        self.getPlayerTiming(pokeGame.getTokenPlayer()) + 5);
+        nextTimeout);
     }
 
 
@@ -484,7 +509,7 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
       seqNo: pokeGame.token.currentSeqNo,
       msgNo: msgNo,
       tipPokeChars: '',
-      timing: 30,
+      timing: table.room.playCardTimeout || 30,
       delegating: (!!player.delegating? 1 : 0)
     };
 
@@ -558,12 +583,19 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
       return;
     }
 
+    var tokenPlayer = pokeGame.getTokenPlayer();
+    var nextTimeout = self.getPlayerTiming(tokenPlayer, table, 'grabLord');
+
+    if (!tokenPlayer.robot && !tokenPlayer.delegating) {
+      nextTimeout += 5;
+    }
+
     if (player.pokeCards.length > 0) {
       var nextPlayer = pokeGame.getPlayerByUserId(pokeGame.token.nextUserId);
-      var nextTimeout = 10;
-      if (!!nextPlayer.delegating || nextPlayer.robot) {
-        nextTimeout = 2;
-      }
+//      var nextTimeout = 10;
+//      if (!!nextPlayer.delegating || nextPlayer.robot) {
+//        nextTimeout = 2;
+//      }
 
       setupNextPlayerTimeout(table, function(timeoutTable, timeoutPlayer, timeoutSeqNo){
         var timeoutPokeChars = ''; // 不出
@@ -595,7 +627,7 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
           }
           self.playCard(timeoutTable, timeoutPlayer, timeoutPokeChars, timeoutSeqNo, true, null);
         }
-      }, self.getPlayerTiming(pokeGame.getTokenPlayer()) + 5);
+      }, nextTimeout);
     }
   });
 };

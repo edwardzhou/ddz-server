@@ -1,11 +1,31 @@
 ActiveAdmin.register DdzGoodsPackage do
 
+  collection_action :refresh_packages, :method => :get do
+    # Do some CSV importing work here...
+    PubSubEvent.create({
+                           eventName: 'reload_cache',
+                           eventData: {reloadTarget: 'packages'},
+                           active: 1
+                       })
+    redirect_to({:action => :index}, {:notice => "Post Packages refresh event successfully!"})
+  end
+
+  sidebar :operation do
+    ul do
+      li link_to "Refresh Packages in GAME SERVER", refresh_packages_admin_ddz_goods_packages_path
+    end
+  end
+
+
   permit_params do
     permitted = []
-    permitted << :goodsName
-    permitted << :goodsDesc
-    permitted << :goodsType
-    permitted << :goodsProps
+    permitted << :packageId
+    permitted << :packageName
+    permitted << :packageDesc
+    permitted << :packageType
+    permitted << :packageIcon
+    permitted << :price
+    permitted << :enabled
     permitted << :sortIndex
     permitted
   end
@@ -21,8 +41,8 @@ ActiveAdmin.register DdzGoodsPackage do
     column :price
     column :enabled
     column :sortIndex
-    column :createAt
-    column :updateAt
+    column :createdAt
+    column :updatedAt
     actions
   end
 

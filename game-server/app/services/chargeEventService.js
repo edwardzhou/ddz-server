@@ -2,6 +2,7 @@
  * Created by edwardzhou on 14-9-5.
  */
 
+var logger = require('pomelo-logger').getLogger('pomelo', __filename);
 var pomeloApp = null;
 var sessionService = null;
 var getSessionBySidQ = null;
@@ -22,11 +23,11 @@ ChargeEventService.init = function(app, opts) {
   pomeloApp = app;
 
   setTimeout(function(){
-    var subs = PubSubEvent.find({eventName: 'charge', active: 1})
+    var subs = PubSubEvent.find({active: 1})
       .tailable({awaitdata:true})
       .setOptions({numberOfRetries: 10000000})
       .stream()
-      .on('data', ChargeEventService.onChargeEvent)
+      .on('data', ChargeEventService.dispatchEvent.bind(this))
       .on('close', function(){
         console.log('[ChargeEventService] event tail stream closed');
       })
@@ -37,14 +38,9 @@ ChargeEventService.init = function(app, opts) {
   }, 3000);
 };
 
-ChargeEventService.onChargeEvent = function(event) {
+ChargeEventService.dispatchEvent = function(event) {
 
-  if (sessionService == null) {
-    sessionService = pomeloApp.get('backendSessionService');
-    //msgService = pomeloApp.get('messageService');
-    getSessionBySidQ = Q.nbind(sessionService.get, sessionService);
-    pushMessageQ = Q.nbind(msgService.pushMessage, msgService);
-  }
+  logger.info('[ChargeEventService.dispatchEvent] event: ', event);
 
   event.active = 0;
   var orderId = event.eventData.orderId;
@@ -54,17 +50,56 @@ ChargeEventService.onChargeEvent = function(event) {
   var userSession = null;
 
   event.saveQ()
-//    .then(function() {
-//      return User.findOne({userId: userId})
-//        .populate('ddzProfile')
-//        .execQ();
-//    })
-//    .then(function(u) {
-//      user = u;
-//    })
     .then(function(){
-      return PurchaseOrder.findOneQ({orderId: orderId});
+      if (event.eventName == 'charge') {
+        ChargeEventService.dispatchChargeEvent(event);
+      } else if (event.eventName == 'reload_cache') {
+        ChargeEventService.dispatchReloadCacheEvent(event);
+      } else {
+        logger.warn('[ChargeEventService.dispatchEvent] unknown event "%s": ', event.eventName, event);
+      }
     })
+    .fail(function(err) {
+      logger.error('[ChargeEventService.dispatchEvent] error: ', err);
+    });
+};
+
+ChargeEventService.dispatchReloadCacheEvent = function(event) {
+  if (event.eventData.reloadTarget == 'packages') {
+    pomeloApp.rpc.area.hallRemote.refreshGoodsPackages.toServer('*', null);
+  }
+
+};
+
+
+ChargeEventService.dispatchChargeEvent = function(event) {
+
+  if (sessionService == null) {
+    sessionService = pomeloApp.get('backendSessionService');
+    //msgService = pomeloApp.get('messageService');
+    getSessionBySidQ = Q.nbind(sessionService.get, sessionService);
+    pushMessageQ = Q.nbind(msgService.pushMessage, msgService);
+  }
+
+  var orderId = event.eventData.orderId;
+  var userId = event.eventData.userId;
+  var user = null;
+  var purchaseOrder = null;
+  var userSession = null;
+
+//  event.saveQ()
+////    .then(function() {
+////      return User.findOne({userId: userId})
+////        .populate('ddzProfile')
+////        .execQ();
+////    })
+////    .then(function(u) {
+////      user = u;
+////    })
+//    .then(function(){
+//      return PurchaseOrder.findOneQ({orderId: orderId});
+//    })
+    PurchaseOrder.findOneQ({orderId: orderId})
     .then(function(po) {
       purchaseOrder = po;
       return DdzGoodsPackageService.deliverPackageQ(purchaseOrder);

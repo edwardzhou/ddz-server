@@ -10,8 +10,8 @@ class PackagePayment
   field :actual_price, type: Integer
   field :memo, type: String
   field :enabled, type: Boolean, default: true
-  field :createAt, type: DateTime, default: ->{ Time.now }
-  field :updateAt, type: DateTime, default: ->{ Time.now }
+  field :createdAt, type: DateTime, default: ->{ Time.now }
+  field :updatedAt, type: DateTime, default: ->{ Time.now }
 
   def self.serialize_from_session(key, salt)
     record = to_adapter.get((key[0]["$oid"] rescue nil))

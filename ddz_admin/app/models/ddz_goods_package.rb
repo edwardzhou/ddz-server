@@ -9,6 +9,9 @@ class DdzGoodsPackage
   field :price, type: Integer
   field :enabled, type: Boolean, default: true
   field :sortIndex, type: Integer, default: 255
+  field :createdAt, type: DateTime, default: ->{ Time.now }
+  field :updatedAt, type: DateTime, default: ->{ Time.now }
+
   embeds_many :items, class_name: "GoodsItem"
 
   def self.serialize_from_session(key, salt)

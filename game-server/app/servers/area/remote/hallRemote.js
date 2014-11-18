@@ -53,6 +53,9 @@ var HallRemote = function(app) {
 var remoteHandler = HallRemote.prototype;
 
 remoteHandler.refreshGoodsPackages = function(cb) {
+
+  logger.info('[HallRemote.refreshGoodsPackages] start to reload ddz goods packages...');
+
   cache.goodsPackages = [];
   cache.goodsPackagesMap = {};
   cache.packagesIdMap = {};
