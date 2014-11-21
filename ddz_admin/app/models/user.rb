@@ -15,6 +15,7 @@ class User
   field :locked, type: Boolean, default: false
   field :lockedAt, type: DateTime
   field :comment, type: String
+  belongs_to :ddzProfile, class_name: "DdzUserProfile", foreign_key: 'ddzProfile'
 
   field :createdAt, type: DateTime, default: ->{ Time.now }
   field :updatedAt, type: DateTime, default: ->{ Time.now }
