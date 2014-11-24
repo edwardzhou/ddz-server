@@ -35,20 +35,22 @@ ActiveAdmin.register DdzGoods do
       #f.input :goodsProps
       f.input :sortIndex
 
-      panel "Goods Properties" do
-
-        #f.input :goodsProps, as: "text"
-        # f.inputs :name => "goodsProps", :for => f.object.goodsProps do |gf|
-        #   gf.object.each_key { |k|
-        #     f.input k
-        #   }
-        # end
-        f.render :partial => 'goodsProps', :locals => {:goodsProps => f.object.goodsProps}
-        # f.object.goodsProps.each_key { |k|
-        #   #"<input type='text' name='#{k}' value='#{f.object.goodsProps[k]}' />"
-        # }
-      end
     end
+
+    f.inputs "Goods Properties" do
+
+      #f.input :goodsProps, as: "text"
+      # f.inputs :name => "goodsProps", :for => f.object.goodsProps do |gf|
+      #   gf.object.each_key { |k|
+      #     f.input k
+      #   }
+      # end
+      f.render :partial => 'goodsProps', :locals => {:goodsProps => f.object.goodsProps}
+      # f.object.goodsProps.each_key { |k|
+      #   #"<input type='text' name='#{k}' value='#{f.object.goodsProps[k]}' />"
+      # }
+    end
+
     f.actions
   end
 
