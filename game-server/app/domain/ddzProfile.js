@@ -10,6 +10,7 @@ var mongoose = require('mongoose-q')();
  */
 var DdzProfileSchema = mongoose.Schema({
   userId: Number,   // 用户Id
+  user_id: {type: mongoose.Schema.Types.ObjectId},
   coins: {type:Number, default: 10000}, // 金币数
   gameStat: {     // 输赢统计
     won: {type: Number, default: 0},
@@ -20,7 +21,7 @@ var DdzProfileSchema = mongoose.Schema({
     appNumber: Number, // apk版本数
     appVersion: String, // apk主版本号
     resVersion: String, // 资源包版本号
-    signedInTime: {type: Date, default: Date.now},  // 登录时间
+    signedTime: {type: Date, default: Date.now},  // 登录时间
     handset: {
       model: String,
       os_ver: String,

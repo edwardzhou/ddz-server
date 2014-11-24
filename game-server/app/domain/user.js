@@ -68,7 +68,7 @@ var userSchema = new mongoose.Schema({
       imei: String,
       mac: String
     },
-    signedInTime: {type: Date, default: Date.now}
+    signedTime: {type: Date, default: Date.now}
   },
   ddzProfile: {type: mongoose.Schema.Types.ObjectId, ref: 'DdzProfile'}, // 个人资料
   createdAt: {type: Date, default: Date.now},
@@ -199,7 +199,7 @@ var __toParams = function(model, excludeAttrs) {
     authToken: model.authToken,
     gender: model.gender,
     headIcon: model.headIcon,
-    lastSignedInTime: model.lastSignedIn.signedInTime
+    lastSignedInTime: model.lastSignedIn.signedTime
   };
   //ddzProfile: model.ddzProfile.toParams(),
 

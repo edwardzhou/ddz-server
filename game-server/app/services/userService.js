@@ -52,7 +52,7 @@ UserService.signInByAuthToken = function(signInParams, callback) {
         throw genError(ErrorCode.AUTH_TOKEN_INVALID);
       }
 
-      user.lastSignedIn.signedInTime = Date.now();
+      user.lastSignedIn.signedTime = Date.now();
       user.updatedAt = Date.now();
 
       result.user = user;
@@ -105,7 +105,7 @@ UserService.signInByPassword = function(signInParams, callback) {
         throw genError(ErrorCode.PASSWORD_INCORRECT);
       }
 
-      user.lastSignedIn.signedInTime = Date.now();
+      user.lastSignedIn.signedTime = Date.now();
       if (!!handsetInfo) {
         user.setSignedInHandsetInfo(handsetInfo);
       }
@@ -182,6 +182,7 @@ UserService.signUp = function(signUpParams, cb) {
       var ddzProfile = new DdzProfile();
       User.copyHandset(results.user.signedUp.handset, ddzProfile.lastSignedIn.handset);
       ddzProfile.userId = results.user.userId;
+      ddzProfile.user_id = results.user.id;
       return ddzProfile.saveQ();
     })
     .then(function(ddzProfile) {

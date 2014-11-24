@@ -1,0 +1,4 @@
+<% goodsProps.each_key do |k| %>
+    <input type="text" name="<%= k%>_name" value="<%= k%>"/> : <input type="text" name="<%= k%>_value" value="<%= goodsProps[k]%>"/>
+    <br/>
+<% end %>

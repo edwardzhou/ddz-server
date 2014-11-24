@@ -48,7 +48,7 @@ ActiveAdmin.register GameRoom do
     f.inputs "Game Room Details" do
       f.input :roomId
       f.input :roomName
-      f.input :roomDesc
+      f.input :roomDesc, as: "text"
       f.input :roomType
       f.input :state
       f.input :ante

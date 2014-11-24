@@ -6,7 +6,7 @@ class SignInfo
   field :appNumber, type: Integer
   field :appVersion, type: String
   field :resVersion, type: String
-  field :signTime, type: DateTime, default: ->{ Time.now }
+  field :signedTime, type: DateTime, default: ->{ Time.now }
   embeds_one :handset, class_name: "DeviceInfo"
 
   def self.serialize_from_session(key, salt)
