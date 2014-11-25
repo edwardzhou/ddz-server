@@ -45,7 +45,7 @@ ActiveAdmin.register DdzGoods do
       #     f.input k
       #   }
       # end
-      f.render :partial => 'goodsProps', :locals => {:goodsProps => f.object.goodsProps}
+      f.render partial: 'goodsProps', locals: {dataObj: f.object.goodsProps, objName: "goodsProps"}
       # f.object.goodsProps.each_key { |k|
       #   #"<input type='text' name='#{k}' value='#{f.object.goodsProps[k]}' />"
       # }
@@ -54,4 +54,10 @@ ActiveAdmin.register DdzGoods do
     f.actions
   end
 
+  controller do
+    def update
+      Rails.logger.info("on update..........#{@ddzGoods}")
+      redirect_to({:action => :show}, {:notice => "Post Packages refresh event successfully!"})
+    end
+  end
 end

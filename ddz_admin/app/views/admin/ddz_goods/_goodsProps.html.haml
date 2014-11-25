@@ -1,0 +1,12 @@
+= javascript_include_tag "admin/ddz_goods"
+
+.attrItems(data-key-name="#{objName}_key[]" id="#{objName}" data-template-id="#{objName}_template")
+  - dataObj.each_key do |key|
+    .attrItem
+      = text_field_tag "#{objName}_key[]", key, maxlength: 50, size: 50, style: "width: 250px;"
+      \ =
+      = text_field_tag "#{objName}_values[]", dataObj[key], style: "width: 350px;"
+      = link_to "Remove", "javascript:void(0);", :"data-remove-item" => true
+<br/>
+
+= link_to "Add", "javascript:void(0);", :"data-add-item" => true, :"data-items-id" => objName
