@@ -15,6 +15,14 @@ class DdzGoods
     record if record && record.authenticatable_salt == salt
   end
 
+  def goods_props_hash
+    self.goodsProps.to_json
+  end
+
+  def goods_props_hash=(value)
+    self.goodsProps = JSON.parse(value)
+  end
+
   # ActiveSupport::Inflector.inflections do |inflect|
   #   inflect.singular("status", "status")
   # end

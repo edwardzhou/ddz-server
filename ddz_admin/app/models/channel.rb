@@ -5,6 +5,7 @@ class Channel
   field :channelName, type: String
   field :description, type: String
   field :enabled, type: Boolean, default: true
+  has_one :paymentMethod, class_name: "PaymentMethod", primary_key: 'paymentMethod'
   field :createdAt, type: DateTime, default: ->{ Time.now }
   field :updatedAt, type: DateTime, default: ->{ Time.now }
 

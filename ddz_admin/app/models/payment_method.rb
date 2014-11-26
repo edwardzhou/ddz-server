@@ -14,4 +14,12 @@ class PaymentMethod
     record = to_adapter.get((key[0]["$oid"] rescue nil))
     record if record && record.authenticatable_salt == salt
   end
+
+  def config_hash
+    self.config
+  end
+
+  def config_hash=(value)
+    self.config = JSON.parse(value)
+  end
 end
