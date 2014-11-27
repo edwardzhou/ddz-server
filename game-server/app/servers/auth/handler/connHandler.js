@@ -92,6 +92,7 @@ Handler.prototype.authConn = function(msg, session, next) {
       results.resp.gameId = gameId;
 
       session.set('userId', results.user.userId);
+      session.set('channelId', results.user.appid);
       session.set('sessionToken', results.userSession.sessionToken);
       if (!!roomId)
         session.set('room_id', roomId);

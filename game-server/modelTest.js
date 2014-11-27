@@ -38,7 +38,7 @@ DataKeyId = require('./app/domain/dataKeyId');
 DdzGoodsPackageService.init();
 
 HallRemote = require('./app/servers/area/remote/hallRemote');
-hall = require('./app/servers/area/remote/hallRemote')();
+hall = HallRemote();
 cache = HallRemote.cache;
 
 setTimeout(function(){

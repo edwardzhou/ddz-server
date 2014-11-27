@@ -12,7 +12,7 @@ var channelSchema = new mongoose.Schema({
   channelId: Number,    // 渠道ID
   channelName: String,  // 渠道名称
   description: String,  // 渠道说明
-  paymentMethod: {type: mongoose.Schema.Types.ObjectId, ref: 'PaymentMethod'}, // 所用支付方式
+  paymentMethod_id: {type: mongoose.Schema.Types.ObjectId, ref: 'PaymentMethod'}, // 所用支付方式
   enabled: {type: Boolean, default: true},  // 是否启用
   createdAt: {type: Date, default: Date.now},
   updatedAt: {type: Date, default: Date.now}
@@ -27,9 +27,17 @@ var channelSchema = new mongoose.Schema({
  */
 channelSchema.statics.getEnabledChannelsQ = function() {
   return this.find({enabled: true})
-    .populate('paymentMethod')
+    .populate('paymentMethod_id')
     .execQ();
 };
+
+channelSchema.virtual('paymentMethod')
+  .get(function(){
+    return this.get('paymentMethod_id');
+  })
+  .set(function(v) {
+    return this.set('paymentMethod_id', v);
+  });
 
 
 

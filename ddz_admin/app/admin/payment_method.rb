@@ -6,7 +6,7 @@ ActiveAdmin.register PaymentMethod do
     permitted << :methodName
     permitted << :description
     permitted << :enabled
-    permitted << :config
+    permitted << :config_hash
     permitted
   end
 
@@ -17,7 +17,7 @@ ActiveAdmin.register PaymentMethod do
     column :methodName
     column :description
     column :enabled
-    column :config
+    column :config_hash
     column :createAt
     column :updateAt
     actions
@@ -33,7 +33,9 @@ ActiveAdmin.register PaymentMethod do
       f.input :methodId
       f.input :methodName
       f.input :description
-      f.input :enabled
+      f.input :enabled, as: :boolean
+      f.input :config_hash, as: :text
+
     end
     f.actions
   end

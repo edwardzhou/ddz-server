@@ -30,6 +30,7 @@ ActiveAdmin.register User do
     column :gender
     column :password
     column :appid
+    column :channel
     column :appVersion
     column :resVersion
     column :robot

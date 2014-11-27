@@ -72,6 +72,7 @@ Handler.prototype.signIn = function(msg, session, next) {
 
       session.set('userId', results.user.userId);
       session.set('sessionToken', results.userSession.sessionToken);
+      session.set('channelId', results.user.appid);
       session.bind(results.user.userId);
       logger.info('[auth.userHandler.signIn] session => ', session);
       return Q.nbind(session.pushAll, session)();
@@ -118,6 +119,7 @@ Handler.prototype.signUp = function(msg, session, next) {
       session.bind(results.user.userId);
       session.set('userId', results.user.userId);
       session.set('sessionToken', results.userSession.sessionToken);
+      session.set('channelId', results.user.appid);
       return Q.nbind(session.pushAll, session)();
     })
     .then(function() {

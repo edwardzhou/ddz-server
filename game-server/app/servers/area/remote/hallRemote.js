@@ -117,10 +117,10 @@ remoteHandler.refreshGoodsPackages = function(cb) {
       // 生成支付方式道具包字典
       ppsArray.forEach(function(pps) {
         if (pps.length > 0) {
-          var theItems = cache.paymentPackagesMap[pps[0].paymentMethod] = [];
+          var theItems = cache.paymentPackagesMap[pps[0].paymentMethod_id] = [];
           pps.forEach(function(pp) {
             var thePP = pp.toParams();
-            thePP.package = cache.packagesIdMap[pp.package];
+            thePP.package = cache.packagesIdMap[pp.package_id];
             PackagePayment.fixAttributes(thePP);
             theItems.push(thePP);
           });
@@ -137,8 +137,12 @@ remoteHandler.refreshGoodsPackages = function(cb) {
     });
 };
 
-remoteHandler.getGoodsPackages = function(uid, frontendId, sessionId, cb) {
-  utils.invokeCallback(cb, null, cache.goodsPackages);
+remoteHandler.getGoodsPackages = function(uid, channelId, frontendId, sessionId, cb) {
+  logger.debug("[hallRemote.getGoodsPackages] uid: %d, channelId: %d", uid, channelId);
+  var packages = cache.channelPackagesMaps[channelId].map(function(packagePayment) {
+    return packagePayment.package;
+  });
+  utils.invokeCallback(cb, null, packages);
 };
 
 remoteHandler.buyPackage = function(msg, cb) {

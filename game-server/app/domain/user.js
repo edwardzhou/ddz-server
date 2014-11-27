@@ -23,6 +23,7 @@ var userSchema = new mongoose.Schema({
   authToken: String,      // 登录token
   oldAuthToken: String,   // 上次登录token
   appid: Number,          // 渠道号
+  channelId: String,
   appVersion: String,     // app版本
   robot: {type: Boolean, default: false}, // 是否为机器人
   robot_busy: {type: Boolean, default: false},  // 机器人繁忙
@@ -133,6 +134,17 @@ userSchema.virtual('password').set(function(password) {
 
   this.passwordDigest = md5_data(password, this.passwordSalt);
 });
+
+//userSchema.virtual('ddzProfile').get(function(){
+//  var _this = this;
+//  if (!this.ddzProfileRef) {
+//    DdzProfile.findOne({user_id: this.id}, function(err, profile) {
+//      _this.ddzProfileRef = profile;
+//    });
+//  }
+//
+//  return this.ddzProfileRef;
+//});
 
 
 /**

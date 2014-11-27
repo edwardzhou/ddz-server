@@ -10,6 +10,8 @@ class PaymentMethod
   field :createdAt, type: DateTime, default: ->{ Time.now }
   field :updatedAt, type: DateTime, default: ->{ Time.now }
 
+  has_many :channels, class_name: 'Channel'
+
   def self.serialize_from_session(key, salt)
     record = to_adapter.get((key[0]["$oid"] rescue nil))
     record if record && record.authenticatable_salt == salt

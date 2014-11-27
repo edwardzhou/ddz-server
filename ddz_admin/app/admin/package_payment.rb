@@ -8,7 +8,6 @@ ActiveAdmin.register PackagePayment do
     permitted << :packageName
     permitted << :description
     permitted << :price
-    permitted << :config_hash
     permitted << :actual_price
     permitted << :memo
     permitted << :enabled
@@ -25,7 +24,6 @@ ActiveAdmin.register PackagePayment do
     column :description
     column :price
     column :actual_price
-    column :config_hash
     column :memo
     column :enabled
     column :createAt
@@ -47,9 +45,8 @@ ActiveAdmin.register PackagePayment do
       f.input :description
       f.input :price
       f.input :actual_price
-      f.input :config_hash, as: :text
       f.input :memo
-      f.input :enabled
+      f.input :enabled, as: :boolean
     end
     f.actions
   end

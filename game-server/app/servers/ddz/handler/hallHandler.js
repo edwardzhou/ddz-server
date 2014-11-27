@@ -18,7 +18,8 @@ var Handler = function(app) {
 };
 
 Handler.prototype.getShopItems = function(msg, session, next) {
-  this.app.rpc.area.hallRemote.getGoodsPackages.toServer('room-server', null, null, null, function(err, packages) {
+  var channelId = session.get('channelId');
+  this.app.rpc.area.hallRemote.getGoodsPackages.toServer('room-server', session.uid, channelId, null, null, function(err, packages) {
     logger.info('[Handler.prototype.getShopItems] hallRemote.getGoodsPackages =>', packages);
     utils.invokeCallback(next, null, packages);
 //    utils.invokeCallback(next, null, JSON.stringify(packages));
