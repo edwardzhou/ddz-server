@@ -24,4 +24,8 @@ class PaymentMethod
   def config_hash=(value)
     self.config = JSON.parse(value)
   end
+
+  def to_s
+    "#{self.methodId} - #{self.methodName}"
+  end
 end

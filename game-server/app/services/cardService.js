@@ -271,7 +271,7 @@ exp.startGame = function (table, next) {
 //    newPokeGame.actionTimeout
     //var nextPlayer = newPokeGame.getTokenPlayer();
 
-    var tokenPlayer = pokeGame.getTokenPlayer();
+    var tokenPlayer = newPokeGame.getTokenPlayer();
     var nextTimeout = self.getPlayerTiming(tokenPlayer, table, 'grabLord');
 
     if (!tokenPlayer.robot && !tokenPlayer.delegating) {

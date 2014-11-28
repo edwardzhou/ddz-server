@@ -18,4 +18,9 @@ class DdzGoodsPackage
     record = to_adapter.get((key[0]["$oid"] rescue nil))
     record if record && record.authenticatable_salt == salt
   end
+
+  def to_s
+    "#{self.packageId} - #{self.packageName}"
+  end
+
 end
