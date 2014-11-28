@@ -10,6 +10,11 @@ ActiveAdmin.register PaymentMethod do
     permitted
   end
 
+  member_action :build_pkgs, method: :get do
+    resource.build_package_payments
+    redirect_to action: :show
+  end
+
   index do
     selectable_column
     id_column
@@ -53,7 +58,11 @@ ActiveAdmin.register PaymentMethod do
       row :updatedAt
     end
 
+
+
+
     panel "Packages" do
+
       table_for resource.packagePayments do
         column "pp_id" do |pp| link_to "pp", admin_package_payment_path(pp) end
 

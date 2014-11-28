@@ -18,7 +18,7 @@ class PaymentMethod
   end
 
   def config_hash
-    self.config
+    self.config.to_json
   end
 
   def config_hash=(value)
@@ -27,5 +27,21 @@ class PaymentMethod
 
   def to_s
     "#{self.methodId} - #{self.methodName}"
+  end
+
+  def build_package_payments
+    DdzGoodsPackage.all.each do |pkg|
+      if self.packagePayments.select{|pp| pp.package_id == pkg.id}.size == 0 then
+        self.packagePayments.new({package_id: pkg.id,
+                                    packageName: pkg.packageName,
+                                    description: pkg.packageDesc,
+                                    price: pkg.price,
+                                    actual_price: pkg.price,
+                                    enabled: true
+                                   })
+      end
+    end
+
+    self.save
   end
 end
