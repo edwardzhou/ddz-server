@@ -138,6 +138,7 @@ var setupNextPlayerTimeout = function (table, callback, seconds) {
   pokeGame.lastTimeout = {
     timeoutCallback: callback,
     actionTimeoutUserId: nextPlayer.userId,
+    timestamp: Date.now(),
     tm: tm
   };
   pokeGame.actionTimeout = setTimeout(timeoutFunc, tm * 1000);
@@ -720,7 +721,10 @@ exp.cancelDelegating = function(table, player, next) {
     player.delegating = false;
     if (player.userId == pokeGame.token.nextUserId) {
       var lastTimeout = pokeGame.lastTimeout;
-      setupNextPlayerTimeout(table, lastTimeout.timeoutCallback, lastTimeout.tm);
+      var timing = this.getPlayerTiming(player, table, 'playCard');
+      timing -= Math.floor( (Date.now() - lastTimeout.timestamp) / 1000);
+      timing += 5;
+      setupNextPlayerTimeout(table, lastTimeout.timeoutCallback, timing);
     }
   }
 
