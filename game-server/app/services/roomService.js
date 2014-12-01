@@ -30,6 +30,16 @@ exp.getRoom = function(roomId) {
   return roomsMap[roomId];
 };
 
+exp.reloadRooms = function(cb) {
+  logger.info("[RoomService.reloadRooms] reload rooms...");
+  for (var roomId in roomsMap) {
+    var room = roomsMap[roomId];
+    room.reloadFromDb();
+  }
+
+  utils.invokeCallback(cb);
+};
+
 exp.enterRoom = function(player, roomId, lastTableId, cb) {
   var room = roomsMap[roomId];
 

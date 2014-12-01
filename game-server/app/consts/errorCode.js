@@ -38,6 +38,7 @@ var ErrorCode = {
 
   // 桌子已经有3个用户
   TABLE_FULL: 2001,
+  CANNOT_ENTER_ROOM: 2100,
 
   // 无效牌型
   INVALID_CARD_TYPE: 3001,

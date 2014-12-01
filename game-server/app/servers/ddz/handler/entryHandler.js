@@ -50,6 +50,7 @@ Handler.prototype.tryEnterRoom = function(msg, session, next) {
   var room_id = msg.room_id;
   var uid = session.uid;
 
+
   session.set("room_id", room_id);
   session.pushAll( function(err) {
     if (err) {

@@ -28,7 +28,6 @@ ActiveAdmin.register User do
     column :email
     column :headIcon
     column :gender
-    column :password
     column :appid
     column :channel
     column :appVersion
@@ -43,7 +42,7 @@ ActiveAdmin.register User do
     actions
   end
 
-  filter :userId
+  filter :userId, as: :numeric
   filter :nickName
   filter :mobileNo
   filter :email
@@ -56,7 +55,6 @@ ActiveAdmin.register User do
       f.input :email
       f.input :headIcon
       f.input :gender
-      f.input :password
       f.input :appid
       f.input :appVersion
       f.input :resVersion

@@ -83,6 +83,9 @@ StartGameAction.execute = function(table, cb) {
 
   newPokeGame.grabbingLord.nextUserId = lordUserId;
   newPokeGame.token = {nextUserId: lordUserId, currentSeqNo: 1};
+  newPokeGame.grabbingLordTimeout = table.room.grabbingLordTimeout;
+  newPokeGame.readyTimeout = table.room.readyTimeout;
+  newPokeGame.playCardTimeout = table.room.playCardTimeout;
   //newPokeGame.pokeGame.lastPlay
 
   utils.invokeCallback(cb, null);

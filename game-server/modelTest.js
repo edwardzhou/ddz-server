@@ -42,7 +42,7 @@ hall = HallRemote();
 cache = HallRemote.cache;
 
 setTimeout(function(){
-  hall.getGoodsPackages(null, null, null, function(err, obj) {
+  hall.getGoodsPackages(null, 1000, null, function(err, obj) {
     console.log(err, JSON.stringify(obj));
   });
 }, 2000);

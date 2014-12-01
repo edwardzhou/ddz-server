@@ -50,4 +50,6 @@ ActiveAdmin.register PackagePayment do
     end
     f.actions
   end
+
+  #belongs_to :PaymentMethod
 end

@@ -100,7 +100,12 @@ remoteHandler.cancelDelegate = function(msg, cb) {
 
   var room = roomService.getRoom(room_id);
   var player = room.getPlayer(uid);
-  player.delegating = false;
+  var table = room.getGameTable(player.tableId)
 
-  utils.invokeCallback(cb, null, {result: new Result(0)});
+  this.cardService.cancelDelegating(table, player, function(){
+    utils.invokeCallback(cb, null, {result: new Result(0)});
+  });
+  //player.delegating = false;
+
+
 };

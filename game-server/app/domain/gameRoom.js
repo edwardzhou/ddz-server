@@ -368,6 +368,28 @@ roomSchema.methods.toParams = function(excludeAttrs) {
   return __toParams(this, excludeAttrs);
 };
 
+roomSchema.methods.reloadFromDb = function() {
+  var self = this;
+  GameRoom.findOneQ({roomId: this.roomId})
+    .then(function(room) {
+      self.roomName = room.roomName;
+      self.roomDesc = room.roomDesc;
+      self.state = room.state;
+      self.ante = room.ante;
+      self.rake = room.rake;
+      self.maxPlayers = room.maxPlayers;
+      self.minCoinsQty = room.minCoinsQty;
+      self.maxCoinsQty = room.maxCoinQty;
+      self.roomType = room.roomType;
+      self.sortIndex = room.sortIndex;
+      self.readyTimeout = room.readyTimeout;
+      self.grabbingLordTimeout = room.grabbingLordTimeout;
+      self.playCardTimeout = room.playCardTimeout;
+    })
+    .fail(function(err) {
+      console.error('[GameRoom.reloadFromDb] error: ', err);
+    });
+};
 
 var GameRoom = mongoose.model('GameRoom', roomSchema);
 

@@ -150,8 +150,15 @@ remoteHandler.buyPackage = function(msg, cb) {
   var sessionId = msg.sessionId;
   var userId = msg.uid;
   var packageId = msg.pkgId;
+  var channelId = msg.channelId;
 
-  var package = cache.goodsPackagesMap[packageId];
+  //var package = cache.goodsPackagesMap[packageId];
+  var channelPkgs = cache.channelPackagesMaps[channelId];
+  var packages = channelPkgs.filter(function(pkg) {return pkg.packageId == packageId});
+  var package = null;
+  if (packages.length > 0) {
+    package = packages[0];
+  }
 
   PurchaseOrder.createOrderQ(userId, package, null, 1000)
     .then(function(po) {

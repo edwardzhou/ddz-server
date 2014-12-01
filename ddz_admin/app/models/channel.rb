@@ -16,7 +16,7 @@ class Channel
 
   def paymentMethod(reload=nil)
     unless reload
-      @paymentMethod ||= PaymentMethod.find_by_id(self.paymentMethod_id)
+      @paymentMethod ||= PaymentMethod.where({id: self.paymentMethod_id}).first
     else
       @paymentMethod = PaymentMethod.find_by_id(self.paymentMethod_id)
     end
@@ -29,6 +29,9 @@ class Channel
       @paymentMethod = nil
       self.paymentMethod_id = nil
     elsif @paymentMethod.nil? or @paymentMethod.id != value.id then
+      if value.is_a?(String) then
+        value = PaymentMethod.where(id: value).first
+      end
       @paymentMethod = value
       self.paymentMethod_id = value.id
     end

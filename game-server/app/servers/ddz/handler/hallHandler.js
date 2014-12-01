@@ -29,6 +29,7 @@ Handler.prototype.getShopItems = function(msg, session, next) {
 
 Handler.prototype.buyItem = function(msg, session, next) {
   msg.uid = session.uid;
+  msg.channelId = session.get('channelId');
 
   this.app.rpc.area.hallRemote.buyPackage.toServer('room-server', msg, function(err, pkg) {
     var result;

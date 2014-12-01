@@ -87,6 +87,10 @@ ActiveAdmin.register PaymentMethod do
         end
 
         column "Enabled", :enabled
+
+        column "Action" do |pp|
+
+        end
       end
     end
 

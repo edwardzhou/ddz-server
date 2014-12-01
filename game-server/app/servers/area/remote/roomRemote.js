@@ -3,6 +3,7 @@ var roomDao = require('../../../dao/roomDao');
 var roomService = require('../../../services/roomService');
 var messageService = require('../../../services/messageService');
 var Player = require('../../../domain/player');
+var User = require('../../../domain/user');
 var PlayerState = require('../../../consts/consts').PlayerState;
 var UserSession = require('../../../domain/userSession');
 var format = require('util').format;
@@ -12,6 +13,7 @@ var ErrorCode = require('../../../consts/errorCode');
 var userDao = require('../../../dao/userDao');
 var GameState = require('../../../consts/consts').GameState;
 var TableState = require('../../../consts/consts').TableState;
+var Result = require('../../../domain/result');
 
 module.exports = function(app) {
   return new RoomRemote(app);
@@ -37,7 +39,34 @@ var remoteHandler = RoomRemote.prototype;
 remoteHandler.tryEnter = function(uid, sid, sessionId, room_id, cb) {
   var self = this;
   var thisServerId = self.app.getServerId();
-  utils.invokeCallback(cb, null, thisServerId, {ret: ErrorCode.SUCCESS});
+  User.findOne({userId: uid})
+    .populate('ddzProfile')
+    .execQ()
+    .then(function(user) {
+      var room = roomService.getRoom(room_id);
+      var errorCode = ErrorCode.SUCCESS;
+      var errorMsg = "";
+      if (room.minCoinsQty > 0) {
+        if (room.minCoinsQty > user.ddzProfile.coins) {
+          errorCode = ErrorCode.CANNOT_ENTER_ROOM;
+          errorMsg = '您的金币不足, 无法进入房间!';
+        }
+      }
+      if (errorCode == ErrorCode.SUCCESS && room.maxCoinsQty > 0) {
+        if (room.maxCoinsQty < user.ddzProfile.coins) {
+          errorCode = ErrorCode.CANNOT_ENTER_ROOM;
+          errorMsg = '您的金币超过房间的准入上限, 请移步到更高级的房间!';
+        }
+      }
+
+      utils.invokeCallback(cb, null, thisServerId, new Result(errorCode, 0, errorMsg));
+
+    })
+    .fail(function(err) {
+      logger.error('[RoomRemote.tryEnter] ERROR: ', err);
+      utils.invokeCallback(cb, null, thisServerId, new Result(ErrorCode.SYSTEM_ERROR, 0, err));
+    });
+  //utils.invokeCallback(cb, null, thisServerId, {ret: ErrorCode.SUCCESS});
 };
 
 /**
@@ -276,4 +305,8 @@ remoteHandler.queryRooms = function(msg, cb) {
   roomDao.getActiveRooms(function(err, rooms) {
     cb(err, rooms);
   });
+};
+
+remoteHandler.reloadRooms = function(msg, cb) {
+  roomService.reloadRooms(cb);
 };

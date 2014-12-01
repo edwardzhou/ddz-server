@@ -105,6 +105,9 @@ var clearNextPlayerTimeout = function (table) {
   var pokeGame = table.pokeGame;
   if (!!pokeGame && !!pokeGame.actionTimeout) {
     clearTimeout(pokeGame.actionTimeout);
+//    pokeGame.actionTimeoutUserId = null;
+//    pokeGame.timeoutFunc = null;
+    pokeGame.lastTimeout = null;
     pokeGame.actionTimeout = null;
   }
 };
@@ -125,10 +128,20 @@ var setupNextPlayerTimeout = function (table, callback, seconds) {
   if (typeof tm == 'undefined')
     tm = (!nextPlayer.isDelegating())? 35 : 35;
 
-  pokeGame.actionTimeout = setTimeout(function(){
-      clearNextPlayerTimeout(table);
-      callback(table, nextPlayer, seqNo);
-    }, tm * 1000);
+  var timeoutFunc = function(){
+    clearNextPlayerTimeout(table);
+    callback(table, nextPlayer, seqNo);
+  };
+
+//  pokeGame.actionTimeoutUserId = nextPlayer.userId;
+//  pokeGame.timeoutFunc = timeoutFunc;
+  pokeGame.lastTimeout = {
+    timeoutCallback: callback,
+    actionTimeoutUserId: nextPlayer.userId,
+    tm: tm
+  };
+  pokeGame.actionTimeout = setTimeout(timeoutFunc, tm * 1000);
+
 };
 
 /**
@@ -206,14 +219,14 @@ exp.playerReadyTimeout = function(table, player, next) {
 exp.getPlayerTiming = function(player, table, actionType) {
   if (player.robot) {
     var r1 = Math.floor(Math.random() * 1000) % 10;
-    if (r1 <= 4) {
+    if (r1 <= 6) {
       return Math.floor(Math.random() * 1000) % 3 + 1;
-    } else if (r1 <= 6) {
-      return Math.floor(Math.random() * 1000) % 3 + 3;
-    } else if (r1 <= 8) {
-      return Math.floor(Math.random() * 1000) % 5 + 5;
+//    } else if (r1 <= 6) {
+//      return Math.floor(Math.random() * 1000) % 3 + 3;
+//    } else if (r1 <= 8) {
+//      return Math.floor(Math.random() * 1000) % 5 + 5;
     } else{
-      return Math.floor(Math.random() * 1000) % 5 + 8;
+      return Math.floor(Math.random() * 1000) % 5 + 2;
     }
     //return Math.floor(Math.random() * 10000) % 7 + 3;
   }
@@ -223,9 +236,9 @@ exp.getPlayerTiming = function(player, table, actionType) {
   }
 
   if (actionType == 'grabLord') {
-    return table.room.grabbingLordTimeout || 20;
+    return table.pokeGame.grabbingLordTimeout || 20;
   } else {
-    return table.room.playCardTimeout || 30;
+    return table.pokeGame.playCardTimeout || 30;
   }
 
   // return 30;
@@ -394,7 +407,6 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
       pokeGame.playerMsgs[pokeGame.players[1].userId].push([eventName, eventData]);
       pokeGame.playerMsgs[pokeGame.players[2].userId].push([eventName, eventData]);
     }
-
 
     logger.info('[cardService.grabLord] game abandoned => ', gameAbandoned);
     // 流局则退出
@@ -700,4 +712,17 @@ exp.gameOver = function(table, player, cb) {
 exp.playerConnectionLost = function(table, player, next) {
 //  var pokeGame = table.pokeGame;
 //  pokeGame.connectionLosts.push(player);
+};
+
+exp.cancelDelegating = function(table, player, next) {
+  if (!!table && !!table.pokeGame) {
+    var pokeGame = table.pokeGame;
+    player.delegating = false;
+    if (player.userId == pokeGame.token.nextUserId) {
+      var lastTimeout = pokeGame.lastTimeout;
+      setupNextPlayerTimeout(table, lastTimeout.timeoutCallback, lastTimeout.tm);
+    }
+  }
+
+  utils.invokeCallback(next);
 };

@@ -39,7 +39,7 @@ ActiveAdmin.register GameRoom do
     actions
   end
 
-  filter :roomId
+  filter :roomId, as: :numeric
   filter :roomName
   filter :roomDesc
   filter :state
@@ -62,5 +62,23 @@ ActiveAdmin.register GameRoom do
     end
     f.actions
   end
+
+
+  collection_action :refresh_rooms, :method => :get do
+    # Do some CSV importing work here...
+    PubSubEvent.create({
+                           eventName: 'reload_cache',
+                           eventData: {reloadTarget: 'rooms'},
+                           active: 1
+                       })
+    redirect_to({:action => :index}, {:notice => "Post Game Rooms refresh event successfully!"})
+  end
+
+  sidebar :operation do
+    ul do
+      li link_to "Refresh Game Rooms in GAME SERVER", refresh_rooms_admin_game_rooms_path
+    end
+  end
+
 
 end
