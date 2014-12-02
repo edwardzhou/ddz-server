@@ -31,6 +31,11 @@ var genError = function(errCode) {
   return error;
 };
 
+/**
+ * 用身份令牌登录
+ * @param signInParams
+ * @param callback
+ */
 UserService.signInByAuthToken = function(signInParams, callback) {
   var userId = signInParams.userId;
   var authToken = signInParams.authToken;
@@ -84,7 +89,11 @@ UserService.signInByAuthToken = function(signInParams, callback) {
     });
 };
 
-
+/**
+ * 密码登录
+ * @param signInParams
+ * @param callback
+ */
 UserService.signInByPassword = function(signInParams, callback) {
   var userId = signInParams.userId;
   var password = signInParams.password;
@@ -124,12 +133,6 @@ UserService.signInByPassword = function(signInParams, callback) {
     .then(function(newUserSession){
       result.userSession = newUserSession;
     })
-//    .then(function() {
-//      return DdzProfile.findOneQ({userId: result.user.userId});
-//    })
-//    .then(function(ddzProfile) {
-//      result.user.ddzProfile = ddzProfile;
-//    })
     .then(function(){
       utils.invokeCallback(callback, null, result);
     })
@@ -145,7 +148,9 @@ UserService.signInByMac = function() {
 
 UserService.signUp = function(signUpParams, cb) {
   var userInfo = signUpParams;
+  // 随机生成盐值
   var passwordSalt = crypto.createHash('md5').update(Math.random().toString()).digest('hex');
+  // TODO: 此处设置缺省密码为了开发调试方便
   userInfo.password = userInfo.password || 'abc123';
   var passwordDigest = null;
   if (!!userInfo.password) {
@@ -155,9 +160,16 @@ UserService.signUp = function(signUpParams, cb) {
   var userId = null;
   var results = {};
 
+  // 生成一个新的用户ID
   DataKeyId.nextUserIdQ()
     .then(function(newUserId) {
+      // 获取昵称: 如果没有提供昵称，则尝试用设备模型做昵称，若还没有设备模型，则用用户ID做昵称
       var nickName = userInfo.nickName || (!!userInfo.handsetInfo && userInfo.handsetInfo.model) || newUserId.toString() ;
+      // 确保昵称不超过八位
+      if (nickName.length > 8) {
+        nickName = nickName.substring(0, 8);
+      }
+      // 创建用户实例
       var user = new User({
         userId: newUserId,
         nickName: nickName,
@@ -169,11 +181,14 @@ UserService.signUp = function(signUpParams, cb) {
         createdAt: (new Date()),
         updatedAt: (new Date())
       });
+      // 设置登录设备信息
       user.setSignedInHandsetInfo(userInfo.handsetInfo);
+      // 设置注册设备信息
       user.setSignedUpHandsetInfo(userInfo.handsetInfo);
+      // 更新身份令牌
       user.updateAuthToken();
       user.oldAuthToken = user.authToken;
-
+      // 保存
       return user.saveQ();
     })
     .then(function(user) {

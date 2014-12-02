@@ -177,10 +177,10 @@ exp.getActionFilters = function(gameAction) {
 };
 
 
-exp.playerJoin = function(table, player, next) {
-
-};
-
+//exp.playerJoin = function(table, player, next) {
+//
+//};
+//
 
 /**
  * 执行玩家就绪动作
@@ -212,13 +212,22 @@ exp.playerReady = function(table, player, next) {
   utils.invokeCallback(next, null, {result: 0});
 };
 
+//
+//exp.playerReadyTimeout = function(table, player, next) {
+//
+//};
 
-exp.playerReadyTimeout = function(table, player, next) {
-
-};
-
+/**
+ * 计算玩家超时时间
+ * @param player
+ * @param table
+ * @param actionType - 超时动作
+ * @returns {*}
+ */
 exp.getPlayerTiming = function(player, table, actionType) {
   if (player.robot) {
+    // 机器人 60% 在 1 ~ 4 秒 中随机
+    //        40% 在 2 ~ 7 秒 中随机
     var r1 = Math.floor(Math.random() * 1000) % 10;
     if (r1 <= 6) {
       return Math.floor(Math.random() * 1000) % 3 + 1;
@@ -232,17 +241,16 @@ exp.getPlayerTiming = function(player, table, actionType) {
     //return Math.floor(Math.random() * 10000) % 7 + 3;
   }
 
+  // 如果是托管玩家，默认5秒超时
   if (!!player.delegating) {
     return 5;
   }
 
   if (actionType == 'grabLord') {
     return table.pokeGame.grabbingLordTimeout || 20;
-  } else {
-    return table.pokeGame.playCardTimeout || 30;
   }
 
-  // return 30;
+  return table.pokeGame.playCardTimeout || 30;
 };
 
 /**
@@ -327,7 +335,6 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
     self.grabLordAction.doGrabLord(table, player, lordAction, function(err, result) {
       actionResult = result;
       // 当地主产生时，保留叫地主过程里指定的下一玩家id , ref to ./filters/increaseSeqNo.js
-//      if (!!table.pokeGame && !!table.pokeGame.lordPlayerId) {
       if (!!table.pokeGame) {
         table.pokeGame.token.nextUserId = result.nextUserId;
         params.keepNextUserId = true;
@@ -346,9 +353,11 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
     var pokeGame = table.pokeGame;
     var eventName = GameEvent.grabLord;
     var msgNo = pokeGame.msgNo++;
-    var timing = table.room.grabbingLordTimeout || 20;
+    // 默认叫地主超时时间
+    var timing = pokeGame.grabbingLordTimeout || 20;
     if (!!pokeGame.lordPlayerId) {
-      timing = table.room.playCardTimeout;
+      // 已经产生地主，则超时时间为出牌的超时时间
+      timing = pokeGame.playCardTimeout;
     }
 
     //如果pokeGame被清空了，说明流局
@@ -361,6 +370,7 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
     actionResult.msgNo = msgNo;
     actionResult.timing = timing;
 
+    // 如果还没有地主产生，则推送叫地主结果，客户端以继续叫地主环节
     if (actionResult.lordUserId == 0) {
       pokeGame.playerMsgs[pokeGame.players[0].userId].push([eventName, actionResult]);
       pokeGame.playerMsgs[pokeGame.players[1].userId].push([eventName, actionResult]);
@@ -372,10 +382,13 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
         actionResult,
         null);
     } else {
+      // 地主已产生, 循环通知抢地主结果
+      // 并在真实令牌玩家消息中，加入提示牌
       for (var playerIndex=0; playerIndex<pokeGame.players.length; playerIndex++) {
         var p = pokeGame.players[playerIndex];
         var tipPokeChars = '';
         if (p.userId == actionResult.lordUserId && !p.robot) {
+          // 玩家是地主，且是真实玩家
           var cardInfo = CardInfo.create(p.pokeCards);
           CardAnalyzer.analyze(cardInfo);
           var tipCard = AIEngine.findLordFirstCard(cardInfo, cardInfo, cardInfo);
@@ -391,6 +404,7 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
       }
     }
 
+    // 如果地主分数发生变化，则通知所有玩家倍数变化
     if (pokeGame.grabbingLord.lordValue > lordValue) {
       eventName = GameEvent.lordValueUpgrade;
       msgNo = pokeGame.msgNo++;
@@ -424,10 +438,12 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
     var tokenPlayer = pokeGame.getTokenPlayer();
     var nextTimeout = self.getPlayerTiming(tokenPlayer, table, tmpAction);
 
+    // 真实非托管玩家，加多5秒
     if (!tokenPlayer.robot && !tokenPlayer.delegating) {
       nextTimeout += 5;
     }
 
+    // 如果未产生地主，则设置抢地主定时器
     if (!pokeGame.lordPlayerId || pokeGame.lordValue < 1) {
        setupNextPlayerTimeout(table,
         function(timeoutTable, timeoutPlayer, timeoutSeq){
@@ -435,6 +451,7 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
         },
         nextTimeout);
     } else {
+      // 已产生地主，设置打牌定时器
       setupNextPlayerTimeout(table,
         function(timeoutTable, timeoutPlayer, timeoutSeq){
           var cardInfo = CardInfo.create(timeoutPlayer.pokeCards);
@@ -445,24 +462,7 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
         },
         nextTimeout);
     }
-
-
-//    // 未产生地主？
-//    if (pokeGame.lordPlayerId == null) {
-//      // 设置下一玩家叫地主超时时，自动不叫
-//      setupNextPlayerTimeout(table, function(table, player, seqNo){
-//        self.grabLord(table, player, 0, seqNo, null);
-//      });
-//    } else {
-//      // 地主超时自动出一张牌
-//      // TODO: 下一步要改用AI在处理
-//      setupNextPlayerTimeout(table, function(table, player, seqNo){
-//        var pokeChar = player.pokeCards[0].pokeChar;
-//        self.playCard(table, player, pokeChar, seqNo, true, null);
-//      }, 3)
-//    }
   });
-
 
 };
 
@@ -479,6 +479,7 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
     table.tableId, player.userId, pokeChars, seqNo, isTimeout);
 
   if (!!isTimeout) {
+    // 如果是超时导致的自动出牌，则玩家自动转为为托管
     player.delegating = true;
   } else if(!player.isRobot()) {
     // 玩家主动打牌，自动取消托管状态
@@ -488,8 +489,11 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
   var self = this;
   var params = {table: table, player: player, seqNo: seqNo};
   var actionResult = null;
+  // 获取打牌的动作拦截器
   var actionFilter = this.getActionFilters(GameAction.PLAY_CARD);
+  // 生成打牌动作代理方法
   var action = function(params, callback) {
+    // 调用实际打牌处理
     self.playCardAction.doPlayCard(table, player, pokeChars, function(err, result){
       actionResult = result;
       params.pokeChars = result.pokeChars;
@@ -498,37 +502,45 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
     });
   };
 
+  // 执行打牌动作
   runAction(action, params, actionFilter.before, actionFilter.after, function(err, result) {
     if (!!err) {
+      // 出错
       utils.invokeCallback(next, null, {result: err});
       return;
     }
 
+    // 清除牌局定时器
     clearNextPlayerTimeout(table);
-
+    // 通知打牌动作成功
     utils.invokeCallback(next, null, {result: new Result(ErrorCode.SUCCESS)});
 
+    // 生成玩家出牌通知信息
     var pokeGame = table.pokeGame;
     var eventName = GameEvent.playCard;
     var msgNo = pokeGame.msgNo++;
 
     var eventData = {
       player: {
-        userId: player.userId,
-        pokeCount: player.pokeCount
+        userId: player.userId,  // 出牌的玩家
+        pokeCount: player.pokeCount  // 剩余牌数
       },
-      pokeChars: actionResult.pokeChars,
-      nextUserId: pokeGame.token.nextUserId,
-      seqNo: pokeGame.token.currentSeqNo,
-      msgNo: msgNo,
-      tipPokeChars: '',
-      timing: table.room.playCardTimeout || 30,
-      delegating: (!!player.delegating? 1 : 0)
+      pokeChars: actionResult.pokeChars, // 出的牌
+      nextUserId: pokeGame.token.nextUserId, // 下一个令牌玩家
+      seqNo: pokeGame.token.currentSeqNo, // 令牌号
+      msgNo: msgNo, // 消息编号
+      tipPokeChars: '', // 提示牌
+      timing: table.pokeGame.playCardTimeout || 30, // 超时时间
+      delegating: (!!player.delegating? 1 : 0) // 委托标志
     };
 
+    // 牌局是否已结束
     var isGameOver = player.pokeCards.length == 0;
+    // 下一令牌玩家
     var nextPlayer = pokeGame.getPlayerByUserId(pokeGame.token.nextUserId);
+    // 提示牌
     var tipPokeChars = '';
+    // 循环通知各个真实玩家此次出牌信息
     for (var playerIndex=0; playerIndex<pokeGame.players.length; playerIndex++) {
       var p = pokeGame.players[playerIndex];
       if (!isGameOver // 牌局未结束
@@ -543,32 +555,26 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
         } else {
           tipCard = AIEngine.findLordPlayCard(cardInfo, cardInfo, cardInfo, pokeGame.lastPlay.card);
         }
-        if (tipCard) {
+        // 如果有可出的牌，则付给提示
+        if (!!tipCard) {
           tipPokeChars = tipCard.getPokeChars();
         }
       } else {
+        // 牌局结束，或不是下一个令牌玩家，或是机器人，都不需要给提示牌
         tipPokeChars = '';
       }
 
       var msgBack = utils.clone(eventData);
-
       msgBack.tipPokeChars = tipPokeChars;
-
+      // 仅通知在线的真实玩家
       if (!p.robot && !p.connectionLost) {
         self.messageService.pushMessage(eventName, msgBack, [p.getUidSid()], null);
       }
+      // 把消息压入玩家消息列表，用于后面玩家断线恢复牌局
       pokeGame.playerMsgs[p.userId].push([eventName, msgBack]);
     }
 
-//    self.messageService.pushTableMessage(table,
-//      eventName,
-//      eventData,
-//      null );
-//
-//    pokeGame.playerMsgs[pokeGame.players[0].userId].push([eventName, eventData]);
-//    pokeGame.playerMsgs[pokeGame.players[1].userId].push([eventName, eventData]);
-//    pokeGame.playerMsgs[pokeGame.players[2].userId].push([eventName, eventData]);
-
+    // 如果出现加倍(如，炸弹，王炸）, 则通知所有玩家牌局加倍信息
     if (!!actionResult.lordValueUpgrade) {
       eventName = GameEvent.lordValueUpgrade;
       msgNo = pokeGame.msgNo++;
@@ -588,28 +594,27 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
       pokeGame.playerMsgs[pokeGame.players[2].userId].push([eventName, eventData]);
     }
 
+    // 如果出牌的玩家的牌已经完了，则获胜，牌局结束
     if (player.pokeCards.length == 0) {
-      // won
+      // 获胜，在下一个处理周期执行结算处理
       process.nextTick(function() {
         self.gameOver(table, player);
       });
       return;
     }
 
+    // 对下一令牌玩家设置定时器，超时自动出牌
     var tokenPlayer = pokeGame.getTokenPlayer();
-    var nextTimeout = self.getPlayerTiming(tokenPlayer, table, 'grabLord');
+    var nextTimeout = self.getPlayerTiming(tokenPlayer, table, 'playCard');
 
+    // 对于真实非托管玩家，加多5秒用户兼容网络延迟
     if (!tokenPlayer.robot && !tokenPlayer.delegating) {
       nextTimeout += 5;
     }
 
     if (player.pokeCards.length > 0) {
-      var nextPlayer = pokeGame.getPlayerByUserId(pokeGame.token.nextUserId);
-//      var nextTimeout = 10;
-//      if (!!nextPlayer.delegating || nextPlayer.robot) {
-//        nextTimeout = 2;
-//      }
-
+      // var nextPlayer = pokeGame.getPlayerByUserId(pokeGame.token.nextUserId);
+      // 设置定时器
       setupNextPlayerTimeout(table, function(timeoutTable, timeoutPlayer, timeoutSeqNo){
         var timeoutPokeChars = ''; // 不出
         var pokeGame = timeoutTable.pokeGame;
@@ -622,12 +627,13 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
             cardUtil.pokeCardsToValueString(timeoutPlayer.pokeCards)
           );
           if (pokeGame.lastPlay.userId == timeoutPlayer.userId) {
-            //pokeChars = timeoutPlayer.pokeCards[0].pokeChar;
+            // 超时玩家属于必出玩家 (第一手, 或上一轮没人大过他的)
             cardInfo = CardInfo.create(timeoutPlayer.pokeCards);
             CardAnalyzer.analyze(cardInfo);
             firstCard = AIEngine.findLordFirstCard(cardInfo, cardInfo, cardInfo);
             timeoutPokeChars = firstCard.getPokeChars();
           } else {
+            // 有牌则出
             cardInfo = CardInfo.create(timeoutPlayer.pokeCards);
             CardAnalyzer.analyze(cardInfo);
             firstCard = AIEngine.findLordPlayCard(cardInfo, cardInfo, cardInfo, pokeGame.lastPlay.card);
@@ -638,6 +644,7 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
           if (!!firstCard) {
             logger.info('Player [%d] : card-> %s' , timeoutPlayer.userId, firstCard.toString());
           }
+          // 出牌
           self.playCard(timeoutTable, timeoutPlayer, timeoutPokeChars, timeoutSeqNo, true, null);
         }
       }, nextTimeout);
@@ -645,27 +652,42 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
   });
 };
 
+
+/**
+ * 牌局结束
+ * @param table - 结束牌局的桌子
+ * @param player - 赢家
+ * @param cb
+ */
 exp.gameOver = function(table, player, cb) {
 
   var self = this;
   var params = {table: table, player: player, seqNo: -1};
   var actionResult = null;
   var pokeGame = table.pokeGame;
+  // 获取动作拦截器
   var actionFilter = this.getActionFilters(GameAction.GAME_OVER);
+  // 清除牌局定时器
   clearNextPlayerTimeout(table);
+  // 生成牌局结算动作
   var action = function(params, callback) {
+    // 实际结算调用
     self.gameOverAction.doGameOver(table, player, function(err, result){
       actionResult = result;
       callback(err, params);
     });
   };
 
+  // 执行结算动作
   runAction(action, params, actionFilter.before, actionFilter.after, function(err, result) {
     if (!!err) {
+      // 出错处理
       utils.invokeCallback(cb, err);
     } else {
+      // 回调返回正常状态
       utils.invokeCallback(cb, {resultCode:0});
 
+      // 如果是春天或反春天，通知前端倍数加倍
       if (actionResult.spring != 0) {
         self.messageService.pushTableMessage(
           table,
@@ -680,30 +702,34 @@ exp.gameOver = function(table, player, cb) {
 
       actionResult.timing = 15;
 
-      //var pokeGame = table.pokeGame;
+      // 通知结算结果
       var eventName = GameEvent.gameOver;
-
       self.messageService.pushTableMessage(table,
         eventName,
         actionResult,
         null );
 
+      // 保存牌局信息，供后续分析用
       pokeGame.save();
 
+      // 循环通知每一个真实玩家的金币变化
       for (var pIndex=0; pIndex< pokeGame.players.length; pIndex++) {
         var p = pokeGame.players[pIndex];
         if (!p.isRobot()) {
           self.messageService.pushMessage('onUserInfoUpdate', {user: p.toParams()}, [p.getUidSid()]);
+          // 对于逃跑的玩家，通知其逃跑扣分信息
           if (!!pokeGame.escapeUserId && pokeGame.escapeUserId == p.userId) {
             self.messageService.pushMessage('onMessage',
               {
                 msg: util.format('由于您强行中止牌局, 系统根据牌局信息扣除您 %d 个金币。', pokeGame.playersResults[p.userId] * -1)
               }, [p.getUidSid()]);
           }
+          // 清楚玩家的牌局信息
           p.userSession.sset({pokeGameId: null, tableId: null});
         }
       }
 
+      // 释放桌子
       table.release();
     }
   });
@@ -715,18 +741,34 @@ exp.playerConnectionLost = function(table, player, next) {
 //  pokeGame.connectionLosts.push(player);
 };
 
+/**
+ * 取消托管
+ *
+ * 如果玩家不是当前令牌玩家，则简单取消托管标志；
+ * 如果玩家是当前令牌玩家，则需要先取消托管的定时器，然后重新计算超时时间，设置定时器。
+ * @param table
+ * @param player
+ * @param next
+ */
 exp.cancelDelegating = function(table, player, next) {
   if (!!table && !!table.pokeGame) {
     var pokeGame = table.pokeGame;
+    // 取消托管标记
     player.delegating = false;
     if (player.userId == pokeGame.token.nextUserId) {
+      // 当前玩家是令牌玩家
       var lastTimeout = pokeGame.lastTimeout;
+      // 获取正常动作的超时时间
       var timing = this.getPlayerTiming(player, table, 'playCard');
+      // 减去已流失的时间
       timing -= Math.floor( (Date.now() - lastTimeout.timestamp) / 1000);
+      // 加多5秒用于放宽对网络速度的依赖。
       timing += 5;
+      // 重新设置定时器
       setupNextPlayerTimeout(table, lastTimeout.timeoutCallback, timing);
     }
   }
 
+  // 回调通知
   utils.invokeCallback(next);
 };
