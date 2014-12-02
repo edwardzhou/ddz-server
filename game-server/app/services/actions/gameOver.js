@@ -18,6 +18,11 @@ var GameOverAction = function(opts) {
 
 module.exports = GameOverAction;
 
+/**
+ * 逃跑结算
+ * @param table - 牌桌
+ * @param player - 逃跑玩家
+ */
 var calcPlayerEscape = function(table, player) {
   var pokeGame = table.pokeGame;
   var player1 = pokeGame.getNextPlayer(player.userId);
@@ -93,27 +98,6 @@ var calcPlayerEscape = function(table, player) {
     pokeGame.playersResults[player.userId] = -1 * score.total;
     pokeGame.playersResults[player1.userId] = score.raked_total / 2;
     pokeGame.playersResults[player2.userId] = score.raked_total / 2;
-//
-//
-//    score.players.push({
-//      userId: player.userId,
-//      nickName: player.nickName,
-//      score: -1 * score.total,
-//      pokeCards: CardUtil.pokeCardsToString(player.pokeCards)
-//    });
-//    score.players.push({
-//      userId: player1.userId,
-//      nickName: player1.nickName,
-//      score: score.raked_total / 2,
-//      pokeCards: CardUtil.pokeCardsToString(player1.pokeCards)
-//
-//    });
-//    score.players.push({
-//      userId: player2.userId,
-//      nickName: player2.nickName,
-//      score: score.raked_total / 2,
-//      pokeCards: CardUtil.pokeCardsToString(player2.pokeCards)
-//    });
   } else {
     var lordUser, farmerUser;
     if (player1.isLord()) {
@@ -128,30 +112,15 @@ var calcPlayerEscape = function(table, player) {
     pokeGame.playersResults[lordUser.userId] = score.raked_total;
     pokeGame.playersResults[farmerUser.userId] = 0;
 
-//    score.players.push({
-//      userId: lordUser.userId,
-//      nickName: lordUser.nickName,
-//      score:  score.raked_total,
-//      pokeCards: CardUtil.pokeCardsToString(lordUser.pokeCards)
-//
-//    });
-//    score.players.push({
-//      userId: player.userId,
-//      nickName: player.nickName,
-//      score: -1 * score.total,
-//      pokeCards: CardUtil.pokeCardsToString(player.pokeCards)
-//
-//    });
-//    score.players.push({
-//      userId: farmerUser.userId,
-//      nickName: farmerUser.nickName,
-//      score: 0,
-//      pokeCards: CardUtil.pokeCardsToString(farmerUser.pokeCards)
-//    });
   }
 
 };
 
+/**
+ * 正常结算
+ * @param table - 牌桌
+ * @param player - 赢家
+ */
 var calcNormalGameOver = function(table, player) {
   var pokeGame = table.pokeGame;
 
@@ -191,35 +160,9 @@ var calcNormalGameOver = function(table, player) {
 
   score.players = [];
   if (player.isLord()) {
-//    player.ddzProfile.updateCoins(score.raked_total);
-//    player1.ddzProfile.updateCoins(score.total / -2);
-//    player2.ddzProfile.updateCoins(score.total / -2);
     pokeGame.playersResults[player.userId] = score.raked_total;
     pokeGame.playersResults[player1.userId] = score.total / -2;
     pokeGame.playersResults[player2.userId] = score.total / -2;
-
-//    score.players.push({
-//      userId: player.userId,
-//      nickName: player.nickName,
-//      score: score.raked_total,
-//      //ddzProfile: player.ddzProfile.toParams(),
-//      pokeCards: CardUtil.pokeCardsToString(player.pokeCards)
-//    });
-//    score.players.push({
-//      userId: player1.userId,
-//      nickName: player1.nickName,
-//      score: score.total / -2,
-//      //ddzProfile: player1.ddzProfile.toParams(),
-//      pokeCards: CardUtil.pokeCardsToString(player1.pokeCards)
-//
-//    });
-//    score.players.push({
-//      userId: player2.userId,
-//      nickName: player2.nickName,
-//      score: score.total / -2,
-//      //ddzProfile: player2.ddzProfile.toParams(),
-//      pokeCards: CardUtil.pokeCardsToString(player2.pokeCards)
-//    });
   } else {
     var lordUser, farmerUser;
     if (player1.isLord()) {
@@ -231,89 +174,58 @@ var calcNormalGameOver = function(table, player) {
     }
     var winScore = Math.round(score.raked_total / 2)
 
-//    lordUser.ddzProfile.updateCoins(-1 * score.total);
-//    player.ddzProfile.updateCoins(winScore);
-//    farmerUser.ddzProfile.updateCoins(winScore);
     pokeGame.playersResults[lordUser.userId] = -1 * score.total;
     pokeGame.playersResults[player.userId] = winScore;
     pokeGame.playersResults[farmerUser.userId] = winScore;
 
-//    score.players.push({
-//      userId: lordUser.userId,
-//      nickName: lordUser.nickName,
-//      score:  -1 * score.total,
-//      //ddzProfile: lordUser.ddzProfile.toParams(),
-//      pokeCards: CardUtil.pokeCardsToString(lordUser.pokeCards)
-//
-//    });
-//    score.players.push({
-//      userId: player.userId,
-//      nickName: player.nickName,
-//      score: winScore,
-//      //ddzProfile: player.ddzProfile.toParams(),
-//      pokeCards: CardUtil.pokeCardsToString(player.pokeCards)
-//
-//    });
-//    score.players.push({
-//      userId: farmerUser.userId,
-//      nickName: farmerUser.nickName,
-//      score: winScore,
-//      //ddzProfile: farmerUser.ddzProfile.toParams(),
-//      pokeCards: CardUtil.pokeCardsToString(farmerUser.pokeCards)
-//
-//    });
   }
 };
 
+/**
+ * 牌局结算
+ * @param table - 牌桌
+ * @param player - 赢家或逃跑的玩家
+ * @param cb
+ */
 GameOverAction.doGameOver = function(table, player, cb) {
   var pokeGame = table.pokeGame;
 
-  var playerIds = pokeGame.players.map(function(player) { return player.userId; });
-//  DdzProfile.findQ({userId: {$in: playerIds }})
-//    .then(function(ddzProfiles) {
-//      for (var index=0; index<ddzProfiles.length; index++) {
-//        var profile = ddzProfiles[index];
-//        pokeGame.getPlayerByUserId(profile.userId).ddzProfile = profile;
-//      }
-//    })
-    Q.fcall(function() {
-      if (player.pokeCards.length == 0) {
-        calcNormalGameOver(table, player);
-      } else {
-        calcPlayerEscape(table, player);
-      }
-
-//      return Q.all( pokeGame.players.map(function(player){return player.ddzProfile.saveQ();}))
-    })
+  Q.fcall(function() {
+    // 1. 得出结算信息
+    if (player.pokeCards.length == 0) {
+      // 玩家手上的牌光了，表示他是赢家，进行正常结算
+      calcNormalGameOver(table, player);
+    } else {
+      // 玩家手上还有牌，即为逃跑，进行逃跑结算
+      calcPlayerEscape(table, player);
+    }
+  })
     .then(function() {
-//      return (!!pokeGame.players[0])
-//        && (!!pokeGame.players[0].ddzProfile)
-//        && pokeGame.players[0].ddzProfile.saveQ();
+      // 2. 更新第一位玩家的金币数
       var p = pokeGame.players[0];
       return DdzProfile.updateCoinsByUserIdQ(p.userId, pokeGame.playersResults[p.userId]);
     })
     .then(function(ddzProfile) {
+      // 设置第一个玩家的ddzProfile
       pokeGame.players[0].ddzProfile = ddzProfile;
 
+      // 3. 更新第二位玩家的ddzProfile
       var p = pokeGame.players[1];
       return DdzProfile.updateCoinsByUserIdQ(p.userId, pokeGame.playersResults[p.userId]);
-
-//      return (!!pokeGame.players[1])
-//        && (!!pokeGame.players[1].ddzProfile)
-//        && pokeGame.players[1].ddzProfile.saveQ();
     })
     .then(function(ddzProfile) {
-//      return (!!pokeGame.players[2])
-//        && (!!pokeGame.players[2].ddzProfile)
-//        && pokeGame.players[2].ddzProfile.saveQ();
+      // 设置第二位玩家的ddzProfile
       pokeGame.players[1].ddzProfile = ddzProfile;
 
+      // 4. 更新第三位玩家的ddzProfile
       var p = pokeGame.players[2];
       return DdzProfile.updateCoinsByUserIdQ(p.userId, pokeGame.playersResults[p.userId]);
     })
     .then(function(ddzProfile) {
+      // 设置第三位玩家的ddzProfile
       pokeGame.players[2].ddzProfile = ddzProfile;
 
+      // 结算结果信息存入pokeGame
       pokeGame.score.players = [];
       for (var index=0; index<pokeGame.players.length; index++) {
         var player = pokeGame.players[index];
@@ -330,15 +242,15 @@ GameOverAction.doGameOver = function(table, player, cb) {
       var result = pokeGame.toParams(['players', 'grabbingLord']);
       result.lordWon = pokeGame.lordWon;
       result.score = {};
-      result.score.lordWon = pokeGame.lordWon? 1 : 0;
-      result.score.rake = pokeGame.score.rake;
-      result.score.ante = pokeGame.score.ante;
-      result.score.lordValue = pokeGame.score.lordValue;
-      result.score.bombs = pokeGame.score.bombs;
-      result.score.spring = pokeGame.score.spring;
-      result.score.total = pokeGame.score.total;
-      result.score.rakedTotal = pokeGame.score.raked_total;
-      result.score.rakeValue = result.score.total - result.score.rakedTotal;
+      result.score.lordWon = pokeGame.lordWon? 1 : 0; // 地主赢还是输
+      result.score.rake = pokeGame.score.rake;  // 佣金
+      result.score.ante = pokeGame.score.ante;  // 底数
+      result.score.lordValue = pokeGame.score.lordValue;  // 倍数
+      result.score.bombs = pokeGame.score.bombs;  // 炸弹数
+      result.score.spring = pokeGame.score.spring; // 春天反春天
+      result.score.total = pokeGame.score.total; // 输赢总数
+      result.score.rakedTotal = pokeGame.score.raked_total; // 扣除佣金的总数
+      result.score.rakeValue = result.score.total - result.score.rakedTotal; // 佣金
       result.score.players = pokeGame.score.players.slice(0);
 
       utils.invokeCallback(cb, null, result.score);

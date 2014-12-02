@@ -21,32 +21,46 @@ DdzGoodsPackageService.init = function(app, opts) {
 
 };
 
+
+/**
+ * 发放道具包
+ * @param purchaseOrder - 购买订单
+ * @returns {Promise|*}
+ */
 DdzGoodsPackageService.deliverPackageQ = function(purchaseOrder) {
   var user = null;
+  // 获取订单的用户
   return User.findOne({userId: purchaseOrder.userId})
-    .populate('ddzProfile')
+    .populate('ddzProfile') // 加载ddzProfile
     .execQ()
     .then(function(u) {
       user = u;
+      // 对每个道具项发放
       var items = purchaseOrder.packageData.items;
       for (index=0; index<items.length; index++) {
         var item = items[index];
         DdzGoodsPackageService['do' + item.goods.goodsType](user, item);
       }
+      // 保存ddzProfile
       return user.ddzProfile.saveQ();
     })
     .then(function() {
+      // 标记订单已处理
       purchaseOrder.status = 1;
       return purchaseOrder.saveQ();
     })
     .then(function(po) {
+      // 最后，放回用户
       return user;
     });
 };
 
+/**
+ * 充值类道具项处理
+ * @param user - 用户
+ * @param goodsItem - 道具项
+ */
 DdzGoodsPackageService.doIncreaseCoins = function(user, goodsItem) {
+  // 加金币
   user.ddzProfile.coins += goodsItem.goods.goodsProps.coins * goodsItem.goodsCount;
-  // for (var i=0; i<goodsItem.goodsCount; i++) {
-  //   user.ddzProfile.coins += goodsItem.goods.goodsProps.coins;
-  // }
 };
