@@ -175,7 +175,7 @@ UserService.signUp = function(signUpParams, cb) {
         nickName: nickName,
         passwordDigest: passwordDigest,
         passwordSalt: passwordSalt,
-        appid: userInfo.appid,
+        appid: userInfo.appid || 1000,
         appVersion: userInfo.appVersion,
         resVersion: userInfo.resVersion,
         createdAt: (new Date()),
