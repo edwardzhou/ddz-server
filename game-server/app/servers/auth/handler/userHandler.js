@@ -38,6 +38,8 @@ var Handler = function(app) {
 Handler.prototype.signIn = function(msg, session, next) {
   var self = this;
 
+  var sessionService = this.app.get('sessionService');
+
   var results = null;
 
   if (msg == null) {
@@ -69,7 +71,11 @@ Handler.prototype.signIn = function(msg, session, next) {
   })
     .then(function(r) {
       results = r;
-
+//      if (!!session.uid) {
+//        return Q.nbind(sessionService.kick, sessionService)(session.uid);
+//      }
+    })
+    .then(function() {
       session.set('userId', results.user.userId);
       session.set('sessionToken', results.userSession.sessionToken);
       session.set('channelId', results.user.appid);
@@ -114,8 +120,13 @@ Handler.prototype.signUp = function(msg, session, next) {
       return createUserSessionQ(user.userId, handsetInfo.mac, session.frontendId, session.id);
     })
     .then(function(newUserSession) {
-      // 3. 绑定到session
       results.userSession = newUserSession;
+//      if (!!session.uid) {
+//        return Q.nbind(sessionService.unbind, sessionService)(session.uid);
+//      }
+    })
+    .then(function() {
+      // 3. 绑定到session
       session.bind(results.user.userId);
       session.set('userId', results.user.userId);
       session.set('sessionToken', results.userSession.sessionToken);

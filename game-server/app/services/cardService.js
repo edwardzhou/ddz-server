@@ -298,6 +298,8 @@ exp.startGame = function (table, next) {
 
     if (!tokenPlayer.robot && !tokenPlayer.delegating) {
       nextTimeout += 5;
+    } else if (tokenPlayer.robot) {
+      nextTimeout += 3;
     }
 
     setupNextPlayerTimeout(table,

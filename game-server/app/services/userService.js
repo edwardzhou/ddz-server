@@ -206,6 +206,9 @@ UserService.signUp = function(signUpParams, cb) {
       return results.user.saveQ();
     })
     .then(function(){
+      return results.user.populateQ('ddzProfile');
+    })
+    .then(function(){
       utils.invokeCallback(cb, null, results.user);
     })
     .fail(function(error) {
