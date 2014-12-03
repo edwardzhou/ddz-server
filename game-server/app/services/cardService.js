@@ -289,16 +289,14 @@ exp.startGame = function (table, next) {
         null);
     }
 
-//    var grabbingLordPlayer = newPokeGame.getPlayerByUserId(newPokeGame.grabbingLord.nextUserId);
-//    newPokeGame.actionTimeout
-    //var nextPlayer = newPokeGame.getTokenPlayer();
-
     var tokenPlayer = newPokeGame.getTokenPlayer();
     var nextTimeout = self.getPlayerTiming(tokenPlayer, table, 'grabLord');
 
     if (!tokenPlayer.robot && !tokenPlayer.delegating) {
+      // 在线玩家加多5秒，用于网络延迟
       nextTimeout += 5;
     } else if (tokenPlayer.robot) {
+      // 如果是机器人，则超时加多3秒，避免前端抢地主按钮错误隐藏
       nextTimeout += 3;
     }
 
