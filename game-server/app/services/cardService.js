@@ -643,32 +643,39 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
           if (pokeGame.lastPlay.userId == timeoutPlayer.userId) {
 
             // 有牌权
-            // 下家只有一手牌
-            if (next_player_cardInfo.cardPlans[0].hands == 1){
-              // 下家为友方
-              if (nextPlayer.role == timeoutPlayer.role) {
-                // 找出与友方相同牌形的最小牌打出
+            // 如果手中有多于一手的牌
+            if (timeout_player_cardInfo.cardPlans[0].hands > 1) {
+              // 下家只有一手牌
+              if (next_player_cardInfo.cardPlans[0].hands == 1) {
+                // 下家为友方
+                if (nextPlayer.role == timeoutPlayer.role) {
+                  // 找出与友方相同牌形的最小牌打出
+
+                }
+                else  // 下家为敌方
+                {
+                  // 打出手中牌值最大的牌
+
+                }
+              }
+              // 下家手中有多于一手的牌 或面过程未找到有效牌
+              // 手中只有最后两手牌
+              if (firstCard == null && timeout_player_cardInfo.cardPlans[0].hands == 2) {
+                // 如最后两手为单 或 对，则先出牌值小的
+
+                // 如最后两手牌为单或对 加 其它组合，则单 或对 最后出
 
               }
-              else  // 下家敌方
+              if (firstCard == null)
               {
-                // 打出手中牌值最大的牌
-
+                firstCard = AIEngine.findLordFirstCard(timeout_player_cardInfo, last_player_cardInfo, next_player_cardInfo);
               }
             }
-           // 下家手中有多于一手的牌 或面过程未找到有效牌
-           // 手中只有最后两手牌
-            if (timeout_player_cardInfo.cardPlans[0].hands == 2) {
-              // 如最后两手为单 或 对，则先出牌值小的
-
-              // 如最后两手牌为单或对 加 其它组合，则单 或对 最后出
-
+            else // 手中只有一手牌，则直接打出
+            {
+              firstCard = AIEngine.findLordFirstCard(timeout_player_cardInfo, last_player_cardInfo, next_player_cardInfo);
             }
-            // 超时玩家属于必出玩家 (第一手, 或上一轮没人大过他的)
-            cardInfo = CardInfo.create(timeoutPlayer.pokeCards);
-            CardAnalyzer.analyze(cardInfo);
-            firstCard = AIEngine.findLordFirstCard(cardInfo, cardInfo, cardInfo);
-            timeoutPokeChars = firstCard.getPokeChars();
+             timeoutPokeChars = firstCard.getPokeChars();
           } else {
             // 有牌则出
             // 无牌权
@@ -676,12 +683,12 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
             if (timeout_player_cardInfo.cardPlans[0].hands > 1) {
               // 最后出牌者是友方
               if (lastPlayer.role == timeoutPlayer.role) {
-                // 友方剩最后一手牌 或者友方的最后所出牌牌值大于等于10
+                // 友方剩最后一手牌 或者友方的最后所出牌牌值大于等于10 或者所出牌为三张以上
                 if (last_player_cardInfo.cardPlans[0].hands == 1 || pokeGame.lastPlay.card.maxPokeValue >=10 ||
                     pokeGame.lastPlay.card.pokeCards.length >= 3){
 
                 }
-                else // 友方手中有不止一手牌
+                else // 友方不手中不止一手牌，或所出牌牌值小于10，或所出牌小于3张
                 {
                   firstCard = AIEngine.findLordPlayCard(timeout_player_cardInfo, last_player_cardInfo, next_player_cardInfo, pokeGame.lastPlay.card);
                 }
