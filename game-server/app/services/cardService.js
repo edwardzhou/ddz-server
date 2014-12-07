@@ -626,7 +626,44 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
             cardUtil.pokeCardsToPokeChars(timeoutPlayer.pokeCards),
             cardUtil.pokeCardsToValueString(timeoutPlayer.pokeCards)
           );
+          var nextPlayer = pokeGame.getNextPlayer(timeoutPlayer.userId);
+          var next_player_cardInfo = CardInfo.create(nextPlayer.pokeCards);
+          CardAnalyzer.analyze(next_player_cardInfo);
+          var timeout_player_cardInfo = CardInfo.create(timeoutPlayer.pokeCards);
+          CardAnalyzer.analyze(timeout_player_cardInfo);
+          var lastPlayer = pokeGame.getPlayerByUserId(pokeGame.lastPlay.userId);
+          var last_player_cardInfo = CardInfo.create(lastPlayer.pokeCards);
+          CardAnalyzer.analyze(last_player_cardInfo);
+          logger.info("timeoutPlayer [%d] : hands=%d, role=%s", timeoutPlayer.userId, timeout_player_cardInfo.cardPlans[0].hands, timeoutPlayer.role);
+          logger.info("nextPlayer [%d] : hands=%d, role=%s", nextPlayer.userId, next_player_cardInfo.cardPlans[0].hands, nextPlayer.role);
+          logger.info("lastPlayer [%d] : hands=%d, role=%s", lastPlayer.userId, last_player_cardInfo.cardPlans[0].hands, lastPlayer.role);
+          logger.info("lastPlayer [%d] : last_card.maxPokeValue=%d, last_card.pokeCards.length=%d",lastPlayer.userId, pokeGame.lastPlay.card.maxPokeValue, pokeGame.lastPlay.card.pokeCards.length);
+
+
           if (pokeGame.lastPlay.userId == timeoutPlayer.userId) {
+
+            // 有牌权
+            // 下家只有一手牌
+            if (next_player_cardInfo.cardPlans[0].hands == 1){
+              // 下家为友方
+              if (nextPlayer.role == timeoutPlayer.role) {
+                // 找出与友方相同牌形的最小牌打出
+
+              }
+              else  // 下家敌方
+              {
+                // 打出手中牌值最大的牌
+
+              }
+            }
+           // 下家手中有多于一手的牌 或面过程未找到有效牌
+           // 手中只有最后两手牌
+            if (timeout_player_cardInfo.cardPlans[0].hands == 2) {
+              // 如最后两手为单 或 对，则先出牌值小的
+
+              // 如最后两手牌为单或对 加 其它组合，则单 或对 最后出
+
+            }
             // 超时玩家属于必出玩家 (第一手, 或上一轮没人大过他的)
             cardInfo = CardInfo.create(timeoutPlayer.pokeCards);
             CardAnalyzer.analyze(cardInfo);
@@ -634,9 +671,32 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
             timeoutPokeChars = firstCard.getPokeChars();
           } else {
             // 有牌则出
-            cardInfo = CardInfo.create(timeoutPlayer.pokeCards);
-            CardAnalyzer.analyze(cardInfo);
-            firstCard = AIEngine.findLordPlayCard(cardInfo, cardInfo, cardInfo, pokeGame.lastPlay.card);
+            // 无牌权
+            // 手中有不止一手牌
+            if (timeout_player_cardInfo.cardPlans[0].hands > 1) {
+              // 最后出牌者是友方
+              if (lastPlayer.role == timeoutPlayer.role) {
+                // 友方剩最后一手牌 或者友方的最后所出牌牌值大于等于10
+                if (last_player_cardInfo.cardPlans[0].hands == 1 || pokeGame.lastPlay.card.maxPokeValue >=10 ||
+                    pokeGame.lastPlay.card.pokeCards.length >= 3){
+
+                }
+                else // 友方手中有不止一手牌
+                {
+                  firstCard = AIEngine.findLordPlayCard(timeout_player_cardInfo, last_player_cardInfo, next_player_cardInfo, pokeGame.lastPlay.card);
+                }
+              }
+              else // 最后出牌者是敌方
+              {
+                firstCard = AIEngine.findLordPlayCard(timeout_player_cardInfo, last_player_cardInfo, next_player_cardInfo, pokeGame.lastPlay.card);
+              }
+            }
+            else{
+              firstCard = AIEngine.findLordPlayCard(timeout_player_cardInfo, last_player_cardInfo, next_player_cardInfo, pokeGame.lastPlay.card);
+            }
+            //cardInfo = CardInfo.create(timeoutPlayer.pokeCards);
+            //CardAnalyzer.analyze(cardInfo);
+            //firstCard = AIEngine.findLordPlayCard(timeout_player_cardInfo, last_player_cardInfo, nextPlayer_cardInfo, pokeGame.lastPlay.card);
             if (!!firstCard)
               timeoutPokeChars = firstCard.getPokeChars();
           }
