@@ -117,14 +117,14 @@ function testFirstPlay() {
   CardAnalyzer.analyze(f2_cardInfo);
 
   var index = 1;
-  var card = AIEngine.findLordFirstCard(ci, f1_cardInfo, f2_cardInfo);
+  var card = AIEngine.findLordFirstCard(ci);
   while(!!card) {
     console.log(index + ' Play: ' , card.getPokeValueChars());
     var pokes = ci.pokeCards.slice(0).exclude(card.pokeCards);
     if (pokes.length > 0) {
       ci = CardInfo.create(pokes);
       CardAnalyzer.analyze(ci);
-      card = AIEngine.findLordFirstCard(ci, f1_cardInfo, f2_cardInfo);
+      card = AIEngine.findLordFirstCard(ci);
     } else {
       card = null;
     }

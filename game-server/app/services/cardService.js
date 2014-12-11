@@ -391,7 +391,7 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
           // 玩家是地主，且是真实玩家
           var cardInfo = CardInfo.create(p.pokeCards);
           CardAnalyzer.analyze(cardInfo);
-          var tipCard = AIEngine.findLordFirstCard(cardInfo, cardInfo, cardInfo);
+          var tipCard = AIEngine.findLordFirstCard(cardInfo);
           tipPokeChars = tipCard.getPokeChars();
         }
         actionResult.tipPokeChars = tipPokeChars;
@@ -456,7 +456,7 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
         function(timeoutTable, timeoutPlayer, timeoutSeq){
           var cardInfo = CardInfo.create(timeoutPlayer.pokeCards);
           CardAnalyzer.analyze(cardInfo);
-          var card = AIEngine.findLordFirstCard(cardInfo, cardInfo, cardInfo);
+          var card = AIEngine.findLordFirstCard(cardInfo);
 
           self.playCard(timeoutTable, timeoutPlayer, card.getPokeChars() , timeoutSeq, true, null);
         },
@@ -551,9 +551,9 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
         var tipCard = null;
         CardAnalyzer.analyze(cardInfo);
         if (pokeGame.lastPlay.userId == nextPlayer.userId) {
-          tipCard = AIEngine.findLordFirstCard(cardInfo, cardInfo, cardInfo);
+          tipCard = AIEngine.findLordFirstCard(cardInfo);
         } else {
-          tipCard = AIEngine.findLordPlayCard(cardInfo, cardInfo, cardInfo, pokeGame.lastPlay.card);
+          tipCard = AIEngine.findLordPlayCard(cardInfo, pokeGame.lastPlay.card);
         }
         // 如果有可出的牌，则付给提示
         if (!!tipCard) {
@@ -628,8 +628,9 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
           );
           var nextPlayer = pokeGame.getNextPlayer(timeoutPlayer.userId);
           var lastPlayer = pokeGame.getPlayerByUserId(pokeGame.lastPlay.userId);
+          var prevPlayer = pokeGame.getNextPlayer(nextPlayer.userId);
 
-          firstCard = AIEngine.playCard(timeoutPlayer, nextPlayer, lastPlayer, pokeGame.lastPlay.card);
+          firstCard = AIEngine.playCard(timeoutPlayer, nextPlayer, prevPlayer, lastPlayer, pokeGame.lastPlay.card);
 
           if (!!firstCard) {
             logger.info('Player [%d] : card-> %s' , timeoutPlayer.userId, firstCard.toString());
