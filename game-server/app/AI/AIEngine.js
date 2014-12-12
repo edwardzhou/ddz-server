@@ -504,14 +504,14 @@ AIEngine.findLordFirstCard = function(lordCardInfo, prevFarmerCardInfo, nextFarm
   if (lordPlan.hands == 2) {
     // 有火箭，则先出非火箭的牌
     if (lordPlan.rocketsCards.length>0) {
-      //return new Card(lordCardInfo.pokeCards.slice(0).exclude(lordPlan.rocketsCards[0].pokeCards));
-      return new Card(excludeArray(lordCardInfo.pokeCards.slice(0), lordPlan.rocketsCards[0].pokeCards));
+      return new Card(lordCardInfo.pokeCards.slice(0).exclude(lordPlan.rocketsCards[0].pokeCards));
+      //return new Card(excludeArray(lordCardInfo.pokeCards.slice(0), lordPlan.rocketsCards[0].pokeCards));
     }
 
     // 有炸弹，则先出非炸弹的牌
     if (lordPlan.bombsCards.length>0) {
-      //return new Card(lordCardInfo.pokeCards.slice(0).exclude(lordPlan.bombsCards[0].pokeCards));
-      return new Card(excludeArray(lordCardInfo.pokeCards.slice(0), lordPlan.bombsCards[0].pokeCards));
+      return new Card(lordCardInfo.pokeCards.slice(0).exclude(lordPlan.bombsCards[0].pokeCards));
+      //return new Card(excludeArray(lordCardInfo.pokeCards.slice(0), lordPlan.bombsCards[0].pokeCards));
     }
 
     if (lordPlan.allCards.length == 2) {
@@ -574,8 +574,8 @@ AIEngine.findLordFirstCard = function(lordCardInfo, prevFarmerCardInfo, nextFarm
       if (lordPlan.pairsCards.length >= cardLength) {
         if (lordPlan.pairsCards[cardLength - 1].maxPokeValue < PokeCardValue.TWO) {
           var pokes = [];
-          //lordPlan.pairsCards.slice(0, cardLength).reduce(function(p, card) { return p.append(card.pokeCards);}, pokes);
-          lordPlan.pairsCards.slice(0, cardLength).reduce(function(p, card) { return appendArray(p, card.pokeCards);}, pokes);
+          lordPlan.pairsCards.slice(0, cardLength).reduce(function(p, card) { return p.append(card.pokeCards);}, pokes);
+          //lordPlan.pairsCards.slice(0, cardLength).reduce(function(p, card) { return appendArray(p, card.pokeCards);}, pokes);
           return new Card(lordPlan.threesStraightsCards[0].pokeCards.concat(pokes));
         }
       }
@@ -640,8 +640,8 @@ AIEngine.findLordPlayCard = function(lordCardInfo, prevFarmerCardInfo, nextFarme
   }
 
   if (!!cardResult.breakCard) {
-    //var pokeCards = lordCardInfo.pokeCards.slice(0).exclude(cardResult.card.pokeCards);
-    var pokeCards = excludeArray(lordCardInfo.pokeCards.slice(0), cardResult.card.pokeCards);
+    var pokeCards = lordCardInfo.pokeCards.slice(0).exclude(cardResult.card.pokeCards);
+    //var pokeCards = excludeArray(lordCardInfo.pokeCards.slice(0), cardResult.card.pokeCards);
     var newCardInfo = CardInfo.create(pokeCards);
     CardAnalyzer.analyze(newCardInfo);
     if (newCardInfo.cardPlans[0].hands > lordCardInfo.cardPlans[0].hands + 1) {

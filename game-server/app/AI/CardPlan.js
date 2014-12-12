@@ -74,22 +74,22 @@ CardPlan.prototype.calculate = function() {
     this.hands -= comb;
   }
 
-  //this.allCards.append(this.singlesCards)
-  //  .append(this.straightsCards)
-  //  .append(this.pairsCards)
-  //  .append(this.pairsStraightsCards)
-  //  .append(this.threesCards)
-  //  .append(this.threesStraightsCards)
-  //  .append(this.bombsCards)
-  //  .append(this.rocketsCards);
-  appendArray(this.allCards, this.singlesCards);
-  appendArray(this.allCards, this.straightsCards);
-  appendArray(this.allCards, this.pairsCards);
-  appendArray(this.allCards, this.pairsStraightsCards);
-  appendArray(this.allCards, this.threesCards);
-  appendArray(this.allCards, this.threesStraightsCards);
-  appendArray(this.allCards, this.bombsCards);
-  appendArray(this.allCards, this.rocketsCards);
+  this.allCards.append(this.singlesCards)
+    .append(this.straightsCards)
+    .append(this.pairsCards)
+    .append(this.pairsStraightsCards)
+    .append(this.threesCards)
+    .append(this.threesStraightsCards)
+    .append(this.bombsCards)
+    .append(this.rocketsCards);
+  //appendArray(this.allCards, this.singlesCards);
+  //appendArray(this.allCards, this.straightsCards);
+  //appendArray(this.allCards, this.pairsCards);
+  //appendArray(this.allCards, this.pairsStraightsCards);
+  //appendArray(this.allCards, this.threesCards);
+  //appendArray(this.allCards, this.threesStraightsCards);
+  //appendArray(this.allCards, this.bombsCards);
+  //appendArray(this.allCards, this.rocketsCards);
 };
 
 CardPlan.prototype.getCardByPoke = function(poke) {
