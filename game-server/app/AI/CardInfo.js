@@ -229,7 +229,6 @@ CardInfo.prototype.dump = function() {
   console.log('三张: ' + AIHelper.groupsToString(this.threes));
   console.log('炸弹: ' + AIHelper.groupsToString(this.bombs));
   console.log('火箭: ' + AIHelper.groupsToString(this.rockets));
-  console.log('可能的顺子: ' + AIHelper.cardsToString(this.possibleStraights));
 };
 
 module.exports = CardInfo;

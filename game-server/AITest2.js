@@ -32,14 +32,32 @@ testcases = [
     , 'AHKNTU\\`abqrstuv'
 ];
 
-var gamePokes = PokeCard.shuffle();
-var pokes = gamePokes.slice(0, 17);
-var farmer1_pokes = gamePokes.slice(17, 34);
-var farmer2_pokes = gamePokes.slice(34, 51);
+//var gamePokes = PokeCard.shuffle();
+//var pokes = gamePokes.slice(0, 17);
+//var farmer1_pokes = gamePokes.slice(17, 34);
+//var farmer2_pokes = gamePokes.slice(34, 51);
+//
+//pokes = PokeCard.pokeCardsFromChars('AHKNTU\\`abqrstuv');
+//
+//console.time('CardInfo create');
+//ci = CardInfo.create(pokes);
+//console.timeEnd('CardInfo create');
+//ci.dump();
 
-pokes = PokeCard.pokeCardsFromChars('AHKNTU\\`abqrstuv');
 
-console.time('CardInfo create');
-ci = CardInfo.create(pokes);
-console.timeEnd('CardInfo create');
-ci.dump();
+PokeCard.getAllPokeCards();
+
+function testGetSmallerThenFun(){
+    var pokes = PokeCard.getByIds("a03, b03, c03, a04, b04, c04, a05,b05, c06, d06, a07, b07");
+    console.log('pokes: ', pokes);
+    var card_info = CardInfo.create(pokes);
+    CardAnalyzer.analyze(card_info);
+    var card = new Card(PokeCard.getByIds("b06"));
+
+    var firstCard = AIEngine.findSmallerThan(card, card_info);
+
+    var timeoutPokeChars = firstCard.card.getPokeChars();
+    console.log(timeoutPokeChars);
+}
+
+testGetSmallerThenFun();

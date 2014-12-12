@@ -64,7 +64,7 @@ AIEngine.playCard = function (curPlayer, nextPlayer, prevPlayer, lastPlayer, las
     {
       firstCard = AIEngine.findLordFirstCard(cur_player_cardInfo);
     }
-    timeoutPokeChars = firstCard.getPokeChars();
+
   } else {
     // 无牌权
     // 手中有不止一手牌
@@ -91,7 +91,7 @@ AIEngine.playCard = function (curPlayer, nextPlayer, prevPlayer, lastPlayer, las
     }
   }
 
-    return firstCard;
+    return firstCard.card;
 };
 
 AIEngine.findFeasibleStraight = function (straights) {
@@ -800,6 +800,7 @@ AIEngine.findGreaterSingle = function(card, cardInfo) {
 };
 
 AIEngine.findSmallerSingle = function(card, cardInfo) {
+  logger.info("AIEngine.findSmallerSingle");
   var plan = cardInfo.cardPlans[0];
   // 找最小单牌
   for (var cardIndex=0; cardIndex<plan.singlesCards.length; cardIndex++) {
@@ -810,6 +811,7 @@ AIEngine.findSmallerSingle = function(card, cardInfo) {
     }
 
     if (otherCard.maxPokeValue < card.maxPokeValue) {
+      logger.info("AIEngine.findSmallerSingle, 1");
       return new CardResult(otherCard, null);
     }
   }
@@ -819,6 +821,7 @@ AIEngine.findSmallerSingle = function(card, cardInfo) {
   if (!!group) {
     var otherCard = new Card(group.pokeCards.slice(0,1));
     if (otherCard.maxPokeValue < card.maxPokeValue) {
+      logger.info("AIEngine.findSmallerSingle, 2");
       return new CardResult(new Card(group.pokeCards.slice(0, 1)), plan.getCardByPoke(group.pokeCards[0]));
     }
   }
@@ -827,6 +830,7 @@ AIEngine.findSmallerSingle = function(card, cardInfo) {
   for (var cardIndex=0; cardIndex<plan.pairsCards.length; cardIndex++) {
     var otherCard = plan.pairsCards[cardIndex];
     if (otherCard.maxPokeValue < card.maxPokeValue) {
+      logger.info("AIEngine.findSmallerSingle, 3");
       return new CardResult(new Card(otherCard.pokeCards.slice(0, 1)), otherCard);
     }
   }
@@ -835,6 +839,7 @@ AIEngine.findSmallerSingle = function(card, cardInfo) {
   for (var cardIndex=0; cardIndex<plan.straightsCards.length; cardIndex++) {
     var otherCard = plan.straightsCards[cardIndex];
     if (otherCard.cardLength > 5 && otherCard.minPokeValue < card.minPokeValue) {
+      logger.info("AIEngine.findSmallerSingle, 4");
       return new CardResult(new Card(otherCard.pokeCards.slice(0, 1)), otherCard);
     }
   }
@@ -843,6 +848,7 @@ AIEngine.findSmallerSingle = function(card, cardInfo) {
   for (var cardIndex=0; cardIndex<plan.threesCards.length; cardIndex++) {
     var otherCard = plan.threesCards[cardIndex];
     if (otherCard.maxPokeValue < card.maxPokeValue) {
+      logger.info("AIEngine.findSmallerSingle, 5");
       return new CardResult(new Card(otherCard.pokeCards.slice(0, 1)), otherCard);
     }
   }
@@ -864,6 +870,7 @@ AIEngine.findSmallerSingle = function(card, cardInfo) {
     }
 
     if (group.pokeValue < card.maxPokeValue) {
+      logger.info("AIEngine.findSmallerSingle, 6");
       return new CardResult(new Card(group.pokeCards.slice(0,1)), plan.getCardByPoke(group.pokeCards[0]));
     }
   }
@@ -940,6 +947,7 @@ AIEngine.findGreaterThan = function(card, cardInfo) {
 
 
 AIEngine.findSmallerThan = function(card, cardInfo) {
+  logger.info("AIEngine.findSmallerThan");
   var result = null;
   var plan = cardInfo.cardPlans[0];
 
@@ -978,6 +986,7 @@ AIEngine.findSmallerThan = function(card, cardInfo) {
 
     case CardType.BOMB:
     case CardType.SINGLE:
+      logger.info("AIEngine.findSmallerThan, CardType.SINGLE");
       result = AIEngine.findSmallerSingle(card, cardInfo);
       break;
   }
