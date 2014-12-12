@@ -11,33 +11,96 @@ var CardInfo = require('./CardInfo');
 var CardPlan = require('./CardPlan');
 var AIHelper = require('./AIHelper');
 
-Array.prototype.append = function(otherArray) {
-  for (var index=0; index<otherArray.length; index++) {
-    this.push(otherArray[index]);
-  }
-  return this;
-};
+//Array.prototype.append = function(otherArray) {
+//  for (var index=0; index<otherArray.length; index++) {
+//    this.push(otherArray[index]);
+//  }
+//  return this;
+//};
+//
+//Array.prototype.preappend = function(otherArray) {
+//  Array.prototype.splice.apply(this, [0,0].concat(otherArray));
+//
+//  return this;
+//};
+//
+//Array.prototype.exclude = function(otherArray) {
+//  if (otherArray == null) {
+//    return this;
+//  }
+//
+//  for (var index=0; index<otherArray.length; index++) {
+//    var foundIndex = this.indexOf(otherArray[index]);
+//    if (foundIndex >= 0) {
+//      this.splice(foundIndex, 1);
+//    }
+//  }
+//
+//  return this;
+//};
 
-Array.prototype.preappend = function(otherArray) {
-  Array.prototype.splice.apply(this, [0,0].concat(otherArray));
-
-  return this;
-};
-
-Array.prototype.exclude = function(otherArray) {
-  if (otherArray == null) {
+Object.defineProperty(Array.prototype, 'append', {
+  value: function(otherArray) {
+    for (var index=0; index<otherArray.length; index++) {
+      this.push(otherArray[index]);
+    }
     return this;
   }
+});
 
-  for (var index=0; index<otherArray.length; index++) {
-    var foundIndex = this.indexOf(otherArray[index]);
-    if (foundIndex >= 0) {
-      this.splice(foundIndex, 1);
-    }
+Object.defineProperty(Array.prototype, 'preappend', {
+  value: function(otherArray) {
+    Array.prototype.splice.apply(this, [0,0].concat(otherArray));
+    return this;
   }
+});
 
-  return this;
+Object.defineProperty(Array.prototype, 'exclude', {
+  value: function(otherArray) {
+    if (otherArray == null) {
+      return this;
+    }
+
+    for (var index=0; index<otherArray.length; index++) {
+      var foundIndex = this.indexOf(otherArray[index]);
+      if (foundIndex >= 0) {
+        this.splice(foundIndex, 1);
+      }
+    }
+
+    return this;
+  }
+});
+
+appendArray = function(thisArray, otherArray) {
+  //for (var index=0; index<otherArray.length; index++) {
+  //  this.push(otherArray[index]);
+  //}
+  //return this;
+  Array.prototype.splice.apply(thisArray, [thisArray.length, 0].concat(otherArray));
+  return thisArray;
 };
+//
+//prependArray = function(thisArray, otherArray) {
+//  Array.prototype.splice.apply(thisArray, [0,0].concat(otherArray));
+//
+//  return thisArray;
+//};
+//
+//excludeArray = function(thisArray, otherArray) {
+//  if (otherArray == null) {
+//    return thisArray;
+//  }
+//
+//  for (var index=0; index<otherArray.length; index++) {
+//    var foundIndex = thisArray.indexOf(otherArray[index]);
+//    if (foundIndex >= 0) {
+//      thisArray.splice(foundIndex, 1);
+//    }
+//  }
+//
+//  return thisArray;
+//};
 
 
 var CardAnalyzer = function() {
@@ -97,6 +160,7 @@ CardAnalyzer.analyzePlanA = function(cardInfo) {
     var remaingCardInfo = CardInfo.create(remaingPokecards);
     cardPlan.singlesCards = AIHelper.groupsToCards(remaingCardInfo.singles);
     cardPlan.pairsCards.append(AIHelper.groupsToCards(remaingCardInfo.pairs));
+    //appendArray(cardPlan.pairsCards, AIHelper.groupsToCards(remaingCardInfo.pairs));
   }
   cardPlan.calculate();
 
@@ -129,6 +193,7 @@ CardAnalyzer.analyzePlanB = function(cardInfo) {
   var removedPairsGroups = CardAnalyzer.processPairsStraights(remaingCardInfo.pairs, cardPlan);
   remaingCardInfo.pairs.removeGroups(removedPairsGroups);
   cardPlan.pairsCards.append(AIHelper.groupsToCards(remaingCardInfo.pairs));
+  //appendArray(cardPlan.pairsCards, AIHelper.groupsToCards(remaingCardInfo.pairs));
   cardPlan.calculate();
 
   return cardPlan;
@@ -161,6 +226,7 @@ CardAnalyzer.analyzePlanC = function(cardInfo) {
   var removedPairsGroups = CardAnalyzer.processPairsStraights(remaingCardInfo.pairs, cardPlan);
   remaingCardInfo.pairs.removeGroups(removedPairsGroups);
   cardPlan.pairsCards.append(AIHelper.groupsToCards(remaingCardInfo.pairs));
+  //appendArray(cardPlan.pairsCards, AIHelper.groupsToCards(remaingCardInfo.pairs));
   CardAnalyzer.processThreesStraights(remaingCardInfo.threes, cardPlan);
   //cardInfo.workingGroups.removeGroups(remaingCardInfo.threes);
   cardPlan.calculate();
@@ -184,6 +250,7 @@ CardAnalyzer.processThreesStraights = function(threesGroups, cardResult) {
         var group = tmpThrees.getGroupByPokeValue(pokeCards[pi].value);
         tmpThrees.remove(group);
         pokes.append(group.pokeCards);
+        //appendArray(pokes, group.pokeCards);
       }
 
       threesStraightsCards.push(new Card(pokes));
@@ -193,6 +260,7 @@ CardAnalyzer.processThreesStraights = function(threesGroups, cardResult) {
   cardResult.threesStraightsCards = threesStraightsCards;
 
   cardResult.threesCards = AIHelper.groupsToCards(tmpThrees);
+  //appendArray(cardResult.threesCards, AIHelper.groupsToCards(tmpThrees));
 };
 
 CardAnalyzer.processStraights = function(cardInfo, cardResult) {
@@ -444,8 +512,10 @@ CardAnalyzer.processStraights = function(cardInfo, cardResult) {
 
             if (straight[0].value == pokecards[pokecards.length-1].value + 1) {
               straight.preappend(pokecards);
+              //prependArray(straight, pokecards)
             } else if (straight[straight.length-1].value == pokecards[0].value - 1) {
               straight.append(pokecards);
+              //appendArray(straight, pokecards);
             }
 
             tmpGroups.push(new PokeGroup(card.pokeCards));
@@ -517,6 +587,7 @@ CardAnalyzer.processPairsStraights = function(pairsGroups, cardResult) {
         tmpPairsGroup.remove(group);
         removedGroups.push(group);
         pokes.append(group.pokeCards);
+        //appendArray(pokes, group.pokeCards);
       }
 
       pairsStraightsCards.push(new Card(pokes));
@@ -524,6 +595,7 @@ CardAnalyzer.processPairsStraights = function(pairsGroups, cardResult) {
   }
 
   cardResult.pairsStraightsCards.append(pairsStraightsCards);
+  //appendArray(cardResult.pairsStraightsCards, pairsStraightsCards);
   return removedGroups;
 };
 
