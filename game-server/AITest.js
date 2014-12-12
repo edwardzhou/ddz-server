@@ -75,7 +75,8 @@ function testAICard(card, cardInfo) {
 
   if (!!testResult) {
     console.log('test ' + card.getPokeValueChars() + ', Result: ', testResult.dump());
-    var remainingPokes = cardInfo.pokeCards.slice(0).exclude(testResult.card.pokeCards);
+    //var remainingPokes = cardInfo.pokeCards.slice(0).exclude(testResult.card.pokeCards);
+    var remainingPokes = excludeArray(cardInfo.pokeCards.slice(0), testResult.card.pokeCards);
     var newCardInfo = CardInfo.create(remainingPokes);
     CardAnalyzer.analyze(newCardInfo);
     for (var index=0; index<newCardInfo.cardPlans.length; index++) {
@@ -120,7 +121,8 @@ function testFirstPlay() {
   var card = AIEngine.findLordFirstCard(ci, f1_cardInfo, f2_cardInfo);
   while(!!card) {
     console.log(index + ' Play: ' , card.getPokeValueChars());
-    var pokes = ci.pokeCards.slice(0).exclude(card.pokeCards);
+    //var pokes = ci.pokeCards.slice(0).exclude(card.pokeCards);
+    var pokes = excludeArray(ci.pokeCards.slice(0), card.pokeCards);
     if (pokes.length > 0) {
       ci = CardInfo.create(pokes);
       CardAnalyzer.analyze(ci);
