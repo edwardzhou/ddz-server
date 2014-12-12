@@ -20,6 +20,7 @@ var userTaskSchema = new mongoose.Schema({
   taskType: {type: String, required: true},
   sortIndex: {type: Number, default: 255},
   progress: {type: Number, default: 0},
+  progressDesc: String,
   enabled: {type: Boolean, default: true},
   taskData: {type: Schema.Types.Mixed, default: {_placeholder:0}},
   createdAt: {type: Date, default: Date.now},

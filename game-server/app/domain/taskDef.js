@@ -21,7 +21,7 @@ var taskDefSchema = new mongoose.Schema({
   enabled: {type: Boolean, default: true},
   taskData: {type: Schema.Types.Mixed, default: {_placeholder:0}},
   createdAt: {type: Date, default: Date.now},
-  updatedAt: {type: Date, default: Date.now} // 默认有效时间为一小时
+  updatedAt: {type: Date, default: Date.now}
 
 }, {
   collection: 'task_defs'

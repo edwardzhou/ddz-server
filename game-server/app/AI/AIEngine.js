@@ -990,7 +990,6 @@ AIEngine.findSmallerThan = function(card, cardInfo) {
       result = AIEngine.findSmallerSingle(card, cardInfo);
       break;
   }
-
   return result;
 };
 
@@ -1074,6 +1073,7 @@ AIEngine.findLordFirstCard = function(lordCardInfo) {
         if (lordPlan.pairsCards[cardLength - 1].maxPokeValue < PokeCardValue.TWO) {
           var pokes = [];
           lordPlan.pairsCards.slice(0, cardLength).reduce(function(p, card) { return p.append(card.pokeCards);}, pokes);
+          //lordPlan.pairsCards.slice(0, cardLength).reduce(function(p, card) { return appendArray(p, card.pokeCards);}, pokes);
           return new Card(lordPlan.threesStraightsCards[0].pokeCards.concat(pokes));
         }
       }
@@ -1139,6 +1139,7 @@ AIEngine.findLordPlayCard = function(lordCardInfo, lastCard) {
 
   if (!!cardResult.breakCard) {
     var pokeCards = lordCardInfo.pokeCards.slice(0).exclude(cardResult.card.pokeCards);
+    //var pokeCards = excludeArray(lordCardInfo.pokeCards.slice(0), cardResult.card.pokeCards);
     var newCardInfo = CardInfo.create(pokeCards);
     CardAnalyzer.analyze(newCardInfo);
     if (newCardInfo.cardPlans[0].hands > lordCardInfo.cardPlans[0].hands + 1) {
