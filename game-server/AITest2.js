@@ -48,11 +48,11 @@ testcases = [
 PokeCard.getAllPokeCards();
 
 function testGetSmallerThenFun(){
-    var pokes = PokeCard.getByIds("a03, b03, c03, a04, b04, c04, a05,b05, c06, d06, a07, b07");
+    var pokes = PokeCard.getByIds("a03, a04,  a05, c06, a07, c08");
     console.log('pokes: ', pokes);
     var card_info = CardInfo.create(pokes);
     CardAnalyzer.analyze(card_info);
-    var card = new Card(PokeCard.getByIds("b06"));
+    var card = new Card(PokeCard.getByIds("a05, b06, c07, b08, c09"));
 
     var firstCard = AIEngine.findSmallerThan(card, card_info);
 

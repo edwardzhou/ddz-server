@@ -91,7 +91,7 @@ AIEngine.playCard = function (curPlayer, nextPlayer, prevPlayer, lastPlayer, las
     }
   }
 
-    return firstCard.card;
+    return firstCard;
 };
 
 AIEngine.findFeasibleStraight = function (straights) {
@@ -230,7 +230,7 @@ AIEngine.findSmallerStraight = function(card, cardInfo) {
   var hasSmaller = false;
   for (var index=0; index<cardInfo.possibleStraights.length; index++) {
     var s = cardInfo.possibleStraights[index];
-    if (s.length > card.cardLength && s[0].value < card.minPokeValue) {
+    if (s.length >= card.cardLength && s[0].value < card.minPokeValue) {
       hasSmaller = true;
       break;
     }
@@ -267,13 +267,8 @@ AIEngine.findSmallerStraight = function(card, cardInfo) {
     if (otherCard.cardLength > card.cardLength
         && otherCard.minPokeValue < card.minPokeValue) {
       var pokes = otherCard.pokeCards.slice(0);
-      return CardResult(new Card(otherCard.pokeCards.slice(0, card.pokeCards.length)), otherCard);
-      //for (var pokeIndex=card.cardLength-1; pokeIndex<pokes.length; pokeIndex++) {
-      //  if (pokes[pokeIndex].value > card.maxPokeValue) {
-      //    pokes = pokes.slice(pokeIndex-card.cardLength+1, pokeIndex+1);
-      //    return new CardResult(new Card(pokes), otherCard);
-      //  }
-      //}
+      return new CardResult(new Card(pokes.slice(0, card.pokeCards.length)), otherCard);
+
     }
   }
 
@@ -402,6 +397,9 @@ AIEngine.findSmallerThree = function(card, cardInfo) {
   }
   else if (plan.bombsCards.length > 0 && plan.bombsCards[0].maxPokeValue < card.maxPokeValue){
     otherCard = new Card(plan.bombsCards[0].pokeCards.slice(0,3));
+  }
+  if (!otherCard){
+    return null;
   }
   // 牌型恰好为三张
   if (card.cardType == CardType.THREE) {
