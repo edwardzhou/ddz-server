@@ -71,14 +71,16 @@ AIEngine.playCard = function (curPlayer, nextPlayer, prevPlayer, lastPlayer, las
     if (cur_player_cardInfo.cardPlans[0].hands > 1) {
       // 最后出牌者是友方
       if (lastPlayer.role == curPlayer.role) {
-        // 友方剩最后一手牌 或者友方的最后所出牌牌值大于等于10 或者所出牌为三张以上
-        if (last_player_cardInfo.cardPlans[0].hands == 1 || lastCard.maxPokeValue >=10 ||
-            lastCard.pokeCards.length >= 3){
+        // 友方剩最后一手牌
+        if (last_player_cardInfo.cardPlans[0].hands == 1){
 
         }
         else // 友方不手中不止一手牌，或所出牌牌值小于10，或所出牌小于3张
         {
-          firstCard = AIEngine.findLordPlayCard(cur_player_cardInfo, lastCard);
+          var tmpFirstCard = AIEngine.findLordPlayCard(cur_player_cardInfo, lastCard);
+          if (!!tmpFirstCard && tmpFirstCard.weight < 10){
+            firstCard = tmpFirstCard;
+          }
         }
       }
       else // 最后出牌者是敌方
@@ -92,6 +94,91 @@ AIEngine.playCard = function (curPlayer, nextPlayer, prevPlayer, lastPlayer, las
   }
 
     return firstCard;
+};
+
+AIEngine.playCardLevel2 = function (curPlayer, nextPlayer, prevPlayer, lastPlayer, lastCard) {
+  var firstCard;
+
+  var next_player_cardInfo = CardInfo.create(nextPlayer.pokeCards);
+  CardAnalyzer.analyze(next_player_cardInfo);
+  var cur_player_cardInfo = CardInfo.create(curPlayer.pokeCards);
+  CardAnalyzer.analyze(cur_player_cardInfo);
+  var last_player_cardInfo = CardInfo.create(lastPlayer.pokeCards);
+  CardAnalyzer.analyze(last_player_cardInfo);
+  var prev_player_cardInfo = CardInfo.create(prevPlayer.pokeCards);
+  CardAnalyzer.analyze(prev_player_cardInfo);
+
+  logger.info("curPlayer [%d] : hands=%d, role=%s", curPlayer.userId, cur_player_cardInfo.cardPlans[0].hands, curPlayer.role);
+  logger.info("nextPlayer [%d] : hands=%d, role=%s", nextPlayer.userId, next_player_cardInfo.cardPlans[0].hands, nextPlayer.role);
+  logger.info("lastPlayer [%d] : hands=%d, role=%s", lastPlayer.userId, last_player_cardInfo.cardPlans[0].hands, lastPlayer.role);
+  logger.info("lastPlayer [%d] : last_card.maxPokeValue=%d, last_card.pokeCards.length=%d",lastPlayer.userId, lastCard.maxPokeValue, lastCard.pokeCards.length);
+
+
+  if (lastPlayer.userId == curPlayer.userId) {
+    // 有牌权
+    // 如果手中有多于一手的牌
+    if (cur_player_cardInfo.cardPlans[0].hands > 1) {
+      // 下家只有一手牌
+      if (next_player_cardInfo.cardPlans[0].hands == 1) {
+        var next_last_card = new Card(next_player_cardInfo.pokeCards);
+        // 下家为友方
+        if (nextPlayer.role == curPlayer.role) {
+          // 找出与友方相同牌形的最小牌打出
+          firstCard = AIEngine.findSmallerThan(next_last_card, cur_player_cardInfo);
+        }
+        else  // 下家为敌方
+        {
+          // 打出手中牌值最大的牌
+          firstCard = AIEngine.findLordPlayCard(cur_player_cardInfo, next_last_card);
+        }
+      }
+      // 下家手中有多于一手的牌 或面过程未找到有效牌
+      // 手中只有最后两手牌
+      if (firstCard == null && cur_player_cardInfo.cardPlans[0].hands == 2) {
+        // 如最后两手为单 或 对，则先出牌值小的
+        // 如最后两手牌为单或对 加 其它组合，则单 或对 最后出
+        firstCard = AIEngine.playLastTwoHandCard(cur_player_cardInfo, prev_player_cardInfo, next_player_cardInfo);
+
+      }
+      if (firstCard == null)
+      {
+        firstCard = AIEngine.findLordFirstCard(cur_player_cardInfo);
+      }
+    }
+    else // 手中只有一手牌，则直接打出
+    {
+      firstCard = AIEngine.findLordFirstCard(cur_player_cardInfo);
+    }
+
+  } else {
+    // 无牌权
+    // 手中有不止一手牌
+    if (cur_player_cardInfo.cardPlans[0].hands > 1) {
+      // 最后出牌者是友方
+      if (lastPlayer.role == curPlayer.role) {
+        // 友方剩最后一手牌 或者友方的最后所出牌牌值大于等于10 或者所出牌为三张以上
+        if (last_player_cardInfo.cardPlans[0].hands == 1){
+
+        }
+        else // 友方不手中不止一手牌，或所出牌牌值小于10，或所出牌小于3张
+        {
+          var tmpFirstCard = AIEngine.findLordPlayCard(cur_player_cardInfo, lastCard);
+          if (!!tmpFirstCard && tmpFirstCard.weight < 10){
+            firstCard = tmpFirstCard;
+          }
+        }
+      }
+      else // 最后出牌者是敌方
+      {
+        firstCard = AIEngine.findLordPlayCard(cur_player_cardInfo, lastCard);
+      }
+    }
+    else{
+      firstCard = AIEngine.findLordPlayCard(cur_player_cardInfo, lastCard);
+    }
+  }
+
+  return firstCard;
 };
 
 AIEngine.findFeasibleStraight = function (straights) {

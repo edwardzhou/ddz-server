@@ -90,6 +90,19 @@ CardInfo.getBombs = function (pokeGroups) {
   return bombs;
 };
 
+CardInfo.getPossibleThrees = function (pokeGroups) {
+  var threes = new PokeGroupArray();
+  for (var index=0; index<pokeGroups.length; index++) {
+    var group = pokeGroups.get(index);
+    if (group.length == 3)
+      threes.push(group);
+    else if (group.length == 4)
+      threes.push(group.slice(0,3));
+  }
+
+  return threes;
+};
+
 CardInfo.getThrees = function (pokeGroups) {
   var threes = new PokeGroupArray();
   for (var index=0; index<pokeGroups.length; index++) {
@@ -107,6 +120,21 @@ CardInfo.getPairs = function (pokeGroups) {
     var group = pokeGroups.get(index);
     if (group.length == 2)
       pairs.push(group);
+  }
+
+  return pairs;
+};
+
+CardInfo.getPossiblePairs = function (pokeGroups) {
+  var pairs = new PokeGroupArray();
+  for (var index=0; index<pokeGroups.length; index++) {
+    var group = pokeGroups.get(index);
+    if (group.length == 2)
+      pairs.push(group);
+    else if (group.length == 3)
+      pairs.push(group.slice(0,2));
+    else if (group.length == 4)
+      pairs.push(group.slice(0,2));
   }
 
   return pairs;

@@ -18,7 +18,8 @@ var Card = function(pokeCards) {
     this.maxPokeValue = tmpCardType.maxPokeValue;
     this.minPokeValue = pokeCards[0].value;
     this.cardLength = tmpCardType.cardLength;
-    this.calcWeight();
+    this.weight = parseInt(tmpCardType.cardValue);
+    //this.calcWeight();
   }
 
   return this;
