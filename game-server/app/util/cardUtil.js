@@ -161,7 +161,12 @@ cardUtil.buildCardTypes = function() {
   var buildSingleCardType = function () {
     for (var index=0; index < idChars.length; index++) {
       var typeId = idChars[index];
-      var cardType = {cardType: CardType.SINGLE, cardLength: 1, maxPokeValue: idValues[idChars[index]]};
+      var cardType = {
+        cardType: CardType.SINGLE,
+        cardLength: 1,
+        maxPokeValue: idValues[idChars[index]],
+        minPokeValue: idValues[idChars[index]]
+      };
       _allCardTypes[typeId] = cardType;
     }
   };
@@ -170,7 +175,12 @@ cardUtil.buildCardTypes = function() {
   var buildBombCardType = function (){
     for (var index=0; index <= 12; index++) {
       var typeId = idChars[index] + idChars[index] + idChars[index] + idChars[index];
-      var cardType = {cardType: CardType.BOMB, cardLength: 1, maxPokeValue: idValues[idChars[index]]};
+      var cardType = {
+        cardType: CardType.BOMB,
+        cardLength: 1,
+        maxPokeValue: idValues[idChars[index]],
+        minPokeValue: idValues[idChars[index]]
+      };
       _allCardTypes[typeId] = cardType;
     }
   }
@@ -178,7 +188,12 @@ cardUtil.buildCardTypes = function() {
   // 生成王炸
   var buildRocketCardType = function() {
     var typeId = 'wW';
-    var cardType = {cardType: CardType.ROCKET, cardLength: 1, maxPokeValue: idValues['W'] };
+    var cardType = {
+      cardType: CardType.ROCKET,
+      cardLength: 1,
+      maxPokeValue: idValues['W'] ,
+      minPokeValue: idValues['w']
+    };
     _allCardTypes[typeId] = cardType;
   };
 
@@ -186,7 +201,12 @@ cardUtil.buildCardTypes = function() {
   var buildPairsCardType = function() {
     for (var index=0; index <= 12; index++) {
       var typeId = idChars[index] + idChars[index];
-      var cardType = {cardType: CardType.PAIRS, cardLength: 1, maxPokeValue: idValues[idChars[index]]};
+      var cardType = {
+        cardType: CardType.PAIRS,
+        cardLength: 1,
+        maxPokeValue: idValues[idChars[index]],
+        minPokeValue: idValues[idChars[index]]
+      };
       _allCardTypes[typeId] = cardType;
     }
   };
@@ -195,7 +215,12 @@ cardUtil.buildCardTypes = function() {
   var buildThreeCardType = function() {
     for (var index=0; index <=12; index++) {
       var typeId = idChars[index] + idChars[index] + idChars[index];
-      var cardType = {cardType: CardType.THREE, cardLength: 1, maxPokeValue: idValues[idChars[index]]};
+      var cardType = {
+        cardType: CardType.THREE,
+        cardLength: 1,
+        maxPokeValue: idValues[idChars[index]],
+        minPokeValue: idValues[idChars[index]]
+      };
       _allCardTypes[typeId] = cardType;
     }
   };
@@ -213,7 +238,12 @@ cardUtil.buildCardTypes = function() {
         else
           newId = typeId + idChars[sndIndex];
 
-        var cardType = {cardType: CardType.THREE_WITH_ONE, cardLength: 1, maxPokeValue: idValues[idChars[index]]};
+        var cardType = {
+          cardType: CardType.THREE_WITH_ONE,
+          cardLength: 1,
+          maxPokeValue: idValues[idChars[index]],
+          minPokeValue: idValues[idChars[index]]
+        };
         _allCardTypes[newId] = cardType;
       }
     }
@@ -232,7 +262,12 @@ cardUtil.buildCardTypes = function() {
         else
           newId = typeId + idChars[sndIndex] + idChars[sndIndex];
 
-        var cardType = {cardType: CardType.THREE_WITH_PAIRS, cardLength: 1, maxPokeValue: idValues[idChars[index]]};
+        var cardType = {
+          cardType: CardType.THREE_WITH_PAIRS,
+          cardLength: 1,
+          maxPokeValue: idValues[idChars[index]],
+          minPokeValue: idValues[idChars[index]]
+        };
         _allCardTypes[newId] = cardType;
       }
     }
@@ -247,9 +282,11 @@ cardUtil.buildCardTypes = function() {
           typeId = typeId + idChars[id] + idChars[id];
         }
 
-        var cardType = {cardType: CardType.PAIRS_STRAIGHT,
+        var cardType = {
+          cardType: CardType.PAIRS_STRAIGHT,
           cardLength: pairsLength,
-          maxPokeValue: idValues[ idChars[index + pairsLength - 1] ]
+          maxPokeValue: idValues[ idChars[index + pairsLength - 1] ],
+          minPokeValue: idValues[ idChars[index] ]
         };
 
         _allCardTypes[typeId] = cardType;
@@ -266,9 +303,11 @@ cardUtil.buildCardTypes = function() {
           typeId = typeId + idChars[id] + idChars[id] + idChars[id];
         }
 
-        var cardType = {cardType: CardType.THREE_STRAIGHT,
+        var cardType = {
+          cardType: CardType.THREE_STRAIGHT,
           cardLength: pairsLength,
-          maxPokeValue: idValues[ idChars[index + pairsLength - 1] ]
+          maxPokeValue: idValues[ idChars[index + pairsLength - 1] ],
+          minPokeValue: idValues[ idChars[index] ]
         };
 
         _allCardTypes[typeId] = cardType;
@@ -281,9 +320,11 @@ cardUtil.buildCardTypes = function() {
     for (var straightLength=5; straightLength<=12; straightLength++) {
       for (var index=0; (index <= 12 - straightLength); index ++) {
         var typeId = idChars.slice(index, straightLength + index).join('');
-        var cardType = {cardType: CardType.STRAIGHT,
+        var cardType = {
+          cardType: CardType.STRAIGHT,
           cardLength: straightLength,
-          maxPokeValue: idValues[ idChars[index + straightLength - 1] ]
+          maxPokeValue: idValues[ idChars[index + straightLength - 1] ],
+          minPokeValue: idValues[ idChars[index] ]
         };
 
         _allCardTypes[typeId] = cardType;
@@ -316,9 +357,11 @@ cardUtil.buildCardTypes = function() {
           if (_j < 0)
             newId = newId + idArray.join('');
 
-          var cardType = {cardType: CardType.PLANE,
+          var cardType = {
+            cardType: CardType.PLANE,
             cardLength: pairsLength,
-            maxPokeValue: idValues[ idChars[index + pairsLength - 1] ]
+            maxPokeValue: idValues[ idChars[index + pairsLength - 1] ],
+            minPokeValue: idValues[ idChars[index] ]
           };
 
           _allCardTypes[newId] = cardType;
@@ -359,9 +402,11 @@ cardUtil.buildCardTypes = function() {
           if (_j < 0)
             newId = newId + idArray.join('');
 
-          var cardType = {cardType: CardType.PLANE_WITH_WING,
+          var cardType = {
+            cardType: CardType.PLANE_WITH_WING,
             cardLength: pairsLength,
-            maxPokeValue: idValues[ idChars[index + pairsLength - 1] ]
+            maxPokeValue: idValues[ idChars[index + pairsLength - 1] ],
+            minPokeValue: idValues[ idChars[index] ]
           };
 
           _allCardTypes[newId] = cardType;
@@ -398,9 +443,11 @@ cardUtil.buildCardTypes = function() {
         if (_j < 0)
           newId = newId + idArray.join('');
 
-        var cardType = {cardType: CardType.FOUR_WITH_TWO,
+        var cardType = {
+          cardType: CardType.FOUR_WITH_TWO,
           cardLength: 1,
-          maxPokeValue: idValues[ idChars[index] ]
+          maxPokeValue: idValues[ idChars[index] ],
+          minPokeValue: idValues[ idChars[index] ]
         };
 
         _allCardTypes[newId] = cardType;
@@ -422,9 +469,11 @@ cardUtil.buildCardTypes = function() {
         if (_j < 0)
           newId = newId + idArray.join('');
 
-        cardType = {cardType: CardType.FOUR_WITH_TWO_PAIRS,
+        cardType = {
+          cardType: CardType.FOUR_WITH_TWO_PAIRS,
           cardLength: 1,
-          maxPokeValue: idValues[ idChars[index] ]
+          maxPokeValue: idValues[ idChars[index] ],
+          minPokeValue: idValues[ idChars[index] ]
         };
 
         _allCardTypes[newId] = cardType;
@@ -441,9 +490,11 @@ cardUtil.buildCardTypes = function() {
           newId = newId + idArray.join('');
         }
 
-        cardType = {cardType: CardType.FOUR_WITH_TWO,
+        cardType = {
+          cardType: CardType.FOUR_WITH_TWO,
           cardLength: 1,
-          maxPokeValue: idValues[ idChars[index] ]
+          maxPokeValue: idValues[ idChars[index] ],
+          minPokeValue: idValues[ idChars[index] ]
         };
 
         _allCardTypes[newId] = cardType;

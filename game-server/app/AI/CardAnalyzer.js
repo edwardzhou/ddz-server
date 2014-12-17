@@ -11,66 +11,66 @@ var CardInfo = require('./CardInfo');
 var CardPlan = require('./CardPlan');
 var AIHelper = require('./AIHelper');
 
-//Array.prototype.append = function(otherArray) {
-//  for (var index=0; index<otherArray.length; index++) {
-//    this.push(otherArray[index]);
-//  }
-//  return this;
-//};
-//
-//Array.prototype.preappend = function(otherArray) {
-//  Array.prototype.splice.apply(this, [0,0].concat(otherArray));
-//
-//  return this;
-//};
-//
-//Array.prototype.exclude = function(otherArray) {
-//  if (otherArray == null) {
+Array.prototype.append = function(otherArray) {
+  for (var index=0; index<otherArray.length; index++) {
+    this.push(otherArray[index]);
+  }
+  return this;
+};
+
+Array.prototype.preappend = function(otherArray) {
+  Array.prototype.splice.apply(this, [0,0].concat(otherArray));
+
+  return this;
+};
+
+Array.prototype.exclude = function(otherArray) {
+  if (otherArray == null) {
+    return this;
+  }
+
+  for (var index=0; index<otherArray.length; index++) {
+    var foundIndex = this.indexOf(otherArray[index]);
+    if (foundIndex >= 0) {
+      this.splice(foundIndex, 1);
+    }
+  }
+
+  return this;
+};
+
+//Object.defineProperty(Array.prototype, 'append', {
+//  value: function(otherArray) {
+//    for (var index=0; index<otherArray.length; index++) {
+//      this.push(otherArray[index]);
+//    }
 //    return this;
 //  }
+//});
 //
-//  for (var index=0; index<otherArray.length; index++) {
-//    var foundIndex = this.indexOf(otherArray[index]);
-//    if (foundIndex >= 0) {
-//      this.splice(foundIndex, 1);
-//    }
+//Object.defineProperty(Array.prototype, 'preappend', {
+//  value: function(otherArray) {
+//    Array.prototype.splice.apply(this, [0,0].concat(otherArray));
+//    return this;
 //  }
+//});
 //
-//  return this;
-//};
-
-Object.defineProperty(Array.prototype, 'append', {
-  value: function(otherArray) {
-    for (var index=0; index<otherArray.length; index++) {
-      this.push(otherArray[index]);
-    }
-    return this;
-  }
-});
-
-Object.defineProperty(Array.prototype, 'preappend', {
-  value: function(otherArray) {
-    Array.prototype.splice.apply(this, [0,0].concat(otherArray));
-    return this;
-  }
-});
-
-Object.defineProperty(Array.prototype, 'exclude', {
-  value: function(otherArray) {
-    if (otherArray == null) {
-      return this;
-    }
-
-    for (var index=0; index<otherArray.length; index++) {
-      var foundIndex = this.indexOf(otherArray[index]);
-      if (foundIndex >= 0) {
-        this.splice(foundIndex, 1);
-      }
-    }
-
-    return this;
-  }
-});
+//Object.defineProperty(Array.prototype, 'exclude', {
+//  value: function(otherArray) {
+//    if (otherArray == null) {
+//      return this;
+//    }
+//
+//    for (var index=0; index<otherArray.length; index++) {
+//      var foundIndex = this.indexOf(otherArray[index]);
+//      if (foundIndex >= 0) {
+//        this.splice(foundIndex, 1);
+//      }
+//    }
+//
+//    return this;
+//  }
+//});
 
 appendArray = function(thisArray, otherArray) {
   //for (var index=0; index<otherArray.length; index++) {
