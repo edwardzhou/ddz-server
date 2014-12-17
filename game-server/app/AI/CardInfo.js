@@ -133,8 +133,11 @@ CardInfo.getPossiblePairs = function (pokeGroups) {
       pairs.push(group);
     else if (group.length == 3)
       pairs.push(group.slice(0,2));
-    else if (group.length == 4)
-      pairs.push(group.slice(0,2));
+    else if (group.length == 4) {
+      pairs.push(group.slice(0, 2));
+      pairs.push(group.slice(-2));
+    }
+
   }
 
   return pairs;
@@ -157,7 +160,30 @@ CardInfo.getSingles = function (pokeGroups) {
       singles.push(group);
   }
 
-  return singles;
+  return singles
+
+};
+
+CardInfo.getPossibleSingles = function (pokeGroups) {
+  var singles = new PokeGroupArray();
+
+  var count = pokeGroups.length;
+  if (count>=2) {
+    if ( pokeGroups.get(count-1).pokeValue == PokeCardValue.BIG_JOKER
+        && pokeGroups.get(count-2).pokeValue == PokeCardValue.SMALL_JOKER) {
+      count = count -2
+    }
+  }
+
+  for (var index=0; index<count; index++) {
+    var group = pokeGroups.get(index);
+    for (var i= 0; i < group.length -1; i++){
+      singles.push(group[i])
+    }
+  }
+
+  return singles
+
 };
 
 CardInfo.getRockets = function (pokeGroups) {
