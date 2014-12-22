@@ -58,7 +58,7 @@ UserService.signInByAuthToken = function(signInParams, callback) {
       }
 
       user.lastSignedIn.signedTime = Date.now();
-      user.updatedAt = Date.now();
+      user.updated_at = Date.now();
 
       result.user = user;
 
@@ -118,7 +118,7 @@ UserService.signInByPassword = function(signInParams, callback) {
       if (!!handsetInfo) {
         user.setSignedInHandsetInfo(handsetInfo);
       }
-      user.updatedAt = Date.now();
+      user.updated_at = Date.now();
       user.updateAuthToken();
       result.user = user;
 
@@ -178,8 +178,8 @@ UserService.signUp = function(signUpParams, cb) {
         appid: userInfo.appid || 1000,
         appVersion: userInfo.appVersion,
         resVersion: userInfo.resVersion,
-        createdAt: (new Date()),
-        updatedAt: (new Date())
+        created_at: (new Date()),
+        updated_at: (new Date())
       });
       // 设置登录设备信息
       user.setSignedInHandsetInfo(userInfo.handsetInfo);

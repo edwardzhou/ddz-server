@@ -8,14 +8,16 @@ var utils = require('../../../util/utils');
 var Result = require('../../../domain/result');
 var DdzGoodsPackage = require('../../../domain/ddzGoodsPackage');
 
+var taskService = require('../../../services/taskService');
 
-module.exports = function(app) {
-    return new Handler(app);
+
+module.exports = function (app) {
+  return new Handler(app);
 };
 
-var Handler = function(app) {
-    logger.info("connector.TaskHandler created.");
-    this.app = app;
+var Handler = function (app) {
+  logger.info("connector.TaskHandler created.");
+  this.app = app;
 };
 
 
@@ -25,8 +27,14 @@ var Handler = function(app) {
  * @param session
  * @param next
  */
-Handler.prototype.getTasks = function(msg, session, next) {
-
+Handler.prototype.getTasks = function (msg, session, next) {
+  taskService.getTaskListQ(null)
+    .then(function(tasks) {
+      utils.invokeCallback(next, null, {tasks: tasks.toParams()});
+    })
+    .fail(function(err) {
+      utils.invokeCallback(next, {err: err}, null);
+    });
 };
 
 
@@ -36,7 +44,7 @@ Handler.prototype.getTasks = function(msg, session, next) {
  * @param session
  * @param next
  */
-Handler.prototype.takeTask = function(msg, session, next) {
+Handler.prototype.takeTask = function (msg, session, next) {
 
 };
 
@@ -47,6 +55,6 @@ Handler.prototype.takeTask = function(msg, session, next) {
  * @param session
  * @param next
  */
-Handler.prototype.takeTaskBonus = function(msg, session, next) {
+Handler.prototype.takeTaskBonus = function (msg, session, next) {
 
 };

@@ -9,8 +9,9 @@ class DdzGoodsPackage
   field :price, type: Integer
   field :enabled, type: Boolean, default: true
   field :sortIndex, type: Integer, default: 255
-  field :createdAt, type: DateTime, default: ->{ Time.now }
-  field :updatedAt, type: DateTime, default: ->{ Time.now }
+  include Mongoid::Timestamps
+  # field :createdAt, type: Date, default: ->{ Time.now }
+  # field :updatedAt, type: Date, default: ->{ Time.now }
 
   embeds_many :items, class_name: "GoodsItem"
 

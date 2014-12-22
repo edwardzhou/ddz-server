@@ -12,6 +12,7 @@ var userDao = require('../../../dao/userDao');
 var ErrorCode = require('../../../consts/errorCode');
 var SignInType = require('../../../consts/consts').SignInType;
 var async = require('async');
+var taskService = require('../../../services/taskService');
 
 var userService = require('../../../services/userService');
 
@@ -22,7 +23,6 @@ var signInByAuthTokenQ = Q.nbind(userService.signInByAuthToken, userService);
 var signInByPasswordQ = Q.nbind(userService.signInByPassword, userService);
 var updatePasswordQ = Q.nbind(userService.updatePassword, userService);
 var createUserSessionQ = Q.nbind(UserSession.createSession, UserSession);
-
 
 /**
  * Gate handler that dispatch user to connectors.
@@ -87,6 +87,7 @@ Handler.prototype.signIn = function(msg, session, next) {
       var resp = {};
       resp.user = results.user.toParams();
       resp.sessionToken = results.userSession.sessionToken;
+      taskService.fixUserTaskList(results.user);
 
       if (session.frontendId.indexOf('gate')>=0) {
         var connectors = self.app.getServersByType('ddz');
@@ -138,6 +139,8 @@ Handler.prototype.signUp = function(msg, session, next) {
         user : results.user.toParams(),
         sessionToken : results.userSession.sessionToken
       };
+
+      taskService.fixUserTaskList(results.user);
 
       if (session.frontendId.indexOf('gate')>=0) {
         var connectors = self.app.getServersByType('ddz');

@@ -56,8 +56,8 @@ var ddzGoodsPackageSchema = new mongoose.Schema({
   enabled: {type: Boolean, default: true},  // 是否启用
   items: [GoodsItemSchema],                 // 道具明细
   sortIndex: {type: Number, default: 255},  // 显示顺序
-  createdAt: {type: Date, default: Date.now},
-  updatedAt: {type: Date, default: Date.now}
+  created_at: {type: Date, default: Date.now},
+  updated_at: {type: Date, default: Date.now}
 }, {
   collection: 'ddz_goods_packages'
 });

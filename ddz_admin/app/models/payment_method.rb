@@ -7,8 +7,9 @@ class PaymentMethod
   field :description, type: String
   field :enabled, type: Boolean, default: true
   field :config, type: Hash, default: ->{ {:_placeholder => 0} }
-  field :createdAt, type: DateTime, default: ->{ Time.now }
-  field :updatedAt, type: DateTime, default: ->{ Time.now }
+  include Mongoid::Timestamps
+  # field :createdAt, type: Date, default: ->{ Time.now }
+  # field :updatedAt, type: Date, default: ->{ Time.now }
 
   has_many :channels, class_name: 'Channel'
 

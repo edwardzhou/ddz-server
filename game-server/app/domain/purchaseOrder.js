@@ -20,8 +20,8 @@ var PurchaseOrderSchema = mongoose.Schema({
   appid: Number,        // 渠道号
   retryTimes: Number,   // 重试次数
   status: Number,       // 状态
-  createdAt: {type: Date, default: Date.now},
-  updatedAt: {type: Date, default: Date.now}
+  created_at: {type: Date, default: Date.now},
+  updated_at: {type: Date, default: Date.now}
 }, {
   collection: 'purchase_orders'
 });

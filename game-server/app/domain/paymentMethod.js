@@ -16,8 +16,8 @@ var paymentMethodSchema = new mongoose.Schema({
   description: String,    // 描述
   enabled: {type: Boolean, default: true}, // 是否启用
   config: {type: mongoose.Schema.Types.Mixed, default: {_placeholder:0}}, // 支付方式配置信息
-  createdAt: {type: Date, default: Date.now},
-  updatedAt: {type: Date, default: Date.now}
+  created_at: {type: Date, default: Date.now},
+  updated_at: {type: Date, default: Date.now}
 }, {
   collection: 'payment_methods'
 });
