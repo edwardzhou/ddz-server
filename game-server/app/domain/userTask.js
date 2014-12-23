@@ -87,6 +87,7 @@ userTaskSchema.statics.findByUserIdQ = function(userId) {
 
 userTaskSchema.statics.createUserTask = function(user, taskDef) {
   var userTask = new this(taskDef);
+  userTask._id = new mongoose.Types.ObjectId();
   userTask.user_id = user.id;
   userTask.task_id = taskDef.id;
   userTask.taskDefUpdatedAt = taskDef.updated_at;

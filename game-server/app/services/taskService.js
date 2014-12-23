@@ -29,6 +29,10 @@ TaskService.getTaskListQ = function (user) {
   return UserTask.findByUserIdQ(user.userId);
 };
 
+TaskService.getUserTaskQ = function(user, taskId) {
+  return UserTask.findOneQ({user_id: user.id, taskId: taskId});
+};
+
 TaskService.fixUserTaskList = function (user) {
   var userTasks;
   var taskDefs;
