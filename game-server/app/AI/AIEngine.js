@@ -545,6 +545,79 @@ AIEngine.findSmallerThree = function(card, cardInfo) {
   return null;
 };
 
+AIEngine.findSmallerThreeWithBreakBestPlan = function(card, cardInfo) {
+  var plan = cardInfo.cardPlans[0];
+  var otherCard;
+  if (plan.threesCards.length > 0 && plan.threesCards[0].maxPokeValue < card.maxPokeValue){
+    otherCard = plan.threesCards[0];
+  }
+  else if (plan.bombsCards.length > 0 && plan.bombsCards[0].maxPokeValue < card.maxPokeValue){
+    otherCard = new Card(plan.bombsCards[0].pokeCards.slice(0,3));
+  }
+  if (!otherCard){
+    var threeGroups = cardInfo.getPossibleThrees(cardInfo.pokeGroups);
+    if (threeGroups.length > 0 && threeGroups.get(0).maxPokeValue < card.maxPokeValue)
+      otherCard = threeGroups.get(0);
+    else
+      return null;
+  }
+  // 牌型恰好为三张
+  if (card.cardType == CardType.THREE) {
+    return new CardResult(otherCard, null);
+  }
+
+  // 如果是三带二
+  if (card.cardType == CardType.THREE_WITH_PAIRS) {
+    // 有对子，直接用，这里暂时没有考虑对2的情况是否最优 (待改进)
+    if (plan.pairsCards.length>0
+    //&& plan.pairsCards[0].maxPokeValue != PokeCardValue.TWO
+    ) {
+      return new CardResult(new Card(otherCard.pokeCards.concat(plan.pairsCards[0].pokeCards)), null);
+    }
+
+    // 没对子，尝试拆连对
+    var pairsStraight = AIEngine.findFeasibleStraight(plan.pairsStraightsCards);
+    if (!!pairsStraight) {
+      return new CardResult(new Card(otherCard.pokeCards.concat(pairsStraight.pokeCards.slice(0,2))), pairsStraight);
+    }
+
+    // 没对子、连对，拆小的三张
+    if (cardIndex > 0) {
+      return new CardResult(new Card(otherCard.pokeCards.concat(plan.threesCards[0].pokeCards.slice(0,2))), plan.threesCards[0]);
+    }
+
+    // 拆三连
+    var threesStraight = AIEngine.findFeasibleStraight(plan.threesStraightsCards);
+    if (!!threesStraight) {
+      return new CardResult(new Card(otherCard.pokeCards.concat(threesStraight.pokeCards.slice(0,2))), threesStraight);
+    }
+  }
+  else if (card.cardType == CardType.THREE_WITH_ONE) {
+    if (plan.singlesCards.length > 0) {
+      return new CardResult(new Card(otherCard.pokeCards.concat(plan.singlesCards[0].pokeCards.slice(0,1))), null);
+    }
+
+    if (plan.pairsCards.length > 0) {
+      return new CardResult(new Card(otherCard.pokeCards.concat(plan.pairsCards[0].pokeCards.slice(0,1))), null);
+    }
+
+    if (cardIndex > 0) {
+      return new CardResult(new Card(otherCard.pokeCards.concat(plan.threesCards[0].pokeCards.slice(0,1))), plan.threesCards[0]);
+    }
+
+    var threesStraight = AIEngine.findFeasibleStraight(plan.threesStraightsCards);
+    if (!!threesStraight) {
+      return new CardResult(new Card(otherCard.pokeCards.concat(threesStraight.pokeCards.slice(0,1))), threesStraight);
+    }
+
+    var pairsStraight = AIEngine.findFeasibleStraight(plan.pairsStraightsCards);
+    if (!!pairsStraight) {
+      return new CardResult(new Card(otherCard.pokeCards.concat(pairsStraight.pokeCards.slice(0,1))), pairsStraight);
+    }
+  }
+  return null;
+};
+
 AIEngine.findGreaterThreesStraight = function(card, cardInfo) {
   var plan = cardInfo.cardPlans[0];
   var optionCard = null;
@@ -1030,6 +1103,43 @@ AIEngine.findGreaterThan = function(card, cardInfo) {
   return result;
 };
 
+AIEngine:findSmallerThanWithBreakBeskPlan function (card, cardInfo){
+    logger.info("AIEngine.findSmallerThan");
+    var result = null;
+    var plan = cardInfo.cardPlans[0];
+
+    switch (card.cardType) {
+
+      case CardType.THREE_STRAIGHT:
+        result = AIEngine.findSmallerThreesStraight(card, cardInfo);
+        break;
+
+      case CardType.THREE:
+      case CardType.THREE_WITH_ONE:
+      case CardType.THREE_WITH_PAIRS:
+        result = AIEngine.findSmallerThree(card, cardInfo);
+        break;
+
+      case CardType.PAIRS_STRAIGHT:
+        result = AIEngine.findSmallerPairsStraight(card, cardInfo);
+        break;
+
+      case CardType.PAIRS:
+        result = AIEngine.findSmallerPairs(card, cardInfo);
+        break;
+
+      case CardType.STRAIGHT:
+        result = AIEngine.findSmallerStraight(card, cardInfo);
+        break;
+
+      case CardType.BOMB:
+      case CardType.SINGLE:
+        logger.info("AIEngine.findSmallerThan, CardType.SINGLE");
+        result = AIEngine.findSmallerSingle(card, cardInfo);
+        break;
+    }
+    return result;
+};
 
 AIEngine.findSmallerThan = function(card, cardInfo) {
   logger.info("AIEngine.findSmallerThan");
