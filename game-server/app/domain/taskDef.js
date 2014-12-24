@@ -23,6 +23,8 @@ var taskDefSchema = new mongoose.Schema({
   enabled: {type: Boolean, default: true},
   progress: {type: Number, default: 0},
   progressDesc: String,
+  taskProcessor: String,
+  taskTrigger: String,
   taskData: {type: Schema.Types.Mixed, default: {_placeholder:0}},
   created_at: {type: Date, default: Date.now},
   updated_at: {type: Date, default: Date.now}

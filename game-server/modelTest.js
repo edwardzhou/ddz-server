@@ -161,4 +161,17 @@ testFixUserTasks = function(user) {
   }
 };
 
-testFixUserTasks();
+//testFixUserTasks();
+
+testProcessGamingTask = function(user) {
+  Q.fcall(function(){
+    if (!!user)
+      return user;
+    return User.findOneQ({userId: 50435});
+  })
+    .then(function(_user) {
+      taskService.processGamingTasks(_user);
+    })
+};
+
+testProcessGamingTask();

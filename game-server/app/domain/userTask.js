@@ -25,6 +25,9 @@ var userTaskSchema = new mongoose.Schema({
   progress: {type: Number, default: 0},
   progressDesc: String,
   taskActivated: {type: Boolean, default: false},
+  taskFinished: {type: Boolean, default: false},
+  taskProcessor: String,
+  taskTrigger: String,
   enabled: {type: Boolean, default: true},
   taskData: {type: Schema.Types.Mixed, default: {_placeholder:0}},
   taskDefUpdatedAt: {type: Date},
@@ -69,10 +72,11 @@ userTaskSchema.methods.toParams = function(excludeAttrs) {
   return __toParams(this, excludeAttrs);
 };
 
-userTaskSchema.statics.findByUserIdQ = function(userId) {
+userTaskSchema.statics.findByUserIdQ = function(userId, onlyActivated) {
   return User.findOneQ({userId: userId})
     .then(function(user) {
       console.log('[UserTask.findByUserIdQ] user: ', user);
+
       return UserTask.find({user_id: user.id})
         .sort('sortIndex')
         .populate('user_id')

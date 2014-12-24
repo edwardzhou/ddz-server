@@ -2,6 +2,7 @@
  * Created by edwardzhou on 14/12/6.
  */
 
+var logger = require('pomelo-logger').getLogger(__filename);
 var User = require('../domain/user');
 var UserSession = require('../domain/userSession');
 var TaskDef = require('../domain/taskDef');
@@ -86,4 +87,29 @@ TaskService.fixUserTaskList = function (user) {
     .fail(function (err) {
       console.error('[TaskService.fixUserTaskList] error: ', err);
     });
+};
+
+TaskService.processGamingTasks = function(user, isWinner, pokeGame, gameRoom) {
+  logger.info('[TaskService.processGamingTasks] user: ', user);
+  UserTask.findQ({user_id: user.id, taskActivated: true, taskFinished: false})
+    .then(function(_tasks){
+      logger.info('[TaskService.processGamingTasks] _tasks: ', _tasks);
+      for(var index=0; index<_tasks.length; index++) {
+        TaskService.processTask(_tasks[index], {user: user, isWinner: isWinner, pokeGame: pokeGame, gameRoom: gameRoom});
+      }
+    })
+    .fail(function(err) {
+      logger.error('[TaskService.processGamingTasks] user => ', user, '\n Error: ', err);
+    })
+};
+
+TaskService.processTask = function(task, params) {
+  logger.info('[TaskService.processTask] task: ', task);
+  task.taskData.current = task.taskData.current + 1;
+  task.progressDesc = task.taskData.current + ' / ' + task.taskData.count;
+  if (task.taskData.current >= task.taskData.count ) {
+    task.taskFinished = true;
+  }
+  task.markModified('taskData');
+  task.save();
 };
