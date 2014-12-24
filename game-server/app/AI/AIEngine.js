@@ -547,7 +547,7 @@ AIEngine.findSmallerThree = function(card, cardInfo) {
 
 AIEngine.findSmallerThreeWithBreakBestPlan = function(card, cardInfo) {
   var otherCard;
-  var threeGroups = cardInfo.getPossibleThrees(cardInfo.pokeGroups);
+  var threeGroups = CardInfo.getPossibleThrees(cardInfo.groups);
   if (threeGroups.length > 0 && threeGroups.get(0).maxPokeValue < card.maxPokeValue)
     otherCard = threeGroups.get(0);
   else
@@ -558,11 +558,11 @@ AIEngine.findSmallerThreeWithBreakBestPlan = function(card, cardInfo) {
     return new CardResult(otherCard, null);
   }
 
-  var leftPokeGroups = cardInfo.getPokeGroupsExcludeUsedPokes(cardInfo.pokeCards, threeGroups)
+  var leftPokeGroups = CardInfo.getPokeGroupsExcludeUsedPokes(cardInfo.pokeCards, threeGroups)
     // 如果是三带二
   if (card.cardType == CardType.THREE_WITH_PAIRS) {
 
-    var pairGroups = cardInfo.getPossiblePairs(leftPokeGroups);
+    var pairGroups = CardInfo.getPossiblePairs(leftPokeGroups);
     // 有对子，直接用，这里暂时没有考虑对2的情况是否最优 (待改进)
     if (pairGroups.length>0
     //&& plan.pairsCards[0].maxPokeValue != PokeCardValue.TWO
@@ -572,7 +572,7 @@ AIEngine.findSmallerThreeWithBreakBestPlan = function(card, cardInfo) {
 
   }
   else if (card.cardType == CardType.THREE_WITH_ONE) {
-    var singleGroups = cardInfo.getPossibleSingles(leftPokeGroups);
+    var singleGroups = CardInfo.getPossibleSingles(leftPokeGroups);
 
     if (singleGroups.length > 0) {
       return new CardResult(new Card(otherCard.pokeCards.concat(singleGroups.get(0).pokeCards.slice(0,1))), null);
@@ -776,8 +776,9 @@ AIEngine.findGreaterPairs = function(card, cardInfo) {
 };
 
 AIEngine.findSmallerPairsWithBreakBestPlan = function(card, cardInfo) {
-  var parisGroups = cardInfo.getPossiblePairs(cardInfo.pokeGroups);
-  if (parisGroups.length > 0 && parisGroups.get(0).maxPokeValue < card.maxPokeValue)
+  var parisGroups = CardInfo.getPossiblePairs(cardInfo.groups);
+  logger.info("AIEngine.findSmallerPairsWithBreakBestPlan");
+  if (parisGroups.length > 0 && parisGroups.get(0).pokeValue < card.maxPokeValue)
       return new CardResult(new Card( parisGroups.get(0).pokeCards.slice(0, 2) ), null);
 
   return null;
@@ -929,9 +930,9 @@ AIEngine.findGreaterSingle = function(card, cardInfo) {
 };
 
 AIEngine.findSmallerSingleWithBreakBestPlan = function (card, cardInfo) {
-  var singleGroups = cardInfo.getPossibleSingles(cardInfo.groups);
-  if (singleGroups.length > 0 && singleGroups.get(0).maxPokeValue < card.maxPokeValue)
-    return new CardResult(new Card( singleGroups.get(0).pokeCards.slice(0, 2) ), null);
+  var singleGroups = CardInfo.getPossibleSingles(cardInfo.groups);
+  if (singleGroups.length > 0 && singleGroups.get(0).pokeValue < card.maxPokeValue)
+    return new CardResult(new Card( singleGroups.get(0).slice(0) ), null);
 
   return null;
 };
@@ -1081,44 +1082,6 @@ AIEngine.findGreaterThan = function(card, cardInfo) {
   }
 
   return result;
-};
-
-AIEngine:findSmallerThanWithBreakBeskPlan = function (card, cardInfo){
-    logger.info("AIEngine.findSmallerThan");
-    var result = null;
-    var plan = cardInfo.cardPlans[0];
-
-    switch (card.cardType) {
-
-      case CardType.THREE_STRAIGHT:
-        result = AIEngine.findSmallerThreesStraight(card, cardInfo);
-        break;
-
-      case CardType.THREE:
-      case CardType.THREE_WITH_ONE:
-      case CardType.THREE_WITH_PAIRS:
-        result = AIEngine.findSmallerThree(card, cardInfo);
-        break;
-
-      case CardType.PAIRS_STRAIGHT:
-        result = AIEngine.findSmallerPairsStraight(card, cardInfo);
-        break;
-
-      case CardType.PAIRS:
-        result = AIEngine.findSmallerPairs(card, cardInfo);
-        break;
-
-      case CardType.STRAIGHT:
-        result = AIEngine.findSmallerStraight(card, cardInfo);
-        break;
-
-      case CardType.BOMB:
-      case CardType.SINGLE:
-        logger.info("AIEngine.findSmallerThan, CardType.SINGLE");
-        result = AIEngine.findSmallerSingle(card, cardInfo);
-        break;
-    }
-    return result;
 };
 
 AIEngine.findSmallerThan = function(card, cardInfo) {

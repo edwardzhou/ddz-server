@@ -630,7 +630,7 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
           var lastPlayer = pokeGame.getPlayerByUserId(pokeGame.lastPlay.userId);
           var prevPlayer = pokeGame.getNextPlayer(nextPlayer.userId);
 
-          firstCard = AIEngine.playCard(timeoutPlayer, nextPlayer, prevPlayer, lastPlayer, pokeGame.lastPlay.card);
+          firstCard = AIEngine.playCardLevel2(timeoutPlayer, nextPlayer, prevPlayer, lastPlayer, pokeGame.lastPlay.card);
 
           if (!!firstCard) {
             logger.info('Player [%d] : card-> %s' , timeoutPlayer.userId, firstCard.toString());

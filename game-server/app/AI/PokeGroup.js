@@ -9,6 +9,14 @@ PokeGroup.prototype.get = function(index) {
   return this.pokeCards[index];
 };
 
+PokeGroup.prototype.slice = function(index, length) {
+  return this.pokeCards.slice(index, length);
+};
+
+PokeGroup.prototype.slice = function(index) {
+  return this.pokeCards.slice(index);
+};
+
 PokeGroup.prototype.push = function(poke) {
   this.pokeCards.push(poke);
   this.pokeCount = this.pokeCards.length;
@@ -58,6 +66,12 @@ PokeGroup.prototype.equals = function(other) {
 Object.defineProperty(PokeGroup.prototype, 'length', {
   enumerable: false,
   get: function() { return this.pokeCards.length }
+});
+
+
+Object.defineProperty(PokeGroup.prototype, 'pokeValue', {
+  enumerable: false,
+  get: function() { return this.pokeCards[0].value }
 });
 
 module.exports = PokeGroup;

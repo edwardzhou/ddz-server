@@ -38,6 +38,14 @@ AIHelper.groupsToString = function( groups ) {
   }).join(", ");
 };
 
+AIHelper.groupToString = function( group ) {
+  return group.pokeCards.map(function(p) { return p.valueChar;}).join('');
+};
+
+AIHelper.pokeCardsToString = function( pokeCards ) {
+  return pokeCards.map(function(p) { return p.valueChar;}).join('');
+};
+
 AIHelper.cardsToString = function( cards ) {
 
   if (cards == null)
