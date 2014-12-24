@@ -89,13 +89,13 @@ TaskService.fixUserTaskList = function (user) {
     });
 };
 
-TaskService.processGamingTasks = function(user, isWinner, pokeGame, gameRoom) {
+TaskService.processGamingTasks = function(user, isWinner, pokeGame) {
   logger.info('[TaskService.processGamingTasks] user: ', user);
   UserTask.findQ({user_id: user.id, taskActivated: true, taskFinished: false})
     .then(function(_tasks){
       logger.info('[TaskService.processGamingTasks] _tasks: ', _tasks);
       for(var index=0; index<_tasks.length; index++) {
-        TaskService.processTask(_tasks[index], {user: user, isWinner: isWinner, pokeGame: pokeGame, gameRoom: gameRoom});
+        TaskService.processTask(_tasks[index], {user: user, isWinner: isWinner, pokeGame: pokeGame});
       }
     })
     .fail(function(err) {
@@ -105,6 +105,9 @@ TaskService.processGamingTasks = function(user, isWinner, pokeGame, gameRoom) {
 
 TaskService.processTask = function(task, params) {
   logger.info('[TaskService.processTask] task: ', task);
+  if (!!task.taskData.roomId && task.taskData.roomId != params.pokeGame.roomId)
+    return;
+
   task.taskData.current = task.taskData.current + 1;
   task.progressDesc = task.taskData.current + ' / ' + task.taskData.count;
   if (task.taskData.current >= task.taskData.count ) {
