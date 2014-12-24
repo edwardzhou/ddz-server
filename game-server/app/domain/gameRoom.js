@@ -24,8 +24,8 @@ var roomSchemaFields = {
   readyTimeout: {type: Number, default: 15},  // 就绪超时
   grabbingLordTimeout: {type: Number, default: 20}, // 叫地主超时
   playCardTimeout: {type: Number, default: 30}, // 出牌超时
-  createdAt: {type: Date, default: Date.now},
-  updatedAt: {type: Date, default: Date.now}
+  created_at: {type: Date, default: Date.now},
+  updated_at: {type: Date, default: Date.now}
 };
 
 // 根据字段定义创建架构，再生成房间信息模型
@@ -379,7 +379,7 @@ roomSchema.methods.reloadFromDb = function() {
       self.rake = room.rake;
       self.maxPlayers = room.maxPlayers;
       self.minCoinsQty = room.minCoinsQty;
-      self.maxCoinsQty = room.maxCoinQty;
+      self.maxCoinsQty = room.maxCoinsQty;
       self.roomType = room.roomType;
       self.sortIndex = room.sortIndex;
       self.readyTimeout = room.readyTimeout;

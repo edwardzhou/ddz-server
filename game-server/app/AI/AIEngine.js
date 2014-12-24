@@ -1083,7 +1083,7 @@ AIEngine.findGreaterThan = function(card, cardInfo) {
   return result;
 };
 
-AIEngine:findSmallerThanWithBreakBeskPlan function (card, cardInfo){
+AIEngine:findSmallerThanWithBreakBeskPlan = function (card, cardInfo){
     logger.info("AIEngine.findSmallerThan");
     var result = null;
     var plan = cardInfo.cardPlans[0];

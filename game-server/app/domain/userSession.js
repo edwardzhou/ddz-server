@@ -21,8 +21,8 @@ var userSessionSchema = new mongoose.Schema({
   sessionToken: {type:String, default: uuid.v1},  // 会话token
   sessionStart: {type:Date, default: Date.now},   // 会话起始时间
   sessionData: {type: Schema.Types.Mixed, default: {_placeholder:0}}, // 会话数据
-  createdAt: {type: Date, default: Date.now},
-  updatedAt: {type: Date, default: Date.now, expires: 60 * 60} // 默认有效时间为一小时
+  created_at: {type: Date, default: Date.now},
+  updated_at: {type: Date, default: Date.now, expires: 60 * 60} // 默认有效时间为一小时
 }, {
   collection: 'user_sessions'
 });
@@ -98,7 +98,7 @@ userSessionSchema.methods.sget = function(key) {
  */
 userSessionSchema.methods.sset = function(key, value) {
   var updateFields = {};
-  this.updatedAt = Date.now();
+  this.updated_at = Date.now();
   if (!!key && !!value) {
     this.sessionData[key] = value;
     updateFields['sessionData.' + key] = value;
@@ -109,7 +109,7 @@ userSessionSchema.methods.sset = function(key, value) {
       updateFields['sessionData.' + k] = map[k];
     }
   }
-  updateFields['updatedAt'] = this.updatedAt;
+  updateFields['updated_at'] = this.updated_at;
   this.update(updateFields, function(err, affected) {
     console.log('update: ', err, affected);
   });
@@ -120,7 +120,7 @@ userSessionSchema.methods.sset = function(key, value) {
  * @returns {*}
  */
 userSessionSchema.methods.touchQ = function() {
-  this.updatedAt = Date.now();
+  this.updated_at = Date.now();
   return this.saveQ();
 };
 

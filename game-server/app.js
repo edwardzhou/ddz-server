@@ -5,7 +5,7 @@ var routeUtil = require('./app/util/routeUtil');
 var tableService = require('./app/services/tableService');
 var roomService = require('./app/services/roomService');
 var logger = require('pomelo-logger').getLogger('pomelo', __filename);
-
+require('./app/domain/ArrayHelper');
 
 /**
  * Init app for client.
@@ -25,6 +25,7 @@ app.configure('production|development', function () {
   app.loadConfig('mongodb', app.getBase() + "/config/mongodb.json");
 
   require('./app/services/messageService').init(app);
+  require('./app/services/taskService').init(app);
 
   var authConnection = require('./app/filters/authConnection');
   app.before(authConnection());
@@ -56,9 +57,10 @@ app.configure('production|development', 'ddz|gate', function () {
   app.set('connectorConfig',
     {
       connector: pomelo.connectors.hybridconnector,
-      heartbeat: 10,
+      heartbeat: 60,
       disconnectOnTimeout: true,
       useDict: true,
+      setNoDelay: true,
       useProtobuf: true,
       handshake: function(msg, cb) {
         logger.info('handshake -> msg: ', msg, "\n", this, "\n", this.socket);

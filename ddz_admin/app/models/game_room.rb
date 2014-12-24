@@ -14,8 +14,9 @@ class GameRoom
   field :readyTimeout, type: Integer, default: 10
   field :grabbingLordTimeout, type: Integer, default: 20
   field :playCardTimeout, type: Integer, default: 30
-  field :createAt, type: DateTime, default: ->{ Time.now }
-  field :updateAt, type: DateTime, default: ->{ Time.now }
+  include Mongoid::Timestamps
+  # field :createdAt, type: Date, default: ->{ Time.now }
+  # field :updatedAt, type: Date, default: ->{ Time.now }
 
 
   def self.serialize_from_session(key, salt)

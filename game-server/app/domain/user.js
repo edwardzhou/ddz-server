@@ -72,8 +72,8 @@ var userSchema = new mongoose.Schema({
     signedTime: {type: Date, default: Date.now}
   },
   ddzProfile: {type: mongoose.Schema.Types.ObjectId, ref: 'DdzProfile'}, // 个人资料
-  createdAt: {type: Date, default: Date.now},
-  updatedAt: {type: Date, default: Date.now}
+  created_at: {type: Date, default: Date.now},
+  updated_at: {type: Date, default: Date.now}
 });
 
 var md5_data = function(password, salt) {
@@ -171,7 +171,7 @@ userSchema.statics.copyHandset = copyHandset;
 
 userSchema.methods.getAuthToken = function() {
   var imei = this.lastSignedIn.handset.imei;
-  var lastLoginTime = this.lastSignedIn.signedInTime || this.createdAt;
+  var lastLoginTime = this.lastSignedIn.signedInTime || this.created_at;
   var pwdSalt = this.passwordSalt;
 
   return md5_data(imei + '_' + lastLoginTime.valueOf() + '_' + pwdSalt);

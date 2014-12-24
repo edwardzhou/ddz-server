@@ -29,6 +29,11 @@ PurchaseOrder = require('./app/domain/purchaseOrder');
 DdzGoodsPackageService = require('./app/services/ddzGoodsPackageService');
 PubSubEvent = require('./app/domain/pubSubEvent');
 Channel = require('./app/domain/channel');
+require('./app/domain/ArrayHelper');
+taskService = require('./app/services/taskService');
+
+TaskDef = require('./app/domain/taskDef');
+UserTask = require('./app/domain/userTask');
 
 require('./init/channelsInit');
 
@@ -40,12 +45,12 @@ DdzGoodsPackageService.init();
 HallRemote = require('./app/servers/area/remote/hallRemote');
 hall = HallRemote();
 cache = HallRemote.cache;
-
-setTimeout(function(){
-  hall.getGoodsPackages(null, 1000, null, function(err, obj) {
-    console.log(err, JSON.stringify(obj));
-  });
-}, 2000);
+//
+//setTimeout(function(){
+//  hall.getGoodsPackages(null, 1000, null, function(err, obj) {
+//    console.log(err, JSON.stringify(obj));
+//  });
+//}, 2000);
 
 removeAllPackages = function () {
   DdzGoodsPackage.remove({}, cb);
@@ -143,3 +148,17 @@ x = Channel.getEnabledChannelsQ().
   then(function(cpps) {
     mycpps = cpps;
   });
+
+testFixUserTasks = function(user) {
+  if (!!user) {
+    taskService.fixUserTaskList(user);
+  } else {
+    User.findOneQ({})
+      .then(function(_user) {
+        console.log('start to fix task list for user: ', _user);
+        taskService.fixUserTaskList(_user);
+      })
+  }
+};
+
+testFixUserTasks();

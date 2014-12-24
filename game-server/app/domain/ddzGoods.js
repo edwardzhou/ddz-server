@@ -17,8 +17,8 @@ var ddzGoodsSchema = new mongoose.Schema({
   goodsType: String,    // 道具类型 (金币，道具，等级等等)
   goodsProps: {},       // 道具属性 (自定义配置)
   sortIndex: {type: Number, default: 255},  // 显示排序
-  createdAt: {type: Date, default: Date.now},
-  updatedAt: {type: Date, default: Date.now}
+  created_at: {type: Date, default: Date.now},
+  updated_at: {type: Date, default: Date.now}
 }, {
   collection: 'ddz_goods'
 });

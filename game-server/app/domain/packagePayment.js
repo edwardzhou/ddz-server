@@ -20,8 +20,8 @@ var packagePaymentSchema = mongoose.Schema({
   actual_price: {type: Number}, // 实际价格，应对渠道打折的情况
   memo: String,         // 本关系的备注
   enabled: {type: Boolean, default: true },  // 是否启用
-  createdAt: {type: Date, default: Date.now},
-  updatedAt: {type: Date, default: Date.now}
+  created_at: {type: Date, default: Date.now},
+  updated_at: {type: Date, default: Date.now}
 }, {
   collection: 'package_payments'
 });

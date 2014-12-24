@@ -73,8 +73,8 @@ var pokeGameSchema = new mongoose.Schema({
     raked_total: {type: Number, default: 0},
     players: []
   },
-  createdAt: {type: Date, default: Date.now},
-  updatedAt: {type: Date, default: Date.now}
+  created_at: {type: Date, default: Date.now},
+  updated_at: {type: Date, default: Date.now}
 }, {
   collection: 'poke_games'
 });

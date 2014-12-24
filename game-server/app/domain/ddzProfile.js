@@ -40,7 +40,9 @@ var DdzProfileSchema = mongoose.Schema({
     }
   },
   vipLevel: Number,
-  avatar: String
+  avatar: String,
+  created_at: {type: Date, default: Date.now},
+  updated_at: {type: Date, default: Date.now}
 }, {
   collection: 'ddz_user_profiles'
 });

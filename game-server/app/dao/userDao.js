@@ -46,8 +46,8 @@ userDao.createUser = function (userInfo, cb) {
         appid: userInfo.appid,
         appVersion: userInfo.appVersion,
         resVersion: userInfo.resVersion,
-        createdAt: (new Date()),
-        updatedAt: (new Date())
+        created_at: (new Date()),
+        updated_at: (new Date())
     });
     user.setSignedInHandsetInfo(userInfo.handsetInfo);
     user.setSignedUpHandsetInfo(userInfo.handsetInfo);
