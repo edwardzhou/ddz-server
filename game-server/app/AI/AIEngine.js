@@ -546,73 +546,36 @@ AIEngine.findSmallerThree = function(card, cardInfo) {
 };
 
 AIEngine.findSmallerThreeWithBreakBestPlan = function(card, cardInfo) {
-  var plan = cardInfo.cardPlans[0];
   var otherCard;
-  if (plan.threesCards.length > 0 && plan.threesCards[0].maxPokeValue < card.maxPokeValue){
-    otherCard = plan.threesCards[0];
-  }
-  else if (plan.bombsCards.length > 0 && plan.bombsCards[0].maxPokeValue < card.maxPokeValue){
-    otherCard = new Card(plan.bombsCards[0].pokeCards.slice(0,3));
-  }
-  if (!otherCard){
-    var threeGroups = cardInfo.getPossibleThrees(cardInfo.pokeGroups);
-    if (threeGroups.length > 0 && threeGroups.get(0).maxPokeValue < card.maxPokeValue)
-      otherCard = threeGroups.get(0);
-    else
-      return null;
-  }
+  var threeGroups = cardInfo.getPossibleThrees(cardInfo.pokeGroups);
+  if (threeGroups.length > 0 && threeGroups.get(0).maxPokeValue < card.maxPokeValue)
+    otherCard = threeGroups.get(0);
+  else
+    return null;
+
   // 牌型恰好为三张
   if (card.cardType == CardType.THREE) {
     return new CardResult(otherCard, null);
   }
 
-  // 如果是三带二
+  var leftPokeGroups = cardInfo.getPokeGroupsExcludeUsedPokes(cardInfo.pokeCards, threeGroups)
+    // 如果是三带二
   if (card.cardType == CardType.THREE_WITH_PAIRS) {
+
+    var pairGroups = cardInfo.getPossiblePairs(leftPokeGroups);
     // 有对子，直接用，这里暂时没有考虑对2的情况是否最优 (待改进)
-    if (plan.pairsCards.length>0
+    if (pairGroups.length>0
     //&& plan.pairsCards[0].maxPokeValue != PokeCardValue.TWO
     ) {
-      return new CardResult(new Card(otherCard.pokeCards.concat(plan.pairsCards[0].pokeCards)), null);
+      return new CardResult(new Card(otherCard.pokeCards.concat(pairGroups.get(0).pokeCards)), null);
     }
 
-    // 没对子，尝试拆连对
-    var pairsStraight = AIEngine.findFeasibleStraight(plan.pairsStraightsCards);
-    if (!!pairsStraight) {
-      return new CardResult(new Card(otherCard.pokeCards.concat(pairsStraight.pokeCards.slice(0,2))), pairsStraight);
-    }
-
-    // 没对子、连对，拆小的三张
-    if (cardIndex > 0) {
-      return new CardResult(new Card(otherCard.pokeCards.concat(plan.threesCards[0].pokeCards.slice(0,2))), plan.threesCards[0]);
-    }
-
-    // 拆三连
-    var threesStraight = AIEngine.findFeasibleStraight(plan.threesStraightsCards);
-    if (!!threesStraight) {
-      return new CardResult(new Card(otherCard.pokeCards.concat(threesStraight.pokeCards.slice(0,2))), threesStraight);
-    }
   }
   else if (card.cardType == CardType.THREE_WITH_ONE) {
-    if (plan.singlesCards.length > 0) {
-      return new CardResult(new Card(otherCard.pokeCards.concat(plan.singlesCards[0].pokeCards.slice(0,1))), null);
-    }
+    var singleGroups = cardInfo.getPossibleSingles(leftPokeGroups);
 
-    if (plan.pairsCards.length > 0) {
-      return new CardResult(new Card(otherCard.pokeCards.concat(plan.pairsCards[0].pokeCards.slice(0,1))), null);
-    }
-
-    if (cardIndex > 0) {
-      return new CardResult(new Card(otherCard.pokeCards.concat(plan.threesCards[0].pokeCards.slice(0,1))), plan.threesCards[0]);
-    }
-
-    var threesStraight = AIEngine.findFeasibleStraight(plan.threesStraightsCards);
-    if (!!threesStraight) {
-      return new CardResult(new Card(otherCard.pokeCards.concat(threesStraight.pokeCards.slice(0,1))), threesStraight);
-    }
-
-    var pairsStraight = AIEngine.findFeasibleStraight(plan.pairsStraightsCards);
-    if (!!pairsStraight) {
-      return new CardResult(new Card(otherCard.pokeCards.concat(pairsStraight.pokeCards.slice(0,1))), pairsStraight);
+    if (singleGroups.length > 0) {
+      return new CardResult(new Card(otherCard.pokeCards.concat(singleGroups.get(0).pokeCards.slice(0,1))), null);
     }
   }
   return null;
@@ -812,6 +775,14 @@ AIEngine.findGreaterPairs = function(card, cardInfo) {
   return null;
 };
 
+AIEngine.findSmallerPairsWithBreakBestPlan = function(card, cardInfo) {
+  var parisGroups = cardInfo.getPossiblePairs(cardInfo.pokeGroups);
+  if (parisGroups.length > 0 && parisGroups.get(0).maxPokeValue < card.maxPokeValue)
+      return new CardResult(new Card( parisGroups.get(0).pokeCards.slice(0, 2) ), null);
+
+  return null;
+};
+
 AIEngine.findSmallerPairs = function(card, cardInfo) {
   var plan = cardInfo.cardPlans[0];
   // 先在对子里找最小对子
@@ -956,6 +927,15 @@ AIEngine.findGreaterSingle = function(card, cardInfo) {
 
   return null;
 };
+
+AIEngine.findSmallerSingleWithBreakBestPlan = function (card, cardInfo) {
+  var singleGroups = cardInfo.getPossibleSingles(cardInfo.groups);
+  if (singleGroups.length > 0 && singleGroups.get(0).maxPokeValue < card.maxPokeValue)
+    return new CardResult(new Card( singleGroups.get(0).pokeCards.slice(0, 2) ), null);
+
+  return null;
+};
+
 
 AIEngine.findSmallerSingle = function(card, cardInfo) {
   logger.info("AIEngine.findSmallerSingle");
@@ -1165,6 +1145,9 @@ AIEngine.findSmallerThan = function(card, cardInfo) {
     case CardType.THREE_WITH_ONE:
     case CardType.THREE_WITH_PAIRS:
       result = AIEngine.findSmallerThree(card, cardInfo);
+        if (!result) {
+          result = AIEngine.findSmallerThreeWithBreakBestPlan(card, cardInfo);
+        }
       break;
 
     case CardType.PAIRS_STRAIGHT:
@@ -1173,6 +1156,9 @@ AIEngine.findSmallerThan = function(card, cardInfo) {
 
     case CardType.PAIRS:
       result = AIEngine.findSmallerPairs(card, cardInfo);
+      if (!result) {
+        result = AIEngine.findSmallerPairsWithBreakBestPlan(card, cardInfo);
+      }
       break;
 
     case CardType.STRAIGHT:
@@ -1183,6 +1169,9 @@ AIEngine.findSmallerThan = function(card, cardInfo) {
     case CardType.SINGLE:
       logger.info("AIEngine.findSmallerThan, CardType.SINGLE");
       result = AIEngine.findSmallerSingle(card, cardInfo);
+      if (!result) {
+        result = AIEngine.findSmallerSingleWithBreakBestPlan(card, cardInfo);
+      }
       break;
   }
   return result;
