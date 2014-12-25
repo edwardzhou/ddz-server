@@ -152,7 +152,11 @@ AIEngine.playCardLevel2 = function (curPlayer, nextPlayer, prevPlayer, lastPlaye
         else  // 下家为敌方
         {
           // 打出手中牌值最大的牌
-          firstCard = AIEngine.findLordPlayCard(cur_player_cardInfo, next_last_card);
+          firstCard = AIEngine.findDiffTypePlayCard(cur_player_cardInfo, next_last_card);
+          if (!firstCard) {
+            firstCard = AIEngine.findLordPlayCard(cur_player_cardInfo, next_last_card);
+          }
+
         }
       }
       // 下家手中有多于一手的牌 或面过程未找到有效牌
@@ -183,10 +187,11 @@ AIEngine.playCardLevel2 = function (curPlayer, nextPlayer, prevPlayer, lastPlaye
         if (last_player_cardInfo.cardPlans[0].hands == 1){
 
         }
-        else // 友方不手中不止一手牌，或所出牌牌值小于10，或所出牌小于3张
+        else // 友方不手中不止一手牌，或所出牌牌权小于10
         {
           var tmpFirstCard = AIEngine.findLordPlayCard(cur_player_cardInfo, lastCard);
-          if (!!tmpFirstCard && tmpFirstCard.weight < 10){
+          if (!!tmpFirstCard && (tmpFirstCard.weight < 10 ||
+              (nextPlayer.role != curPlayer.role && next_player_cardInfo.cardPlans[0].hands < 3))){
             firstCard = tmpFirstCard;
           }
         }
@@ -975,7 +980,7 @@ AIEngine.findSmallerSingle = function(card, cardInfo) {
 
     if (otherCard.maxPokeValue < card.maxPokeValue) {
       logger.info("AIEngine.findSmallerSingle, 1");
-      return new CardResult(otherCard, null);
+      return new CardResult(new Card(otherCard.pokeCards.slice(0)), null);
     }
   }
 
@@ -1321,6 +1326,29 @@ AIEngine.findLordPlayCard = function(lordCardInfo, lastCard) {
   }
 
   return cardResult.card;
+};
+
+AIEngine.findDiffTypePlayCard = function (lordCardInfo, lastCard) {
+  var lordPlan = lordCardInfo.cardPlans[0];
+  if (lordPlan.straightsCards.length > 0 && lastCard.cardType != CardType.STRAIGHT ) {
+    return new Card(lordPlan.straightsCards[0].pokeCards.slice(0));
+  }
+  if (lordPlan.threesStraightsCards.length > 0 && lastCard.cardType != CardType.THREE_STRAIGHT) {
+    return new Card(lordPlan.threesStraightsCards[0].pokeCards.slice(0));
+  }
+  if (lordPlan.pairsStraightsCards.length > 0 && lastCard.cardType != CardType.PAIRS_STRAIGHT) {
+    return new Card(lordPlan.pairsStraightsCards[0].pokeCards.slice(0));
+  }
+  if (lordPlan.threesCards.length > 0 && lastCard.cardType != CardType.THREE) {
+    return new Card(lordPlan.threesCards[0].pokeCards.slice(0));
+  }
+  if (lordPlan.pairsCards.length > 0 && lastCard.cardType != CardType.PAIRS) {
+    return new Card(lordPlan.pairsCards[0].pokeCards.slice(0));
+  }
+  if (lordPlan.singlesCards.length > 0 && lastCard.cardType != CardType.SINGLE) {
+    return new Card(lordPlan.singlesCards[0].pokeCards.slice(0));
+  }
+  return null;
 };
 
 
