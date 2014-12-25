@@ -96,6 +96,25 @@ AIEngine.playCard = function (curPlayer, nextPlayer, prevPlayer, lastPlayer, las
     return firstCard;
 };
 
+AIEngine.canGrabLoad = function (curPlayer, nextPlayer, prevPlayer) {
+  var grabLoad = 0;
+
+  var next_player_cardInfo = CardInfo.create(nextPlayer.pokeCards);
+  CardAnalyzer.analyze(next_player_cardInfo);
+  var cur_player_cardInfo = CardInfo.create(curPlayer.pokeCards);
+  CardAnalyzer.analyze(cur_player_cardInfo);
+  var prev_player_cardInfo = CardInfo.create(prevPlayer.pokeCards);
+  CardAnalyzer.analyze(prev_player_cardInfo);
+
+  if (cur_player_cardInfo.grabLoadWeight >= 3 &&
+      cur_player_cardInfo.cardPlans[0].hands <= next_player_cardInfo.cardPlans[0].hands &&
+          cur_player_cardInfo.cardPlans[0].hands <= prev_player_cardInfo.cardPlans[0].hands) {
+    grabLoad = 1;
+  }
+
+  return grabLoad;
+};
+
 AIEngine.playCardLevel2 = function (curPlayer, nextPlayer, prevPlayer, lastPlayer, lastCard) {
   var firstCard;
 

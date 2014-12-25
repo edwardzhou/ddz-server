@@ -447,7 +447,10 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
     if (!pokeGame.lordPlayerId || pokeGame.lordValue < 1) {
        setupNextPlayerTimeout(table,
         function(timeoutTable, timeoutPlayer, timeoutSeq){
-          self.grabLord(timeoutTable, timeoutPlayer, 1, timeoutSeq, null);
+          var nextPlayer = pokeGame.getNextPlayer(timeoutPlayer.userId);
+          var prevPlayer = pokeGame.getNextPlayer(nextPlayer.userId);
+          var grabLoad = AIEngine.canGrabLoad(timeoutPlayer, nextPlayer, prevPlayer);
+          self.grabLord(timeoutTable, timeoutPlayer, grabLoad, timeoutSeq, null);
         },
         nextTimeout);
     } else {

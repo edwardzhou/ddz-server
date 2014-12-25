@@ -18,6 +18,7 @@ var CardInfo = function() {
   this.possibleStraights = [];
   this.workingGroups = [];
   this.cardPlans = [];
+  this.grabLoadWeight = 0;
 };
 
 CardInfo.prototype.clone = function() {
@@ -61,6 +62,7 @@ CardInfo.create = function(pokeCards) {
   cardInfo.rockets = CardInfo.getRockets(pokeGroups);
 
   cardInfo.possibleStraights = CardInfo.findPossibleStraights(pokeGroups);
+  cardInfo.grabLoadWeight = CardInfo.getGrabLoadWeight(pokeGroups);
 
   return cardInfo;
 };
@@ -126,6 +128,17 @@ CardInfo.isInPokeGroups = function (pokeCard, pokeGroups) {
   }
   return false;
 };
+
+CardInfo.getGrabLoadWeight =function (pokeGroups) {
+  var weight = 0;
+  for (var index=0; index<pokeGroups.length; index++) {
+    var group = pokeGroups.get(index);
+    if (group.pokeValue >= PokeCardValue.ACE || group.length >= 4)
+      weight++;
+  }
+  return weight;
+};
+
 
 CardInfo.getBombs = function (pokeGroups) {
   var bombs = new PokeGroupArray();
