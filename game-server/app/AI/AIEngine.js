@@ -106,9 +106,13 @@ AIEngine.canGrabLoad = function (curPlayer, nextPlayer, prevPlayer) {
   var prev_player_cardInfo = CardInfo.create(prevPlayer.pokeCards);
   CardAnalyzer.analyze(prev_player_cardInfo);
 
-  if (cur_player_cardInfo.grabLoadWeight >= 3 &&
-      cur_player_cardInfo.cardPlans[0].hands <= next_player_cardInfo.cardPlans[0].hands &&
-          cur_player_cardInfo.cardPlans[0].hands <= prev_player_cardInfo.cardPlans[0].hands) {
+  //if (cur_player_cardInfo.grabLoadWeight >= 3 &&
+  //    cur_player_cardInfo.cardPlans[0].hands <= next_player_cardInfo.cardPlans[0].hands &&
+  //        cur_player_cardInfo.cardPlans[0].hands <= prev_player_cardInfo.cardPlans[0].hands) {
+  //  grabLoad = 1;
+  //}
+
+  if (cur_player_cardInfo.grabLoadWeight >= 3) {
     grabLoad = 1;
   }
 
