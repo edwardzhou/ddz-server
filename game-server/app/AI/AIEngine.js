@@ -546,16 +546,18 @@ AIEngine.findSmallerThree = function(card, cardInfo) {
 };
 
 AIEngine.findSmallerThreeWithBreakBestPlan = function(card, cardInfo) {
+  logger.info("AIEngine.findSmallerThreeWithBreakBestPlan");
   var otherCard;
   var threeGroups = CardInfo.getPossibleThrees(cardInfo.groups);
-  if (threeGroups.length > 0 && threeGroups.get(0).maxPokeValue < card.maxPokeValue)
+  logger.info("AIEngine.findSmallerThreeWithBreakBestPlan, threeGroups.length=%d", threeGroups.length);
+  if (threeGroups.length > 0 && threeGroups.get(0).pokeValue < card.maxPokeValue)
     otherCard = threeGroups.get(0);
   else
     return null;
 
   // 牌型恰好为三张
   if (card.cardType == CardType.THREE) {
-    return new CardResult(otherCard, null);
+    return new CardResult(new Card(otherCard.pokeCards), null);
   }
 
   var leftPokeGroups = CardInfo.getPokeGroupsExcludeUsedPokes(cardInfo.pokeCards, threeGroups)
@@ -573,7 +575,6 @@ AIEngine.findSmallerThreeWithBreakBestPlan = function(card, cardInfo) {
   }
   else if (card.cardType == CardType.THREE_WITH_ONE) {
     var singleGroups = CardInfo.getPossibleSingles(leftPokeGroups);
-
     if (singleGroups.length > 0) {
       return new CardResult(new Card(otherCard.pokeCards.concat(singleGroups.get(0).pokeCards.slice(0,1))), null);
     }

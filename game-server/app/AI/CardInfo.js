@@ -89,7 +89,7 @@ CardInfo:createPokeGroups = function (pokeCards){
   return pokeGroups;
 };
 
-CardInfo:getPokeGroupsExcludeUsedPokes = function (pokeCards, usedPokeGroups){
+CardInfo.getPokeGroupsExcludeUsedPokes = function (pokeCards, usedPokeGroups){
   pokeCards = pokeCards.slice(0);
   pokeCards.sort(AIHelper.sortAscBy('pokeIndex'));
 
@@ -97,15 +97,18 @@ CardInfo:getPokeGroupsExcludeUsedPokes = function (pokeCards, usedPokeGroups){
   var group = [];
 
   for (var index=0; index<pokeCards.length; index++) {
-    if (group.length == 0 && !isInPokeGroups(pokeCards[index], usedPokeGroups)) {
-      group.push(pokeCards[index]);
-    } else if (group[0].value == pokeCards[index].value && !isInPokeGroups(pokeCards[index], usedPokeGroups)) {
-      group.push(pokeCards[index]);
-    } else if (!isInPokeGroups(pokeCards[index], usedPokeGroups)) {
-      pokeGroups.push(new PokeGroup(group));
-      group = [];
-      group.push(pokeCards[index]);
+    if (!CardInfo.isInPokeGroups(pokeCards[index], usedPokeGroups)){
+      if (group.length == 0) {
+        group.push(pokeCards[index]);
+      } else if (group.length > 0 && group[0].value == pokeCards[index].value) {
+        group.push(pokeCards[index]);
+      } else {
+        pokeGroups.push(new PokeGroup(group));
+        group = [];
+        group.push(pokeCards[index]);
+      }
     }
+
   }
   if (group.length > 0)
     pokeGroups.push(new PokeGroup(group));
@@ -113,11 +116,11 @@ CardInfo:getPokeGroupsExcludeUsedPokes = function (pokeCards, usedPokeGroups){
   return pokeGroups;
 };
 
-CardInfo:isInPokeGroups = function (pokeCard, pokeGroups) {
+CardInfo.isInPokeGroups = function (pokeCard, pokeGroups) {
   for (var i=0; i < pokeGroups.length; i ++) {
     var group = pokeGroups.get(i);
     for (var j=0; j<group.length; j ++){
-      if (group[j].pokeIndex == pokeCard.pokeIndex)
+      if (group.get(j).pokeIndex == pokeCard.pokeIndex)
         return true;
     }
   }
@@ -222,7 +225,7 @@ CardInfo.getPossibleSingles = function (pokeGroups) {
 
   for (var index=0; index<count; index++) {
     var group = pokeGroups.get(index);
-    for (var i= 0; i < group.length -1; i++){
+    for (var i= 0; i < group.length; i++){
       singles.push(new PokeGroup([group.get(i)]))
     }
   }
