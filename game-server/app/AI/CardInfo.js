@@ -1,3 +1,4 @@
+var logger = require('pomelo-logger').getLogger('pomelo', __filename);
 var PokeGroup = require('./PokeGroup');
 var PokeGroupArray = require('./PokeGroupArray');
 var AIHelper = require('./AIHelper');
@@ -17,6 +18,7 @@ var CardInfo = function() {
   this.possibleStraights = [];
   this.workingGroups = [];
   this.cardPlans = [];
+  this.grabLoadWeight = 0;
 };
 
 CardInfo.prototype.clone = function() {
@@ -46,6 +48,29 @@ CardInfo.create = function(pokeCards) {
   pokeCards = pokeCards.slice(0);
   pokeCards.sort(AIHelper.sortAscBy('pokeIndex'));
 
+  var pokeGroups = createPokeGroups(pokeCards)
+
+  var cardInfo = new CardInfo();
+  cardInfo.pokeCards = pokeCards;
+  cardInfo.groups = pokeGroups;
+  //cardInfo.groupsMap = groupsMap;
+
+  cardInfo.bombs = CardInfo.getBombs(pokeGroups);
+  cardInfo.threes = CardInfo.getThrees(pokeGroups);
+  cardInfo.pairs = CardInfo.getPairs(pokeGroups);
+  cardInfo.singles = CardInfo.getSingles(pokeGroups);
+  cardInfo.rockets = CardInfo.getRockets(pokeGroups);
+
+  cardInfo.possibleStraights = CardInfo.findPossibleStraights(pokeGroups);
+  cardInfo.grabLoadWeight = CardInfo.getGrabLoadWeight(pokeGroups);
+
+  return cardInfo;
+};
+
+CardInfo:createPokeGroups = function (pokeCards){
+  pokeCards = pokeCards.slice(0);
+  pokeCards.sort(AIHelper.sortAscBy('pokeIndex'));
+
   var pokeGroups = new PokeGroupArray();
   var group = [];
 
@@ -63,21 +88,57 @@ CardInfo.create = function(pokeCards) {
   if (group.length > 0)
     pokeGroups.push(new PokeGroup(group));
 
-  var cardInfo = new CardInfo();
-  cardInfo.pokeCards = pokeCards;
-  cardInfo.groups = pokeGroups;
-  //cardInfo.groupsMap = groupsMap;
-
-  cardInfo.bombs = CardInfo.getBombs(pokeGroups);
-  cardInfo.threes = CardInfo.getThrees(pokeGroups);
-  cardInfo.pairs = CardInfo.getPairs(pokeGroups);
-  cardInfo.singles = CardInfo.getSingles(pokeGroups);
-  cardInfo.rockets = CardInfo.getRockets(pokeGroups);
-
-  cardInfo.possibleStraights = CardInfo.findPossibleStraights(pokeGroups);
-
-  return cardInfo;
+  return pokeGroups;
 };
+
+CardInfo.getPokeGroupsExcludeUsedPokes = function (pokeCards, usedPokeGroups){
+  pokeCards = pokeCards.slice(0);
+  pokeCards.sort(AIHelper.sortAscBy('pokeIndex'));
+
+  var pokeGroups = new PokeGroupArray();
+  var group = [];
+
+  for (var index=0; index<pokeCards.length; index++) {
+    if (!CardInfo.isInPokeGroups(pokeCards[index], usedPokeGroups)){
+      if (group.length == 0) {
+        group.push(pokeCards[index]);
+      } else if (group.length > 0 && group[0].value == pokeCards[index].value) {
+        group.push(pokeCards[index]);
+      } else {
+        pokeGroups.push(new PokeGroup(group));
+        group = [];
+        group.push(pokeCards[index]);
+      }
+    }
+
+  }
+  if (group.length > 0)
+    pokeGroups.push(new PokeGroup(group));
+
+  return pokeGroups;
+};
+
+CardInfo.isInPokeGroups = function (pokeCard, pokeGroups) {
+  for (var i=0; i < pokeGroups.length; i ++) {
+    var group = pokeGroups.get(i);
+    for (var j=0; j<group.length; j ++){
+      if (group.get(j).pokeIndex == pokeCard.pokeIndex)
+        return true;
+    }
+  }
+  return false;
+};
+
+CardInfo.getGrabLoadWeight =function (pokeGroups) {
+  var weight = 0;
+  for (var index=0; index<pokeGroups.length; index++) {
+    var group = pokeGroups.get(index);
+    if (group.pokeValue > PokeCardValue.ACE || group.length >= 4)
+      weight++;
+  }
+  return weight;
+};
+
 
 CardInfo.getBombs = function (pokeGroups) {
   var bombs = new PokeGroupArray();
@@ -88,6 +149,19 @@ CardInfo.getBombs = function (pokeGroups) {
   }
 
   return bombs;
+};
+
+CardInfo.getPossibleThrees = function (pokeGroups) {
+  var threes = new PokeGroupArray();
+  for (var index=0; index<pokeGroups.length; index++) {
+    var group = pokeGroups.get(index);
+    if (group.length == 3)
+      threes.push(group);
+    else if (group.length == 4)
+      threes.push(new PokeGroup(group.slice(0,3)));
+  }
+
+  return threes;
 };
 
 CardInfo.getThrees = function (pokeGroups) {
@@ -112,6 +186,24 @@ CardInfo.getPairs = function (pokeGroups) {
   return pairs;
 };
 
+CardInfo.getPossiblePairs = function (pokeGroups) {
+  var pairs = new PokeGroupArray();
+  for (var index=0; index<pokeGroups.length; index++) {
+    var group = pokeGroups.get(index);
+    if (group.length == 2)
+      pairs.push(group);
+    else if (group.length == 3)
+      pairs.push(new PokeGroup(group.slice(0,2)));
+    else if (group.length == 4) {
+      pairs.push(new PokeGroup(group.slice(0,2)));
+      pairs.push(new PokeGroup(group.slice(-2)));
+    }
+
+  }
+
+  return pairs;
+};
+
 CardInfo.getSingles = function (pokeGroups) {
   var singles = new PokeGroupArray();
 
@@ -129,7 +221,30 @@ CardInfo.getSingles = function (pokeGroups) {
       singles.push(group);
   }
 
-  return singles;
+  return singles
+
+};
+
+CardInfo.getPossibleSingles = function (pokeGroups) {
+  var singles = new PokeGroupArray();
+
+  var count = pokeGroups.length;
+  if (count>=2) {
+    if ( pokeGroups.get(count-1).pokeValue == PokeCardValue.BIG_JOKER
+        && pokeGroups.get(count-2).pokeValue == PokeCardValue.SMALL_JOKER) {
+      count = count -2
+    }
+  }
+
+  for (var index=0; index<count; index++) {
+    var group = pokeGroups.get(index);
+    for (var i= 0; i < group.length; i++){
+      singles.push(new PokeGroup([group.get(i)]))
+    }
+  }
+
+  return singles
+
 };
 
 CardInfo.getRockets = function (pokeGroups) {

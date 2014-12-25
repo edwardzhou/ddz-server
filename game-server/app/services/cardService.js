@@ -447,7 +447,10 @@ exp.grabLord = function(table, player, lordAction, seqNo, next) {
     if (!pokeGame.lordPlayerId || pokeGame.lordValue < 1) {
        setupNextPlayerTimeout(table,
         function(timeoutTable, timeoutPlayer, timeoutSeq){
-          self.grabLord(timeoutTable, timeoutPlayer, 1, timeoutSeq, null);
+          var nextPlayer = pokeGame.getNextPlayer(timeoutPlayer.userId);
+          var prevPlayer = pokeGame.getNextPlayer(nextPlayer.userId);
+          var grabLoad = AIEngine.canGrabLoad(timeoutPlayer, nextPlayer, prevPlayer);
+          self.grabLord(timeoutTable, timeoutPlayer, grabLoad, timeoutSeq, null);
         },
         nextTimeout);
     } else {
@@ -630,7 +633,7 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
           var lastPlayer = pokeGame.getPlayerByUserId(pokeGame.lastPlay.userId);
           var prevPlayer = pokeGame.getNextPlayer(nextPlayer.userId);
 
-          firstCard = AIEngine.playCard(timeoutPlayer, nextPlayer, prevPlayer, lastPlayer, pokeGame.lastPlay.card);
+          firstCard = AIEngine.playCardLevel2(timeoutPlayer, nextPlayer, prevPlayer, lastPlayer, pokeGame.lastPlay.card);
 
           if (!!firstCard) {
             logger.info('Player [%d] : card-> %s' , timeoutPlayer.userId, firstCard.toString());

@@ -71,14 +71,16 @@ AIEngine.playCard = function (curPlayer, nextPlayer, prevPlayer, lastPlayer, las
     if (cur_player_cardInfo.cardPlans[0].hands > 1) {
       // 最后出牌者是友方
       if (lastPlayer.role == curPlayer.role) {
-        // 友方剩最后一手牌 或者友方的最后所出牌牌值大于等于10 或者所出牌为三张以上
-        if (last_player_cardInfo.cardPlans[0].hands == 1 || lastCard.maxPokeValue >=10 ||
-            lastCard.pokeCards.length >= 3){
+        // 友方剩最后一手牌
+        if (last_player_cardInfo.cardPlans[0].hands == 1){
 
         }
         else // 友方不手中不止一手牌，或所出牌牌值小于10，或所出牌小于3张
         {
-          firstCard = AIEngine.findLordPlayCard(cur_player_cardInfo, lastCard);
+          var tmpFirstCard = AIEngine.findLordPlayCard(cur_player_cardInfo, lastCard);
+          if (!!tmpFirstCard && tmpFirstCard.weight < 10){
+            firstCard = tmpFirstCard;
+          }
         }
       }
       else // 最后出牌者是敌方
@@ -92,6 +94,114 @@ AIEngine.playCard = function (curPlayer, nextPlayer, prevPlayer, lastPlayer, las
   }
 
     return firstCard;
+};
+
+AIEngine.canGrabLoad = function (curPlayer, nextPlayer, prevPlayer) {
+  var grabLoad = 0;
+
+  var next_player_cardInfo = CardInfo.create(nextPlayer.pokeCards);
+  CardAnalyzer.analyze(next_player_cardInfo);
+  var cur_player_cardInfo = CardInfo.create(curPlayer.pokeCards);
+  CardAnalyzer.analyze(cur_player_cardInfo);
+  var prev_player_cardInfo = CardInfo.create(prevPlayer.pokeCards);
+  CardAnalyzer.analyze(prev_player_cardInfo);
+
+  //if (cur_player_cardInfo.grabLoadWeight >= 3 &&
+  //    cur_player_cardInfo.cardPlans[0].hands <= next_player_cardInfo.cardPlans[0].hands &&
+  //        cur_player_cardInfo.cardPlans[0].hands <= prev_player_cardInfo.cardPlans[0].hands) {
+  //  grabLoad = 1;
+  //}
+
+  if (cur_player_cardInfo.grabLoadWeight >= 3) {
+    grabLoad = 1;
+  }
+
+  return grabLoad;
+};
+
+AIEngine.playCardLevel2 = function (curPlayer, nextPlayer, prevPlayer, lastPlayer, lastCard) {
+  var firstCard;
+
+  var next_player_cardInfo = CardInfo.create(nextPlayer.pokeCards);
+  CardAnalyzer.analyze(next_player_cardInfo);
+  var cur_player_cardInfo = CardInfo.create(curPlayer.pokeCards);
+  CardAnalyzer.analyze(cur_player_cardInfo);
+  var last_player_cardInfo = CardInfo.create(lastPlayer.pokeCards);
+  CardAnalyzer.analyze(last_player_cardInfo);
+  var prev_player_cardInfo = CardInfo.create(prevPlayer.pokeCards);
+  CardAnalyzer.analyze(prev_player_cardInfo);
+
+  logger.info("curPlayer [%d] : hands=%d, role=%s", curPlayer.userId, cur_player_cardInfo.cardPlans[0].hands, curPlayer.role);
+  logger.info("nextPlayer [%d] : hands=%d, role=%s", nextPlayer.userId, next_player_cardInfo.cardPlans[0].hands, nextPlayer.role);
+  logger.info("lastPlayer [%d] : hands=%d, role=%s", lastPlayer.userId, last_player_cardInfo.cardPlans[0].hands, lastPlayer.role);
+  logger.info("lastPlayer [%d] : last_card.maxPokeValue=%d, last_card.pokeCards.length=%d",lastPlayer.userId, lastCard.maxPokeValue, lastCard.pokeCards.length);
+
+
+  if (lastPlayer.userId == curPlayer.userId) {
+    // 有牌权
+    // 如果手中有多于一手的牌
+    if (cur_player_cardInfo.cardPlans[0].hands > 1) {
+      // 下家只有一手牌
+      if (next_player_cardInfo.cardPlans[0].hands == 1) {
+        var next_last_card = new Card(next_player_cardInfo.pokeCards);
+        // 下家为友方
+        if (nextPlayer.role == curPlayer.role) {
+          // 找出与友方相同牌形的最小牌打出
+          firstCard = AIEngine.findSmallerThan(next_last_card, cur_player_cardInfo);
+        }
+        else  // 下家为敌方
+        {
+          // 打出手中牌值最大的牌
+          firstCard = AIEngine.findLordPlayCard(cur_player_cardInfo, next_last_card);
+        }
+      }
+      // 下家手中有多于一手的牌 或面过程未找到有效牌
+      // 手中只有最后两手牌
+      if (firstCard == null && cur_player_cardInfo.cardPlans[0].hands == 2) {
+        // 如最后两手为单 或 对，则先出牌值小的
+        // 如最后两手牌为单或对 加 其它组合，则单 或对 最后出
+        firstCard = AIEngine.playLastTwoHandCard(cur_player_cardInfo, prev_player_cardInfo, next_player_cardInfo);
+
+      }
+      if (firstCard == null)
+      {
+        firstCard = AIEngine.findLordFirstCard(cur_player_cardInfo);
+      }
+    }
+    else // 手中只有一手牌，则直接打出
+    {
+      firstCard = AIEngine.findLordFirstCard(cur_player_cardInfo);
+    }
+
+  } else {
+    // 无牌权
+    // 手中有不止一手牌
+    if (cur_player_cardInfo.cardPlans[0].hands > 1) {
+      // 最后出牌者是友方
+      if (lastPlayer.role == curPlayer.role) {
+        // 友方剩最后一手牌 或者友方的最后所出牌牌值大于等于10 或者所出牌为三张以上
+        if (last_player_cardInfo.cardPlans[0].hands == 1){
+
+        }
+        else // 友方不手中不止一手牌，或所出牌牌值小于10，或所出牌小于3张
+        {
+          var tmpFirstCard = AIEngine.findLordPlayCard(cur_player_cardInfo, lastCard);
+          if (!!tmpFirstCard && tmpFirstCard.weight < 10){
+            firstCard = tmpFirstCard;
+          }
+        }
+      }
+      else // 最后出牌者是敌方
+      {
+        firstCard = AIEngine.findLordPlayCard(cur_player_cardInfo, lastCard);
+      }
+    }
+    else{
+      firstCard = AIEngine.findLordPlayCard(cur_player_cardInfo, lastCard);
+    }
+  }
+
+  return firstCard;
 };
 
 AIEngine.findFeasibleStraight = function (straights) {
@@ -458,6 +568,43 @@ AIEngine.findSmallerThree = function(card, cardInfo) {
   return null;
 };
 
+AIEngine.findSmallerThreeWithBreakBestPlan = function(card, cardInfo) {
+  logger.info("AIEngine.findSmallerThreeWithBreakBestPlan");
+  var otherCard;
+  var threeGroups = CardInfo.getPossibleThrees(cardInfo.groups);
+  logger.info("AIEngine.findSmallerThreeWithBreakBestPlan, threeGroups.length=%d", threeGroups.length);
+  if (threeGroups.length > 0 && threeGroups.get(0).pokeValue < card.maxPokeValue)
+    otherCard = threeGroups.get(0);
+  else
+    return null;
+
+  // 牌型恰好为三张
+  if (card.cardType == CardType.THREE) {
+    return new CardResult(new Card(otherCard.pokeCards), null);
+  }
+
+  var leftPokeGroups = CardInfo.getPokeGroupsExcludeUsedPokes(cardInfo.pokeCards, threeGroups)
+    // 如果是三带二
+  if (card.cardType == CardType.THREE_WITH_PAIRS) {
+
+    var pairGroups = CardInfo.getPossiblePairs(leftPokeGroups);
+    // 有对子，直接用，这里暂时没有考虑对2的情况是否最优 (待改进)
+    if (pairGroups.length>0
+    //&& plan.pairsCards[0].maxPokeValue != PokeCardValue.TWO
+    ) {
+      return new CardResult(new Card(otherCard.pokeCards.concat(pairGroups.get(0).pokeCards)), null);
+    }
+
+  }
+  else if (card.cardType == CardType.THREE_WITH_ONE) {
+    var singleGroups = CardInfo.getPossibleSingles(leftPokeGroups);
+    if (singleGroups.length > 0) {
+      return new CardResult(new Card(otherCard.pokeCards.concat(singleGroups.get(0).pokeCards.slice(0,1))), null);
+    }
+  }
+  return null;
+};
+
 AIEngine.findGreaterThreesStraight = function(card, cardInfo) {
   var plan = cardInfo.cardPlans[0];
   var optionCard = null;
@@ -652,6 +799,15 @@ AIEngine.findGreaterPairs = function(card, cardInfo) {
   return null;
 };
 
+AIEngine.findSmallerPairsWithBreakBestPlan = function(card, cardInfo) {
+  var parisGroups = CardInfo.getPossiblePairs(cardInfo.groups);
+  logger.info("AIEngine.findSmallerPairsWithBreakBestPlan");
+  if (parisGroups.length > 0 && parisGroups.get(0).pokeValue < card.maxPokeValue)
+      return new CardResult(new Card( parisGroups.get(0).pokeCards.slice(0, 2) ), null);
+
+  return null;
+};
+
 AIEngine.findSmallerPairs = function(card, cardInfo) {
   var plan = cardInfo.cardPlans[0];
   // 先在对子里找最小对子
@@ -796,6 +952,15 @@ AIEngine.findGreaterSingle = function(card, cardInfo) {
 
   return null;
 };
+
+AIEngine.findSmallerSingleWithBreakBestPlan = function (card, cardInfo) {
+  var singleGroups = CardInfo.getPossibleSingles(cardInfo.groups);
+  if (singleGroups.length > 0 && singleGroups.get(0).pokeValue < card.maxPokeValue)
+    return new CardResult(new Card( singleGroups.get(0).slice(0) ), null);
+
+  return null;
+};
+
 
 AIEngine.findSmallerSingle = function(card, cardInfo) {
   logger.info("AIEngine.findSmallerSingle");
@@ -943,7 +1108,6 @@ AIEngine.findGreaterThan = function(card, cardInfo) {
   return result;
 };
 
-
 AIEngine.findSmallerThan = function(card, cardInfo) {
   logger.info("AIEngine.findSmallerThan");
   var result = null;
@@ -968,6 +1132,9 @@ AIEngine.findSmallerThan = function(card, cardInfo) {
     case CardType.THREE_WITH_ONE:
     case CardType.THREE_WITH_PAIRS:
       result = AIEngine.findSmallerThree(card, cardInfo);
+        if (!result) {
+          result = AIEngine.findSmallerThreeWithBreakBestPlan(card, cardInfo);
+        }
       break;
 
     case CardType.PAIRS_STRAIGHT:
@@ -976,6 +1143,9 @@ AIEngine.findSmallerThan = function(card, cardInfo) {
 
     case CardType.PAIRS:
       result = AIEngine.findSmallerPairs(card, cardInfo);
+      if (!result) {
+        result = AIEngine.findSmallerPairsWithBreakBestPlan(card, cardInfo);
+      }
       break;
 
     case CardType.STRAIGHT:
@@ -986,6 +1156,9 @@ AIEngine.findSmallerThan = function(card, cardInfo) {
     case CardType.SINGLE:
       logger.info("AIEngine.findSmallerThan, CardType.SINGLE");
       result = AIEngine.findSmallerSingle(card, cardInfo);
+      if (!result) {
+        result = AIEngine.findSmallerSingleWithBreakBestPlan(card, cardInfo);
+      }
       break;
   }
   return result;
