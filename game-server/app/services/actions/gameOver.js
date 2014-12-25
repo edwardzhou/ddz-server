@@ -204,7 +204,7 @@ GameOverAction.doGameOver = function(table, player, cb) {
     .then(function() {
       // 2. 更新第一位玩家的金币数
       var p = pokeGame.players[0];
-      taskService.processGamingTasks(p, (pokeGame.playersResults[p.userId] > 0), pokeGame, pokeGame.gameRoom);
+      taskService.processGamingTasks(p, 'game_over', (pokeGame.playersResults[p.userId] > 0), pokeGame, pokeGame.gameRoom);
       return DdzProfile.updateCoinsByUserIdQ(p.userId, pokeGame.playersResults[p.userId]);
     })
     .then(function(ddzProfile) {
@@ -213,7 +213,7 @@ GameOverAction.doGameOver = function(table, player, cb) {
 
       // 3. 更新第二位玩家的ddzProfile
       var p = pokeGame.players[1];
-      taskService.processGamingTasks(p, (pokeGame.playersResults[p.userId] > 0), pokeGame, pokeGame.gameRoom);
+      taskService.processGamingTasks(p, 'game_over', (pokeGame.playersResults[p.userId] > 0), pokeGame, pokeGame.gameRoom);
       return DdzProfile.updateCoinsByUserIdQ(p.userId, pokeGame.playersResults[p.userId]);
     })
     .then(function(ddzProfile) {
@@ -222,7 +222,7 @@ GameOverAction.doGameOver = function(table, player, cb) {
 
       // 4. 更新第三位玩家的ddzProfile
       var p = pokeGame.players[2];
-      taskService.processGamingTasks(p, (pokeGame.playersResults[p.userId] > 0), pokeGame, pokeGame.gameRoom);
+      taskService.processGamingTasks(p, 'game_over', (pokeGame.playersResults[p.userId] > 0), pokeGame, pokeGame.gameRoom);
       return DdzProfile.updateCoinsByUserIdQ(p.userId, pokeGame.playersResults[p.userId]);
     })
     .then(function(ddzProfile) {

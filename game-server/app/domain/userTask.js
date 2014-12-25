@@ -48,6 +48,7 @@ var __toParams = function(model, excludeAttrs) {
     taskIcon: model.taskIcon,
     taskType: model.taskType,
     taskActivated: (model.taskActivated? 1 : 0),
+    taskFinished: (model.taskFinished? 1 : 0),
     taskBonusDesc: model.taskBonusDesc,
     progress: model.progress,
     progressDesc: model.progressDesc

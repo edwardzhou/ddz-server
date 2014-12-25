@@ -89,13 +89,14 @@ TaskService.fixUserTaskList = function (user) {
     });
 };
 
-TaskService.processGamingTasks = function(user, isWinner, pokeGame) {
+TaskService.processGamingTasks = function(user, trigger, isWinner, pokeGame) {
   logger.info('[TaskService.processGamingTasks] user: ', user);
-  UserTask.findQ({user_id: user.id, taskActivated: true, taskFinished: false})
+  var query = UserTask.find({user_id: user.id, taskTrigger: trigger, taskActivated: true, taskFinished: false});
+  query.execQ()
     .then(function(_tasks){
       logger.info('[TaskService.processGamingTasks] _tasks: ', _tasks);
       for(var index=0; index<_tasks.length; index++) {
-        TaskService.processTask(_tasks[index], {user: user, isWinner: isWinner, pokeGame: pokeGame});
+        TaskService.processTask(_tasks[index], {user: user, trigger: trigger, isWinner: isWinner, pokeGame: pokeGame});
       }
     })
     .fail(function(err) {
@@ -105,14 +106,16 @@ TaskService.processGamingTasks = function(user, isWinner, pokeGame) {
 
 TaskService.processTask = function(task, params) {
   logger.info('[TaskService.processTask] task: ', task);
-  if (!!task.taskData.roomId && task.taskData.roomId != params.pokeGame.roomId)
-    return;
-
-  task.taskData.current = task.taskData.current + 1;
-  task.progressDesc = task.taskData.current + ' / ' + task.taskData.count;
-  if (task.taskData.current >= task.taskData.count ) {
-    task.taskFinished = true;
-  }
-  task.markModified('taskData');
-  task.save();
+  var processor = require('./tasks/' + task.taskProcessor + 'Processor');
+  processor.process(task, params);
+  //if (!!task.taskData.roomId && task.taskData.roomId != params.pokeGame.roomId)
+  //  return;
+  //
+  //task.taskData.current = task.taskData.current + 1;
+  //task.progressDesc = task.taskData.current + ' / ' + task.taskData.count;
+  //if (task.taskData.current >= task.taskData.count ) {
+  //  task.taskFinished = true;
+  //}
+  //task.markModified('taskData');
+  //task.save();
 };
