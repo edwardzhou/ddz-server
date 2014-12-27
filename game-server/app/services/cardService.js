@@ -556,7 +556,7 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
         if (pokeGame.lastPlay.userId == nextPlayer.userId) {
           tipCard = AIEngine.findLordFirstCard(cardInfo);
         } else {
-          tipCard = AIEngine.findLordPlayCard(cardInfo, pokeGame.lastPlay.card);
+          tipCard = AIEngine.findLordPlayCard(cardInfo, pokeGame.lastPlay.card).card;
         }
         // 如果有可出的牌，则付给提示
         if (!!tipCard) {
@@ -633,7 +633,7 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
           var lastPlayer = pokeGame.getPlayerByUserId(pokeGame.lastPlay.userId);
           var prevPlayer = pokeGame.getNextPlayer(nextPlayer.userId);
 
-          firstCard = AIEngine.playCardLevel2(timeoutPlayer, nextPlayer, prevPlayer, lastPlayer, pokeGame.lastPlay.card);
+          firstCard = AIEngine.playCardLevel3(timeoutPlayer, nextPlayer, prevPlayer, lastPlayer, pokeGame.lastPlay.card);
 
           if (!!firstCard) {
             logger.info('Player [%d] : card-> %s' , timeoutPlayer.userId, firstCard.toString());
