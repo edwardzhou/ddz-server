@@ -4,7 +4,11 @@ var CardResult = function(card, breakCard) {
 };
 
 CardResult.prototype.dump = function() {
-  var result = this.card.getPokeValueChars();
+  var result = "";
+  if (!!this.card) {
+    result = this.card.getPokeValueChars();
+  }
+
   if (!!this.breakCard) {
     var breakCardChars = "";
     if (this.breakCard instanceof Array) {

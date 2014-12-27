@@ -134,7 +134,7 @@ CardInfo.getGrabLoadWeight =function (pokeGroups) {
   for (var index=0; index<pokeGroups.length; index++) {
     var group = pokeGroups.get(index);
     if (group.pokeValue > PokeCardValue.ACE || group.length >= 4)
-      weight++;
+      weight = weight + 1*group.length;
   }
   return weight;
 };
