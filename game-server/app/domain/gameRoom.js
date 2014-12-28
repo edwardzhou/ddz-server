@@ -16,6 +16,7 @@ var roomSchemaFields = {
   state: Number,      // 状态, ref: RoomState
   ante: Number,       // 底注
   rake: Number,       // 佣金
+  startLordValue: Number,       // 起始倍数
   maxPlayers: Number, // 最大人数
   minCoinsQty: {type: Number, default: 0}, // 准入资格, 最小金币数, 0 代表无限制
   maxCoinsQty: {type: Number, default: 0}, // 准入资格, 最大金币数, 0 代表无限制
@@ -377,6 +378,7 @@ roomSchema.methods.reloadFromDb = function() {
       self.state = room.state;
       self.ante = room.ante;
       self.rake = room.rake;
+      self.startLordValue = room.startLordValue;
       self.maxPlayers = room.maxPlayers;
       self.minCoinsQty = room.minCoinsQty;
       self.maxCoinsQty = room.maxCoinsQty;

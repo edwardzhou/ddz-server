@@ -8,6 +8,7 @@ class GameRoom
   field :state, type: Integer
   field :ante, type: Integer
   field :rake, type: Float
+  field :startLordValue, type: Integer
   field :maxCoinsQty, type: Integer
   field :minCoinsQty, type: Integer
   field :sortIndex, type: Integer

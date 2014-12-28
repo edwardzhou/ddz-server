@@ -9,6 +9,7 @@ ActiveAdmin.register GameRoom do
     permitted << :state
     permitted << :ante
     permitted << :rake
+    permitted << :startLordValue
     permitted << :minCoinsQty
     permitted << :maxCoinsQty
     permitted << :sortIndex
@@ -28,6 +29,7 @@ ActiveAdmin.register GameRoom do
     column :state
     column :ante
     column :rake
+    column :startLordValue
     column :minCoinsQty
     column :maxCoinsQty
     column :sortIndex
@@ -53,6 +55,7 @@ ActiveAdmin.register GameRoom do
       f.input :state
       f.input :ante
       f.input :rake
+      f.input :startLordValue
       f.input :maxCoinsQty
       f.input :minCoinsQty
       f.input :sortIndex
