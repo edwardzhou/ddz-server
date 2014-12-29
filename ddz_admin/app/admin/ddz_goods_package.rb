@@ -41,8 +41,8 @@ ActiveAdmin.register DdzGoodsPackage do
     column :price
     column :enabled
     column :sortIndex
-    column :createdAt
-    column :updatedAt
+    column :created_at
+    column :updated_at
     actions
   end
 

@@ -36,8 +36,8 @@ ActiveAdmin.register GameRoom do
     column :readyTimeout
     column :grabbingLordTimeout
     column :playCardTimeout
-    column :createAt
-    column :updateAt
+    column :created_at
+    column :updated_at
     actions
   end
 

@@ -18,8 +18,8 @@ ActiveAdmin.register Channel do
     column :description
     column :paymentMethod
     column :enabled
-    column :createAt
-    column :updateAt
+    column :created_at
+    column :updated_at
     actions
   end
 

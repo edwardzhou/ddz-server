@@ -23,8 +23,8 @@ ActiveAdmin.register PaymentMethod do
     column :description
     column :enabled
     column :config_hash
-    column :createAt
-    column :updateAt
+    column :created_at
+    column :updated_at
     actions
   end
 

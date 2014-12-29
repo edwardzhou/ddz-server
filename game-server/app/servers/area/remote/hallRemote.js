@@ -135,6 +135,7 @@ remoteHandler.refreshGoodsPackages = function(cb) {
     .fail(function(error) {
       console.error(error);
     });
+  utils.invokeCallback(cb, null, null);
 };
 
 remoteHandler.getGoodsPackages = function(uid, channelId, frontendId, sessionId, cb) {

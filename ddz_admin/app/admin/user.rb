@@ -37,8 +37,8 @@ ActiveAdmin.register User do
     column :locked
     column :lockedAt
     column :comment
-    column :createAt
-    column :updateAt
+    column :created_at
+    column :updated_at
     actions
   end
 
