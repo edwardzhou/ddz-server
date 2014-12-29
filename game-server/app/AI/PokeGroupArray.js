@@ -91,7 +91,10 @@ PokeGroupArray.prototype.removeGroups = function(groups) {
   for (var index=0; index<groups.length; index++) {
     var g = groups.get(index);
     var groupIndex = this.findIndex(g);
-    this.data.splice(groupIndex, 1);
+    if (groupIndex > -1) {
+      this.data.splice(groupIndex, 1);
+    }
+
     if (!!g)
       removedGroups.push(g);
   }

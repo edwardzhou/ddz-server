@@ -302,8 +302,8 @@ exp.startGame = function (table, next) {
 
     setupNextPlayerTimeout(table,
       function(timeoutTable, timeoutPlayer, timeoutSeq){
-        var nextPlayer = pokeGame.getNextPlayer(timeoutPlayer.userId);
-        var prevPlayer = pokeGame.getNextPlayer(nextPlayer.userId);
+        var nextPlayer = newPokeGame.getNextPlayer(timeoutPlayer.userId);
+        var prevPlayer = newPokeGame.getNextPlayer(nextPlayer.userId);
         var grabLoad = AIEngine.canGrabLoad(timeoutPlayer, nextPlayer, prevPlayer);
         self.grabLord(timeoutTable, timeoutPlayer, grabLoad, timeoutSeq, null);
       },
@@ -637,7 +637,7 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
           var lastPlayer = pokeGame.getPlayerByUserId(pokeGame.lastPlay.userId);
           var prevPlayer = pokeGame.getNextPlayer(nextPlayer.userId);
 
-          firstCard = AIEngine.playCardLevel3(timeoutPlayer, nextPlayer, prevPlayer, lastPlayer, pokeGame.lastPlay.card);
+          firstCard = AIEngine.playCardLevel4(timeoutPlayer, nextPlayer, prevPlayer, lastPlayer, pokeGame.lastPlay.card);
 
           if (!!firstCard) {
             logger.info('Player [%d] : card-> %s' , timeoutPlayer.userId, firstCard.toString());
