@@ -147,6 +147,12 @@ PokeGame.newGame = function(table) {
     state: GameState.PENDING_FOR_READY};
   var game = new PokeGame(opts);
 
+  game.playedPokeBits = [0, 0];
+
+  game.startLordValue = gameRoom.startLordValue || 1;
+  game.grabbingLordTimeout = gameRoom.grabbingLordTimeout || 20;
+  game.playCardTimeout =gameRoom.playCardTimeout || 30;
+
   game.msgNo = 1;
   game.players = table.players.slice(0, table.players.length);
   game.token = {nextUserId: '', currentSeqNo: 0};

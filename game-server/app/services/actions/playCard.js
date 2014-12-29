@@ -71,6 +71,15 @@ PlayCardAction.doPlayCard = function(table, player, pokeChars, cb) {
       resp.lordValueUpgrade = true;
     }
 
+    var poke;
+    for (var pokeIndex=0; pokeIndex<card.pokeCards.length; pokeIndex++) {
+      poke = card.pokeCards[pokeIndex];
+      poke.setBit(pokeGame.playedPokeBits);
+
+      logger.info('%s, %d, %d', poke.toString(), pokeGame.playedPokeBits[0], pokeGame.playedPokeBits[1]);
+
+    }
+
     utils.invokeCallback(cb, null, resp);
     return true;
   }

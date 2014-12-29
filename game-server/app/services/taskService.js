@@ -2,6 +2,7 @@
  * Created by edwardzhou on 14/12/6.
  */
 
+var logger = require('pomelo-logger').getLogger(__filename);
 var User = require('../domain/user');
 var UserSession = require('../domain/userSession');
 var TaskDef = require('../domain/taskDef');
@@ -86,4 +87,35 @@ TaskService.fixUserTaskList = function (user) {
     .fail(function (err) {
       console.error('[TaskService.fixUserTaskList] error: ', err);
     });
+};
+
+TaskService.processGamingTasks = function(user, trigger, isWinner, pokeGame) {
+  logger.info('[TaskService.processGamingTasks] user: ', user);
+  var query = UserTask.find({user_id: user.id, taskTrigger: trigger, taskActivated: true, taskFinished: false});
+  query.execQ()
+    .then(function(_tasks){
+      logger.info('[TaskService.processGamingTasks] _tasks: ', _tasks);
+      for(var index=0; index<_tasks.length; index++) {
+        TaskService.processTask(_tasks[index], {user: user, trigger: trigger, isWinner: isWinner, pokeGame: pokeGame});
+      }
+    })
+    .fail(function(err) {
+      logger.error('[TaskService.processGamingTasks] user => ', user, '\n Error: ', err);
+    })
+};
+
+TaskService.processTask = function(task, params) {
+  logger.info('[TaskService.processTask] task: ', task);
+  var processor = require('./tasks/' + task.taskProcessor + 'Processor');
+  processor.process(task, params);
+  //if (!!task.taskData.roomId && task.taskData.roomId != params.pokeGame.roomId)
+  //  return;
+  //
+  //task.taskData.current = task.taskData.current + 1;
+  //task.progressDesc = task.taskData.current + ' / ' + task.taskData.count;
+  //if (task.taskData.current >= task.taskData.count ) {
+  //  task.taskFinished = true;
+  //}
+  //task.markModified('taskData');
+  //task.save();
 };

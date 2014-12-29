@@ -9,6 +9,8 @@ ActiveAdmin.register TaskDef do
     permitted << :taskType
     permitted << :taskIcon
     permitted << :taskBonusDesc
+    permitted << :taskTrigger
+    permitted << :taskProcessor
     permitted << :enabled
     permitted << :sortIndex
     permitted << :progress
@@ -26,6 +28,8 @@ ActiveAdmin.register TaskDef do
     column :taskType
     column :taskIcon
     column :taskBonusDesc
+    column :taskTrigger
+    column :taskProcessor
     column :enabled
     column :sortIndex
     column :progress
@@ -49,6 +53,8 @@ ActiveAdmin.register TaskDef do
       f.input :taskType
       f.input :taskIcon
       f.input :taskBonusDesc
+      f.input :taskTrigger
+      f.input :taskProcessor
       f.input :enabled
       f.input :sortIndex
       f.input :progress

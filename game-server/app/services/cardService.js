@@ -278,7 +278,7 @@ exp.startGame = function (table, next) {
         nextUserId: newPokeGame.grabbingLord.nextUserId,
         seqNo: (player.userId == newPokeGame.grabbingLord.nextUserId ? seqNo : 0),
         msgNo: msgNo,
-        timing: table.room.grabbingLordTimeout || 20
+        timing: newPokeGame.grabbingLordTimeout || 20
       };
       //newPokeGame.playerMsgs[player.userId] = [];
       newPokeGame.playerMsgs[player.userId].push([eventName, eventData]);
@@ -537,7 +537,8 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
       msgNo: msgNo, // 消息编号
       tipPokeChars: '', // 提示牌
       timing: table.pokeGame.playCardTimeout || 30, // 超时时间
-      delegating: (!!player.delegating? 1 : 0) // 委托标志
+      delegating: (!!player.delegating? 1 : 0), // 委托标志
+      playedPokeBits: pokeGame.playedPokeBits
     };
 
     // 牌局是否已结束

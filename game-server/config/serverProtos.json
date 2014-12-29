@@ -90,7 +90,8 @@
     "required uInt32 msgNo": 5,
     "required uInt32 timing": 6,
     "optional uInt32 delegating": 7,
-    "optional string tipPokeChars": 8
+    "optional string tipPokeChars": 8,
+    "repeated uInt32 playedPokeBits": 9
   },
   "onLordValueUpgrade" : {
     "required uInt32 lordValue": 1,

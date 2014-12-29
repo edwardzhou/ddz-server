@@ -11,6 +11,8 @@ class TaskDef
   field :enabled, type: Boolean, default: true
   field :progress, type: Integer, default: 0
   field :progressDesc, type: String
+  field :taskTrigger, type: String
+  field :taskProcessor, type: String
   field :taskData, type: Hash, default: ->{ {:_placeholder => 0} }
   include Mongoid::Timestamps
   # field :createdAt, type: Date, default: ->{ Time.now }

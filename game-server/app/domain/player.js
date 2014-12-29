@@ -9,6 +9,7 @@ var DdzProfile = require('./ddzProfile');
 var Player = function(opts) {
   opts = opts || {};
   EventEmitter.call(this, opts);
+  this.id = opts.id;
   this.pokeCards = opts.pokeCards || [];
   this.initPokeCards = this.pokeCardsString();
   this.gender = opts.gender;
