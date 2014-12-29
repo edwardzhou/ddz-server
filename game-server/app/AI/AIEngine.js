@@ -1,4 +1,6 @@
 var logger = require('pomelo-logger').getLogger('pomelo', __filename);
+var Combinatorics = require('js-combinatorics').Combinatorics;
+
 var CardAnalyzer = require('./CardAnalyzer');
 var cardUtil = require('../util/cardUtil');
 var CardResult = require('./CardResult');
@@ -39,7 +41,7 @@ AIEngine.playCard = function (curPlayer, nextPlayer, prevPlayer, lastPlayer, las
         // 下家为友方
         if (nextPlayer.role == curPlayer.role) {
           // 找出与友方相同牌形的最小牌打出
-          firstCard = AIEngine.findSmallerThan(next_last_card, cur_player_cardInfo);
+          firstCard = AIEngine.findSmallerThan(next_last_card, cur_player_cardInfo).card;
         }
         else  // 下家为敌方
         {
@@ -149,7 +151,7 @@ AIEngine.playCardLevel2 = function (curPlayer, nextPlayer, prevPlayer, lastPlaye
         // 下家为友方
         if (nextPlayer.role == curPlayer.role) {
           // 找出与友方相同牌形的最小牌打出
-          firstCard = AIEngine.findSmallerThan(next_last_card, cur_player_cardInfo);
+          firstCard = AIEngine.findSmallerThan(next_last_card, cur_player_cardInfo).card;
         }
         else  // 下家为敌方
         {
@@ -212,6 +214,7 @@ AIEngine.playCardLevel2 = function (curPlayer, nextPlayer, prevPlayer, lastPlaye
 };
 
 AIEngine.playCardLevel3 = function (curPlayer, nextPlayer, prevPlayer, lastPlayer, lastCard) {
+  logger.info("AIEngine.playCardLevel3 ");
   var firstCard;
 
   var next_player_cardInfo = CardInfo.create(nextPlayer.pokeCards);
@@ -235,14 +238,14 @@ AIEngine.playCardLevel3 = function (curPlayer, nextPlayer, prevPlayer, lastPlaye
     // 如果手中有多于一手的牌
     if (cur_player_cardInfo.cardPlans[0].hands > 1) {
       // 下家或下下家只有一手牌
-      if (next_player_cardInfo.cardPlans[0].hands == 1 || prev_player_cardInfo.cardPlans[0].hands == 1) {
+      if (next_player_cardInfo.cardPlans[0].hands == 1) {
         logger.info("Have right to play card. nextPlayer has only one hand card.");
         var next_last_card = new Card(next_player_cardInfo.pokeCards);
         // 下家为友方
         if (nextPlayer.role == curPlayer.role) {
           // 找出与友方相同牌形的最小牌打出
           logger.info("Have right to play card. play the smaller card to let friend run.");
-          firstCard = AIEngine.findSmallerThan(next_last_card, cur_player_cardInfo);
+          firstCard = AIEngine.findSmallerThan(next_last_card, cur_player_cardInfo).card;
         }
         else  // 下家为敌方
         {
@@ -265,7 +268,7 @@ AIEngine.playCardLevel3 = function (curPlayer, nextPlayer, prevPlayer, lastPlaye
         if (curPlayer.role == prevPlayer.role) {
           // 找出与友方相同牌形的最小牌打出
           logger.info("Have right to play card. play the smaller card to let friend run.");
-          firstCard = AIEngine.findSmallerThan(prev_last_card, cur_player_cardInfo);
+          firstCard = AIEngine.findSmallerThan(prev_last_card, cur_player_cardInfo).card;
         }
         else  // 下下家为敌方
         {
@@ -317,7 +320,9 @@ AIEngine.playCardLevel3 = function (curPlayer, nextPlayer, prevPlayer, lastPlaye
         {
           var tmpCardResult = AIEngine.findLordPlayCard(cur_player_cardInfo, lastCard);
           var tmpFirstCard = tmpCardResult.card;
-          if (!!tmpFirstCard && ((tmpFirstCard.weight < 10 && !tmpCardResult.breakCard) || next_player_cardInfo.cardPlans[0].hands < 3)){
+          if (!!tmpFirstCard && ((tmpFirstCard.weight < 10 && !tmpCardResult.breakCard) ||
+              (cur_player_cardInfo.cardPlans[0].hands < last_player_cardInfo.cardPlans[0].hands) ||
+              next_player_cardInfo.cardPlans[0].hands < 3)){
             firstCard = tmpFirstCard;
             logger.info("No right to play card. cover friend's card.");
           }
@@ -330,6 +335,430 @@ AIEngine.playCardLevel3 = function (curPlayer, nextPlayer, prevPlayer, lastPlaye
       {
         logger.info("No right to play card. cover enemy's card.");
         firstCard = AIEngine.findLordPlayCard(cur_player_cardInfo, lastCard).card;
+      }
+    }
+    else{
+      logger.info("No right to play card. curPlayer play the last card.");
+      firstCard = AIEngine.findLordPlayCard(cur_player_cardInfo, lastCard).card;
+    }
+  }
+
+  return firstCard;
+};
+
+AIEngine.getBestPowerCardInfo = function (pokeCards1, pokeCards2) {
+  //Combinatorics.combination
+  var concat_pokeCards = pokeCards1.concat(pokeCards2);
+  var cardInfo = CardInfo.create(concat_pokeCards);
+  CardAnalyzer.analyze(cardInfo);
+  var cardPlan = cardInfo.cardPlans[0];
+  //this.singlesCards = [];
+  //this.pairsCards = [];
+  //this.threesCards = [];
+  //this.bombsCards = [];
+  //this.rocketsCards = [];
+  //this.pairsStraightsCards = [];
+  //this.threesStraightsCards = [];
+  //this.straightsCards = [];
+  var newPokeCards = [];
+  if (!!cardPlan.rocketsCards && cardPlan.rocketsCards.length > 0) {
+    for (var index=0;index<cardPlan.rocketsCards.length;index++){
+      var tmpCard = cardPlan.rocketsCards[index];
+      for (var i=0; i<tmpCard.pokeCards.length;i++) {
+        if (newPokeCards.length < pokeCards1.length) {
+          newPokeCards.push(tmpCard.pokeCards[i]);
+        }
+      }
+    }
+  }
+  if (newPokeCards.length < pokeCards1.length && !!cardPlan.bombsCards && cardPlan.bombsCards.length > 0) {
+    for (var index=0;index<cardPlan.bombsCards.length;index++){
+      var tmpCard = cardPlan.bombsCards[index];
+      for (var i=0; i<tmpCard.pokeCards.length;i++) {
+        if (newPokeCards.length < pokeCards1.length) {
+          newPokeCards.push(tmpCard.pokeCards[i]);
+        }
+      }
+    }
+  }
+  if (newPokeCards.length < pokeCards1.length && !!cardPlan.threesStraightsCards && cardPlan.threesStraightsCards.length > 0) {
+    for (var index=0;index<cardPlan.threesStraightsCards.length;index++){
+      var tmpCard = cardPlan.threesStraightsCards[index];
+      for (var i=0; i<tmpCard.pokeCards.length;i++) {
+        if (newPokeCards.length < pokeCards1.length) {
+          newPokeCards.push(tmpCard.pokeCards[i]);
+        }
+      }
+    }
+  }
+
+  if (newPokeCards.length < pokeCards1.length && !!cardPlan.pairsStraightsCards && cardPlan.pairsStraightsCards.length > 0) {
+    for (var index=0;index<cardPlan.pairsStraightsCards.length;index++){
+      var tmpCard = cardPlan.pairsStraightsCards[index];
+      for (var i=0; i<tmpCard.pokeCards.length;i++) {
+        if (newPokeCards.length < pokeCards1.length) {
+          newPokeCards.push(tmpCard.pokeCards[i]);
+        }
+      }
+    }
+  }
+
+  if (newPokeCards.length < pokeCards1.length && !!cardPlan.straightsCards && cardPlan.straightsCards.length > 0) {
+    for (var index=0;index<cardPlan.straightsCards.length;index++){
+      var tmpCard = cardPlan.straightsCards[index];
+      for (var i=0; i<tmpCard.pokeCards.length;i++) {
+        if (newPokeCards.length < pokeCards1.length) {
+          newPokeCards.push(tmpCard.pokeCards[i]);
+        }
+      }
+    }
+  }
+
+  if (newPokeCards.length < pokeCards1.length && !!cardPlan.threesCards && cardPlan.threesCards.length > 0) {
+    for (var index=0;index<cardPlan.threesCards.length;index++){
+      var tmpCard = cardPlan.threesCards[index];
+      for (var i=0; i<tmpCard.pokeCards.length;i++) {
+        if (newPokeCards.length < pokeCards1.length) {
+          newPokeCards.push(tmpCard.pokeCards[i]);
+        }
+      }
+    }
+  }
+
+  if (newPokeCards.length < pokeCards1.length && !!cardPlan.pairsCards && cardPlan.pairsCards.length > 0) {
+    for (var index=0;index<cardPlan.pairsCards.length;index++){
+      var tmpCard = cardPlan.pairsCards[index];
+      for (var i=0; i<tmpCard.pokeCards.length;i++) {
+        if (newPokeCards.length < pokeCards1.length) {
+          newPokeCards.push(tmpCard.pokeCards[i]);
+        }
+      }
+    }
+  }
+
+  if (newPokeCards.length < pokeCards1.length && !!cardPlan.singlesCards && cardPlan.singlesCards.length > 0) {
+    for (var index=0;index<cardPlan.singlesCards.length;index++){
+      var tmpCard = cardPlan.singlesCards[index];
+      for (var i=0; i<tmpCard.pokeCards.length;i++) {
+        if (newPokeCards.length < pokeCards1.length) {
+          newPokeCards.push(tmpCard.pokeCards[i]);
+        }
+      }
+    }
+  }
+
+  var newCardInfo = CardInfo.create(newPokeCards);
+  CardAnalyzer.analyze(newCardInfo);
+
+  var leftPokeCards = [];
+  for (var i=0;i<concat_pokeCards.length;i++){
+    var used = false;
+    for (var j=0;j<newPokeCards.length;j++){
+      if (concat_pokeCards[i].pokeChar == newPokeCards[j].pokeChar){
+        used = true;
+      }
+    }
+    if (!used){
+      leftPokeCards.push(concat_pokeCards[i]);
+    }
+  }
+  return [newCardInfo,leftPokeCards];
+};
+
+AIEngine.getBestCardInfo = function (pokeCards1, pokeCards2) {
+  //Combinatorics.combination
+  var concat_pokeCards = pokeCards1.concat(pokeCards2);
+  var cardInfo = CardInfo.create(concat_pokeCards);
+  CardAnalyzer.analyze(cardInfo);
+  var cardPlan = cardInfo.cardPlans[0];
+  //this.singlesCards = [];
+  //this.pairsCards = [];
+  //this.threesCards = [];
+  //this.bombsCards = [];
+  //this.rocketsCards = [];
+  //this.pairsStraightsCards = [];
+  //this.threesStraightsCards = [];
+  //this.straightsCards = [];
+  var newPokeCards = [];
+  if (!!cardPlan.rocketsCards && cardPlan.rocketsCards.length > 0) {
+    for (var index=0;index<cardPlan.rocketsCards.length;index++){
+      var tmpCard = cardPlan.rocketsCards[index];
+      for (var i=0; i<tmpCard.pokeCards.length;i++) {
+        if (newPokeCards.length < pokeCards1.length) {
+          newPokeCards.push(tmpCard.pokeCards[i]);
+        }
+      }
+    }
+  }
+
+  if (newPokeCards.length < pokeCards1.length && !!cardPlan.straightsCards && cardPlan.straightsCards.length > 0) {
+    for (var index=0;index<cardPlan.straightsCards.length;index++){
+      var tmpCard = cardPlan.straightsCards[index];
+      for (var i=0; i<tmpCard.pokeCards.length;i++) {
+        if (newPokeCards.length < pokeCards1.length) {
+          newPokeCards.push(tmpCard.pokeCards[i]);
+        }
+      }
+    }
+  }
+
+  if (newPokeCards.length < pokeCards1.length && !!cardPlan.pairsStraightsCards && cardPlan.pairsStraightsCards.length > 0) {
+    for (var index=0;index<cardPlan.pairsStraightsCards.length;index++){
+      var tmpCard = cardPlan.pairsStraightsCards[index];
+      for (var i=0; i<tmpCard.pokeCards.length;i++) {
+        if (newPokeCards.length < pokeCards1.length) {
+          newPokeCards.push(tmpCard.pokeCards[i]);
+        }
+      }
+    }
+  }
+
+  if (newPokeCards.length < pokeCards1.length && !!cardPlan.threesStraightsCards && cardPlan.threesStraightsCards.length > 0) {
+    for (var index=0;index<cardPlan.threesStraightsCards.length;index++){
+      var tmpCard = cardPlan.threesStraightsCards[index];
+      for (var i=0; i<tmpCard.pokeCards.length;i++) {
+        if (newPokeCards.length < pokeCards1.length) {
+          newPokeCards.push(tmpCard.pokeCards[i]);
+        }
+      }
+    }
+  }
+
+  if (newPokeCards.length < pokeCards1.length && !!cardPlan.threesCards && cardPlan.threesCards.length > 0) {
+    for (var index=0;index<cardPlan.threesCards.length;index++){
+      var tmpCard = cardPlan.threesCards[index];
+      for (var i=0; i<tmpCard.pokeCards.length;i++) {
+        if (newPokeCards.length < pokeCards1.length) {
+          newPokeCards.push(tmpCard.pokeCards[i]);
+        }
+      }
+    }
+  }
+
+  if (newPokeCards.length < pokeCards1.length && !!cardPlan.bombsCards && cardPlan.bombsCards.length > 0) {
+    for (var index=0;index<cardPlan.bombsCards.length;index++){
+      var tmpCard = cardPlan.bombsCards[index];
+      for (var i=0; i<tmpCard.pokeCards.length;i++) {
+        if (newPokeCards.length < pokeCards1.length) {
+          newPokeCards.push(tmpCard.pokeCards[i]);
+        }
+      }
+    }
+  }
+
+  if (newPokeCards.length < pokeCards1.length && !!cardPlan.pairsCards && cardPlan.pairsCards.length > 0) {
+    for (var index=0;index<cardPlan.pairsCards.length;index++){
+      var tmpCard = cardPlan.pairsCards[index];
+      for (var i=0; i<tmpCard.pokeCards.length;i++) {
+        if (newPokeCards.length < pokeCards1.length) {
+          newPokeCards.push(tmpCard.pokeCards[i]);
+        }
+      }
+    }
+  }
+
+  if (newPokeCards.length < pokeCards1.length && !!cardPlan.singlesCards && cardPlan.singlesCards.length > 0) {
+    for (var index=0;index<cardPlan.singlesCards.length;index++){
+      var tmpCard = cardPlan.singlesCards[index];
+      for (var i=0; i<tmpCard.pokeCards.length;i++) {
+        if (newPokeCards.length < pokeCards1.length) {
+          newPokeCards.push(tmpCard.pokeCards[i]);
+        }
+      }
+    }
+  }
+
+  var newCardInfo = CardInfo.create(newPokeCards);
+  CardAnalyzer.analyze(newCardInfo);
+
+  var leftPokeCards = [];
+  for (var i=0;i<concat_pokeCards.length;i++){
+    var used = false;
+    for (var j=0;j<newPokeCards.length;j++){
+      if (concat_pokeCards[i].pokeChar == newPokeCards[j].pokeChar){
+        used = true;
+      }
+    }
+    if (!used){
+      leftPokeCards.push(concat_pokeCards[i]);
+    }
+  }
+  return [newCardInfo,leftPokeCards];
+};
+
+AIEngine.playCardLevel4 = function (curPlayer, nextPlayer, prevPlayer, lastPlayer, lastCard) {
+  logger.info("AIEngine.playCardLevel4 ");
+  var firstCard;
+
+  var next_player_cardInfo = CardInfo.create(nextPlayer.pokeCards);
+  CardAnalyzer.analyze(next_player_cardInfo);
+  var cur_player_cardInfo = CardInfo.create(curPlayer.pokeCards);
+  CardAnalyzer.analyze(cur_player_cardInfo);
+  var last_player_cardInfo = CardInfo.create(lastPlayer.pokeCards);
+  CardAnalyzer.analyze(last_player_cardInfo);
+  var prev_player_cardInfo = CardInfo.create(prevPlayer.pokeCards);
+  CardAnalyzer.analyze(prev_player_cardInfo);
+
+  logger.info("curPlayer [%d] : hands=%d, role=%s", curPlayer.userId, cur_player_cardInfo.cardPlans[0].hands, curPlayer.role);
+  logger.info("nextPlayer [%d] : hands=%d, role=%s", nextPlayer.userId, next_player_cardInfo.cardPlans[0].hands, nextPlayer.role);
+  logger.info("lastPlayer [%d] : hands=%d, role=%s", lastPlayer.userId, last_player_cardInfo.cardPlans[0].hands, lastPlayer.role);
+  logger.info("lastPlayer [%d] : last_card.maxPokeValue=%d, last_card.pokeCards.length=%d",lastPlayer.userId, lastCard.maxPokeValue, lastCard.pokeCards.length);
+
+  if (lastPlayer.userId == curPlayer.userId) {
+    logger.info("Have right to play card.");
+    // 有牌权
+    // 如果手中有多于一手的牌
+    if (cur_player_cardInfo.cardPlans[0].hands > 1) {
+      // 下家或下下家只有一手牌
+      if (next_player_cardInfo.cardPlans[0].hands == 1) {
+        logger.info("Have right to play card. nextPlayer has only one hand card.");
+        var next_last_card = new Card(next_player_cardInfo.pokeCards);
+        // 下家为友方
+        if (nextPlayer.role == curPlayer.role) {
+          // 找出与友方相同牌形的最小牌打出
+          logger.info("Have right to play card. play the smaller card to let friend run.");
+          firstCard = AIEngine.findSmallerThan(next_last_card, cur_player_cardInfo).card;
+        }
+        else  // 下家为敌方
+        {
+          // 打出手中牌值最大的牌
+          firstCard = AIEngine.findDiffTypePlayCard(cur_player_cardInfo, next_last_card);
+          if (!firstCard) {
+            logger.info("Have right to play card. play greater card to cover enemy's card.");
+            firstCard = AIEngine.findLordPlayCard(cur_player_cardInfo, next_last_card).card;
+          }
+          else {
+            logger.info("Have right to play card. play the diff type card to cover enemy's card.");
+          }
+
+        }
+      }
+      else  if (prev_player_cardInfo.cardPlans[0].hands == 1) {
+        logger.info("Have right to play card. prevPlayer has only one hand card.");
+        var prev_last_card = new Card(prev_player_cardInfo.pokeCards);
+        // 下下家为友方
+        if (curPlayer.role == prevPlayer.role) {
+          // 找出与友方相同牌形的最小牌打出
+          logger.info("Have right to play card. play the smaller card to let friend run.");
+          firstCard = AIEngine.findSmallerThan(prev_last_card, cur_player_cardInfo).card;
+        }
+        else  // 下下家为敌方
+        {
+          // 打出手中牌值最大的牌
+          firstCard = AIEngine.findDiffTypePlayCard(cur_player_cardInfo, prev_last_card);
+          if (!firstCard) {
+            logger.info("Have right to play card. play greater card to cover enemy's card.");
+            firstCard = AIEngine.findLordPlayCard(cur_player_cardInfo, prev_last_card).card;
+          }
+          else {
+            logger.info("Have right to play card. play the diff type card to cover enemy's card.");
+          }
+        }
+      }
+
+      // 下家手中有多于一手的牌 或面过程未找到有效牌
+      // 手中只有最后两手牌
+      if (firstCard == null && cur_player_cardInfo.cardPlans[0].hands == 2) {
+        // 如最后两手为单 或 对，则先出牌值小的
+        // 如最后两手牌为单或对 加 其它组合，则单 或对 最后出
+        logger.info("Have right to play card. curPlayer only have two hands card.");
+        firstCard = AIEngine.playLastTwoHandCard(cur_player_cardInfo, prev_player_cardInfo, next_player_cardInfo);
+
+      }
+      if (!firstCard && curPlayer.robot) {
+        var otherRobot;
+        if (prevPlayer.robot) {
+          logger.info("Have right to play card. prevPlayer is another robot");
+          otherRobot = prevPlayer;
+        }
+        else if (nextPlayer.robot) {
+          logger.info("Have right to play card. nextPlayer is another robot");
+          otherRobot = nextPlayer;
+        }
+        if (!!otherRobot){
+          logger.info("Have right to play card. Two robots exchange cards");
+          if (curPlayer.role == 2 || (curPlayer.role == 1 && otherRobot.role == 1)){
+            var exchangeResult = AIEngine.getBestCardInfo(curPlayer.pokeCards, otherRobot.pokeCards);
+            var bestCardInfo = exchangeResult[0];
+            var leftPokeCards = exchangeResult[1];
+            if (bestCardInfo.cardPlans[0].hands <= cur_player_cardInfo.cardPlans[0].hands){
+              cur_player_cardInfo = bestCardInfo;
+              curPlayer.setPokeCards(bestCardInfo.pokeCards);
+              otherRobot.setPokeCards(leftPokeCards);
+              logger.info("After exchange, curPlayer [%d] : hands=%d, role=%s", curPlayer.userId, cur_player_cardInfo.cardPlans[0].hands, curPlayer.role);
+            }
+          }
+        }
+      }
+      if (firstCard == null)
+      {
+        logger.info("Have right to play card. curPlayer just play an any card.");
+        firstCard = AIEngine.findLordFirstCard(cur_player_cardInfo);
+      }
+    }
+    else // 手中只有一手牌，则直接打出
+    {
+      logger.info("Have right to play card. curPlayer play the last card.");
+      firstCard = AIEngine.findLordFirstCard(cur_player_cardInfo);
+    }
+
+  } else {
+    // 无牌权
+    // 手中有不止一手牌
+    logger.info("No right to play card.");
+    if (cur_player_cardInfo.cardPlans[0].hands > 1) {
+      // 最后出牌者是友方
+      if (lastPlayer.role == curPlayer.role) {
+        // 友方剩最后一手牌 或者友方的最后所出牌牌值大于等于10 或者所出牌为三张以上
+        if (last_player_cardInfo.cardPlans[0].hands == 1){
+          logger.info("No right to play card. do not cover friend's card, let it run.");
+        }
+        else // 友方不手中不止一手牌，或所出牌牌权小于10
+        {
+          var tmpCardResult = AIEngine.findLordPlayCard(cur_player_cardInfo, lastCard);
+          var tmpFirstCard = tmpCardResult.card;
+          if (!!tmpFirstCard && ((tmpFirstCard.weight < 10 && !tmpCardResult.breakCard)  ||
+              (cur_player_cardInfo.cardPlans[0].hands < last_player_cardInfo.cardPlans[0].hands) ||
+              next_player_cardInfo.cardPlans[0].hands < 3)){
+            firstCard = tmpFirstCard;
+            logger.info("No right to play card. cover friend's card.");
+          }
+          else{
+            logger.info("No right to play card. do not cover friend's card.");
+          }
+        }
+      }
+      else // 最后出牌者是敌方
+      {
+        logger.info("No right to play card. cover enemy's card.");
+        firstCard = AIEngine.findLordPlayCard(cur_player_cardInfo, lastCard).card;
+
+        if (!firstCard && curPlayer.robot) {
+          var otherRobot;
+          if (prevPlayer.robot) {
+            logger.info("No right to play card. prevPlayer is another robot");
+            otherRobot = prevPlayer;
+          }
+          else if (nextPlayer.robot) {
+            logger.info("No right to play card. nextPlayer is another robot");
+            otherRobot = nextPlayer;
+          }
+          if (!!otherRobot){
+            logger.info("No right to play card. Two robots exchange cards");
+            if (curPlayer.role == 2 || (curPlayer.role == 1 && otherRobot.role == 1)){
+              var exchangeResult = AIEngine.getBestPowerCardInfo(curPlayer.pokeCards, otherRobot.pokeCards);
+              var bestCardInfo = exchangeResult[0];
+              var leftPokeCards = exchangeResult[1];
+              if (bestCardInfo.cardPlans[0].hands <= cur_player_cardInfo.cardPlans[0].hands){
+                cur_player_cardInfo = bestCardInfo;
+                curPlayer.setPokeCards(bestCardInfo.pokeCards);
+                otherRobot.setPokeCards(leftPokeCards);
+                logger.info("After exchange, curPlayer [%d] : hands=%d, role=%s", curPlayer.userId, cur_player_cardInfo.cardPlans[0].hands, curPlayer.role);
+                firstCard = AIEngine.findLordPlayCard(cur_player_cardInfo, lastCard).card;
+              }
+            }
+          }
+        }
       }
     }
     else{
@@ -1298,13 +1727,15 @@ AIEngine.findSmallerThan = function(card, cardInfo) {
       }
       break;
   }
+  if (!result)
+    return new CardResult(null, null);
   return result;
 };
 
 AIEngine.playLastTwoHandCard = function(cur_player_card_info, enemy_player_card_info) {
   var lordPlan = cur_player_card_info.cardPlans[0];
   if (lordPlan.rocketsCards.length>0) {
-    return new Card(lordCardInfo.pokeCards.slice(0).exclude(lordPlan.rocketsCards[0].pokeCards));
+    return new Card(cur_player_card_info.pokeCards.slice(0).exclude(lordPlan.rocketsCards[0].pokeCards));
   }
 
   // 有炸弹，则先出非炸弹的牌

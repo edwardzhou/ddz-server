@@ -168,6 +168,9 @@ PokeGame.newGame = function(table) {
 //  game.players[2].prevPlayer = game.players[1];
 //  game.players[2].nextPlayer = game.players[0];
 
+  game.cheatRate = 40;
+  game.cheatLimit = 1;
+  game.cheatCount = 0;
   return game;
 };
 

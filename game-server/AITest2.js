@@ -8,6 +8,7 @@ CardAnalyzer = require('./app/AI/CardAnalyzer');
 cardUtil = require('./app/util/cardUtil');
 Card = require('./app/domain/card');
 AIEngine = require('./app/AI/AIEngine');
+var Combinatorics = require('js-combinatorics').Combinatorics;
 
 testcases = [
     'BCFGIKOPWZ\\_cfitv'
@@ -61,4 +62,13 @@ function testGetSmallerThenFun() {
     console.log(timeoutPokeChars);
 }
 
-testGetSmallerThenFun();
+
+function TestPokeCard() {
+    var pokes = PokeCard.pokeCardsFromChars('Iijkluv');
+    var card_info = CardInfo.create(pokes);
+    CardAnalyzer.analyze(card_info);
+
+    console.log(pokes.length);
+}
+//testGetSmallerThenFun();
+TestPokeCard();
