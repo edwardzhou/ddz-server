@@ -717,7 +717,9 @@ AIEngine.playCardLevel4 = function (curPlayer, nextPlayer, prevPlayer, lastPlaye
         {
           var tmpCardResult = AIEngine.findLordPlayCard(cur_player_cardInfo, lastCard);
           var tmpFirstCard = tmpCardResult.card;
-          if (!!tmpFirstCard && ((tmpFirstCard.weight < 10 && !tmpCardResult.breakCard) || next_player_cardInfo.cardPlans[0].hands < 3)){
+          if (!!tmpFirstCard && ((tmpFirstCard.weight < 10 && !tmpCardResult.breakCard)  ||
+              (cur_player_cardInfo.cardPlans[0].hands < last_player_cardInfo.cardPlans[0].hands) ||
+              next_player_cardInfo.cardPlans[0].hands < 3)){
             firstCard = tmpFirstCard;
             logger.info("No right to play card. cover friend's card.");
           }
