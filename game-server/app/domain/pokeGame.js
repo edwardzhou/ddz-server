@@ -152,7 +152,8 @@ PokeGame.newGame = function(table) {
   game.startLordValue = gameRoom.startLordValue || 1;
   game.grabbingLordTimeout = gameRoom.grabbingLordTimeout || 20;
   game.playCardTimeout =gameRoom.playCardTimeout || 30;
-
+  game.cheatRate = gameRoom.playCardCheatRate || 40;
+  game.cheatLimit = gameRoom.playCardCheatLimit || 1;
   game.msgNo = 1;
   game.players = table.players.slice(0, table.players.length);
   game.token = {nextUserId: '', currentSeqNo: 0};
@@ -168,8 +169,6 @@ PokeGame.newGame = function(table) {
 //  game.players[2].prevPlayer = game.players[1];
 //  game.players[2].nextPlayer = game.players[0];
 
-  game.cheatRate = 40;
-  game.cheatLimit = 1;
   game.cheatCount = 0;
   return game;
 };

@@ -638,6 +638,9 @@ exp.playCard = function(table, player, pokeChars, seqNo, isTimeout, next) {
           var lastPlayer = pokeGame.getPlayerByUserId(pokeGame.lastPlay.userId);
           var prevPlayer = pokeGame.getNextPlayer(nextPlayer.userId);
           var tmpRandomNum = Math.random()*100;
+          logger.info("setupNextPlayerTimeout, cheatRate=%d, cheatLimit=%d, cheatCount=%d",
+              pokeGame.cheatRate, pokeGame.cheatLimit, pokeGame.cheatCount);
+
           if (tmpRandomNum <= pokeGame.cheatRate && pokeGame.cheatCount < pokeGame.cheatLimit) {
             pokeGame.cheatCount = pokeGame.cheatCount + 1;
             firstCard = AIEngine.playCardLevel4(timeoutPlayer, nextPlayer, prevPlayer, lastPlayer, pokeGame.lastPlay.card);
