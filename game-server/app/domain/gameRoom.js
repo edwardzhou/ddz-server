@@ -25,6 +25,8 @@ var roomSchemaFields = {
   readyTimeout: {type: Number, default: 15},  // 就绪超时
   grabbingLordTimeout: {type: Number, default: 20}, // 叫地主超时
   playCardTimeout: {type: Number, default: 30}, // 出牌超时
+  playCardCheatRate: {type: Number, default:40}, // 机器人作弊机率
+  playCardCheatLimit: {type: Number, default:1}, // 每个牌局机器作弊次数限制
   created_at: {type: Date, default: Date.now},
   updated_at: {type: Date, default: Date.now}
 };
@@ -387,6 +389,8 @@ roomSchema.methods.reloadFromDb = function() {
       self.readyTimeout = room.readyTimeout;
       self.grabbingLordTimeout = room.grabbingLordTimeout;
       self.playCardTimeout = room.playCardTimeout;
+      self.playCardCheatLimit = room.playCardCheatLimit;
+      self.playCardCheatRate = room.playCardCheatRate;
     })
     .fail(function(err) {
       console.error('[GameRoom.reloadFromDb] error: ', err);
