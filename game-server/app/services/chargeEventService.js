@@ -15,12 +15,38 @@ var UserSession = require('../domain/userSession');
 var DdzGoodsPackageService = require('./ddzGoodsPackageService');
 var Q = require('q');
 
-var ChargeEventService = function() {
+var _isShutdown = false;
 
+var ChargeEventService = function() {
+};
+
+ChargeEventService.shutdown = function() {
+  _isShutdown = true;
 };
 
 ChargeEventService.init = function(app, opts) {
   pomeloApp = app;
+  var setupSubscriber = null;
+
+  setupSubscriber = function() {
+    var subs = PubSubEvent.find({active: 1})
+      .tailable({awaitdata:true})
+      .setOptions({numberOfRetries: 10000000})
+      .stream()
+      .on('data', ChargeEventService.dispatchEvent.bind(this))
+      .on('close', function(){
+        console.log('[ChargeEventService] event tail stream closed. isShutdown: ', _isShutdown);
+        if (!_isShutdown) {
+          console.log('[ChargeEventService] setup event subscriber again.');
+          setupSubscriber();
+        }
+      })
+      .on('error', function(err) {
+        console.error('[ChargeEventService] event tail stream error: ', err);
+      });
+    console.log('start to subscribe charge events.');
+
+  };
 
   setTimeout(function(){
     var subs = PubSubEvent.find({active: 1})
@@ -29,7 +55,8 @@ ChargeEventService.init = function(app, opts) {
       .stream()
       .on('data', ChargeEventService.dispatchEvent.bind(this))
       .on('close', function(){
-        console.log('[ChargeEventService] event tail stream closed');
+        console.log('[ChargeEventService] event tail stream closed. isShutdown: ', _isShutdown);
+
       })
       .on('error', function(err) {
         console.error('[ChargeEventService] event tail stream error: ', err);

@@ -40,8 +40,8 @@ ActiveAdmin.register GameRoom do
     column :playCardTimeout
     column :playCardCheatRate
     column :playCardCheatLimit
-    column :createAt
-    column :updateAt
+    column :created_at
+    column :updated_at
     actions
   end
 

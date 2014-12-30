@@ -278,7 +278,8 @@ exp.startGame = function (table, next) {
         nextUserId: newPokeGame.grabbingLord.nextUserId,
         seqNo: (player.userId == newPokeGame.grabbingLord.nextUserId ? seqNo : 0),
         msgNo: msgNo,
-        timing: newPokeGame.grabbingLordTimeout || 20
+        timing: newPokeGame.grabbingLordTimeout || 20,
+        assetBits: 0xffff
       };
       //newPokeGame.playerMsgs[player.userId] = [];
       newPokeGame.playerMsgs[player.userId].push([eventName, eventData]);

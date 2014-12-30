@@ -1,12 +1,13 @@
 class DdzGoods
   include Mongoid::Document
 
-  field :goods, type: Integer
+  field :goodsId, type: String
   field :goodsName, type: String
   field :goodsDesc, type: String
   field :goodsType, type: String
+  field :goodsIcon, type: String
   field :sortIndex, type: Integer
-  field :goodsProps, type: Hash
+  field :goodsProps, type: Hash, default: ->{ {:_placeholder => 0} }
   include Mongoid::Timestamps
   # field :createdAt, type: Date, default: ->{ Time.now }
   # field :updatedAt, type: Date, default: ->{ Time.now }

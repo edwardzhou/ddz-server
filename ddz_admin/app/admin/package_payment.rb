@@ -26,8 +26,8 @@ ActiveAdmin.register PackagePayment do
     column :actual_price
     column :memo
     column :enabled
-    column :createAt
-    column :updateAt
+    column :created_at
+    column :updated_at
     actions
   end
 

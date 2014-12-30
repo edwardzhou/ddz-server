@@ -3,6 +3,7 @@
  */
 var logger = require('pomelo-logger').getLogger('pomelo', __filename);
 var DdzGoods = require('../domain/ddzGoods');
+var DdzUserAsset = require('../domain/ddzUserAsset');
 var User = require('../domain/user');
 var pomeloApp = null;
 var DdzGoodsPackageService = module.exports;
@@ -63,4 +64,34 @@ DdzGoodsPackageService.deliverPackageQ = function(purchaseOrder) {
 DdzGoodsPackageService.doIncreaseCoins = function(user, goodsItem) {
   // 加金币
   user.ddzProfile.coins += goodsItem.goods.goodsProps.coins * goodsItem.goodsCount;
+};
+
+/**
+ * 使用类道具项处理
+ * @param user
+ * @param goodsItem
+ */
+DdzGoodsPackageService.doAddToAsset = function(user, goodsItem) {
+
+  for (var i=0; i<goodsItem.goodsCount; i++) {
+    var newAsset = new DdzUserAsset({
+      user_id: user.id,
+      goodsId: goodsItem.goods.goodsId,
+      goodsName: goodsItem.goods.goodsName,
+      goodsDesc: goodsItem.goods.goodsDesc,
+      goodsType: goodsItem.goods.goodsType,
+      goodsIcon: goodsItem.goods.goodsIcon,
+      goodsProps: goodsItem.goods.goodsProps,
+      sortIndex: goodsItem.goods.sortIndex,
+      used_at: null
+    });
+    newAsset.saveQ()
+      .then(function(asset) {
+        logger.info('[DdzGoodsPackageService.doAddToAsset] add asset "%s" to user "%d" successfully:',
+          asset.goodsId, user.userId, asset );
+      })
+      .fail(function(err) {
+        logger.error('[DdzGoodsPackageService.doAddToAsset] Error: ', err);
+      });
+  }
 };

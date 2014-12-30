@@ -5,6 +5,8 @@ var format = require('util').format;
 var logger = require('pomelo-logger').getLogger(__filename);
 var utils = require('../../../util/utils');
 var Result = require('../../../domain/result');
+var User = require('../../../domain/user');
+var DdzUserAsset = require('../../../domain/ddzUserAsset');
 var DdzGoodsPackage = require('../../../domain/ddzGoodsPackage');
 
 
@@ -41,4 +43,19 @@ Handler.prototype.buyItem = function(msg, session, next) {
     }
     utils.invokeCallback(next, null, result);
   });
+};
+
+Handler.prototype.getAssetItems = function(msg, session, next) {
+  var userId = session.uid;
+  User.findOneQ({userId: userId})
+    .then(function(user) {
+      return DdzUserAsset.findQ({user_id: user.id});
+    })
+    .then(function(userAssets) {
+      utils.invokeCallback(next, null, {assets: userAssets.toParams()});
+    })
+    .fail(function(err){
+      logger.error('[HallHandler.getAssetItems] Error: ', err);
+      utils.invokeCallback(next, null, {error: 500});
+    });
 };
