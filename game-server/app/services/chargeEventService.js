@@ -48,21 +48,7 @@ ChargeEventService.init = function(app, opts) {
 
   };
 
-  setTimeout(function(){
-    var subs = PubSubEvent.find({active: 1})
-      .tailable({awaitdata:true})
-      .setOptions({numberOfRetries: 10000000})
-      .stream()
-      .on('data', ChargeEventService.dispatchEvent.bind(this))
-      .on('close', function(){
-        console.log('[ChargeEventService] event tail stream closed. isShutdown: ', _isShutdown);
-
-      })
-      .on('error', function(err) {
-        console.error('[ChargeEventService] event tail stream error: ', err);
-      });
-    console.log('start to subscribe charge events.');
-  }, 3000);
+  setTimeout(setupSubscriber, 3000);
 };
 
 ChargeEventService.dispatchEvent = function(event) {

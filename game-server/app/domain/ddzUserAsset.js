@@ -22,12 +22,14 @@ var ddzUserAssetSchema = new mongoose.Schema({
   goodsProps: {type: Schema.Types.Mixed, default: {_placeholder:0}},       // 道具属性 (自定义配置)
   sortIndex: {type: Number, default: 255},  // 显示排序
   used_at: {type: Date},
+  expired_at: {type: Date, expires: 0},
   created_at: {type: Date, default: Date.now},
   updated_at: {type: Date, default: Date.now}
 }, {
   collection: 'ddz_user_assets'
 });
 
+ddzUserAssetSchema.index({user_id: 1});
 
 
 var __toParams = function(model, excludeAttrs) {
@@ -37,6 +39,7 @@ var __toParams = function(model, excludeAttrs) {
     goodsName: model.goodsName,
     goodsDesc: model.goodsDesc,
     goodsType: model.goodsType,
+    count: model.count,
     goodsIcon: model.goodsIcon,
     //goodsProps: model.goodsProps,
     sortIndex: model.sortIndex
