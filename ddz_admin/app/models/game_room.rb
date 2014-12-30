@@ -15,6 +15,8 @@ class GameRoom
   field :readyTimeout, type: Integer, default: 10
   field :grabbingLordTimeout, type: Integer, default: 20
   field :playCardTimeout, type: Integer, default: 30
+  field :playCardCheatRate, type: Integer, default: 40
+  field :playCardCheatLimit, type: Integer, default: 1
   include Mongoid::Timestamps
   # field :createdAt, type: Date, default: ->{ Time.now }
   # field :updatedAt, type: Date, default: ->{ Time.now }

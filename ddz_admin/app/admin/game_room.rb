@@ -16,6 +16,8 @@ ActiveAdmin.register GameRoom do
     permitted << :readyTimeout
     permitted << :grabbingLordTimeout
     permitted << :playCardTimeout
+    permitted << :playCardCheatRate
+    permitted << :playCardCheatLimit
     permitted
   end
 
@@ -36,6 +38,8 @@ ActiveAdmin.register GameRoom do
     column :readyTimeout
     column :grabbingLordTimeout
     column :playCardTimeout
+    column :playCardCheatRate
+    column :playCardCheatLimit
     column :created_at
     column :updated_at
     actions
@@ -62,6 +66,8 @@ ActiveAdmin.register GameRoom do
       f.input :readyTimeout
       f.input :grabbingLordTimeout
       f.input :playCardTimeout
+      f.input :playCardCheatRate
+      f.input :playCardCheatLimit
     end
     f.actions
   end
