@@ -16,6 +16,7 @@ var ddzGoodsSchema = new mongoose.Schema({
   goodsName: String,    // 道具名称
   goodsDesc: String,    // 道具描述
   goodsType: String,    // 道具类型 (金币，道具，等级等等)
+  goodsAction: String,    // 道具类型 (金币，道具，等级等等)
   goodsIcon: String,    // 道具图标
   goodsProps: {type: Schema.Types.Mixed, default: {_placeholder:0}},       // 道具属性 (自定义配置)
   sortIndex: {type: Number, default: 255},  // 显示排序
@@ -33,6 +34,7 @@ var __toParams = function(model, excludeAttrs) {
     goodsName: model.goodsName,
     goodsDesc: model.goodsDesc,
     goodsType: model.goodsType,
+    goodsAction: model.goodsAction,
     goodsIcon: model.goodsIcon,
     goodsProps: model.goodsProps,
     sortIndex: model.sortIndex

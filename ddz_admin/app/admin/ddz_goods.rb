@@ -6,6 +6,7 @@ ActiveAdmin.register DdzGoods do
     permitted << :goodsName
     permitted << :goodsDesc
     permitted << :goodsType
+    permitted << :goodsAction
     permitted << :goodsIcon
     permitted << :goods_props_hash
     permitted << :sortIndex
@@ -19,6 +20,7 @@ ActiveAdmin.register DdzGoods do
     column :goodsName
     column :goodsDesc
     column :goodsType
+    column :goodsAction
     column :goodsIcon
     column :goodsProps
     column :sortIndex
@@ -31,6 +33,7 @@ ActiveAdmin.register DdzGoods do
   filter :goodsName
   filter :goodsDesc
   filter :goodsType
+  filter :goodsAction
 
   form do |f|
     f.inputs "DdzGoods Details" do
@@ -38,6 +41,7 @@ ActiveAdmin.register DdzGoods do
       f.input :goodsName
       f.input :goodsDesc
       f.input :goodsType
+      f.input :goodsAction
       f.input :goodsIcon
       f.input :sortIndex
 

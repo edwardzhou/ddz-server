@@ -5,6 +5,7 @@ class DdzGoods
   field :goodsName, type: String
   field :goodsDesc, type: String
   field :goodsType, type: String
+  field :goodsAction, type: String
   field :goodsIcon, type: String
   field :sortIndex, type: Integer
   field :goodsProps, type: Hash, default: ->{ {:_placeholder => 0} }
