@@ -40,7 +40,7 @@ DdzGoodsPackageService.deliverPackageQ = function(purchaseOrder) {
       var items = purchaseOrder.packageData.items;
       for (index=0; index<items.length; index++) {
         var item = items[index];
-        DdzGoodsPackageService['do' + item.goods.goodsType](user, item);
+        DdzGoodsPackageService['do' + item.goods.goodsAction](user, item);
       }
       // 保存ddzProfile
       return user.ddzProfile.saveQ();
@@ -75,11 +75,12 @@ DdzGoodsPackageService.doAddToAsset = function(user, goodsItem) {
 
   for (var i=0; i<goodsItem.goodsCount; i++) {
     var newAsset = new DdzUserAsset({
-      user_id: user.id,
+      userId: user.userId,
       goodsId: goodsItem.goods.goodsId,
       goodsName: goodsItem.goods.goodsName,
       goodsDesc: goodsItem.goods.goodsDesc,
       goodsType: goodsItem.goods.goodsType,
+      goodsAction: goodsItem.goods.goodsAction,
       goodsIcon: goodsItem.goods.goodsIcon,
       goodsProps: goodsItem.goods.goodsProps,
       sortIndex: goodsItem.goods.sortIndex,

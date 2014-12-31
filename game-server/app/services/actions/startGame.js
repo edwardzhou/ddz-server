@@ -7,7 +7,9 @@ var PlayerState = require('../../consts/consts').PlayerState;
 var ErrorCode = require('../../consts/errorCode');
 var PokeCard = require('../../domain/pokeCard');
 var PokeGame = require('../../domain/pokeGame');
+var DdzUserAsset = require('../../domain/ddzUserAsset');
 var cardUtil = require('../../util/cardUtil');
+var logger = require('pomelo-logger').getLogger('pomelo', __filename);
 
 var StartGameAction = function(opts) {
 
@@ -87,7 +89,30 @@ StartGameAction.execute = function(table, cb) {
   newPokeGame.readyTimeout = table.room.readyTimeout;
   newPokeGame.playCardTimeout = table.room.playCardTimeout;
   //newPokeGame.pokeGame.lastPlay
+  var playerAssetBits = {};
+  var playerIds = [];
+  var asset;
+  for (var i=0; i<newPokeGame.players.length; i++) {
+    playerAssetBits[newPokeGame.players[i].userId] = 0;
+    if (!newPokeGame.players[i].isRobot()) {
+      playerIds.push(newPokeGame.players[i].userId);
+    }
+  }
 
-  utils.invokeCallback(cb, null);
+  DdzUserAsset.findQ({userId: {$in: playerIds}, expired_at: {$gt: Date.now()}})
+    .then(function(assets) {
+      for (var i=0; i<assets.length; i++) {
+        asset = assets[i];
+        if (!!asset.goodsProps.assetBit) {
+          playerAssetBits[asset.userId] |= asset.goodsProps.assetBit;
+        }
+      }
+      newPokeGame.playerAssetBits = playerAssetBits;
+      utils.invokeCallback(cb, null);
+    })
+    .fail(function(err) {
+      logger.error('[StartGameAction.execute] error: ', err);
+      utils.invokeCallback(cb, null);
+    });
 
 };

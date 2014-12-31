@@ -13,11 +13,12 @@ var uuid = require('node-uuid');
  * @type {Mongoose.Schema}
  */
 var ddzUserAssetSchema = new mongoose.Schema({
-  user_id: {type: mongoose.Schema.Types.ObjectId},
+  userId: Number,
   goodsId: String,    // 道具Id
   goodsName: String,    // 道具名称
   goodsDesc: String,    // 道具描述
   goodsType: String,    // 道具类型 (金币，道具，等级等等)
+  goodsAction: String,  // 道具处理类型
   goodsIcon: String,    // 道具图标
   goodsProps: {type: Schema.Types.Mixed, default: {_placeholder:0}},       // 道具属性 (自定义配置)
   sortIndex: {type: Number, default: 255},  // 显示排序
@@ -29,7 +30,7 @@ var ddzUserAssetSchema = new mongoose.Schema({
   collection: 'ddz_user_assets'
 });
 
-ddzUserAssetSchema.index({user_id: 1});
+ddzUserAssetSchema.index({userId: 1});
 
 
 var __toParams = function(model, excludeAttrs) {
@@ -39,8 +40,11 @@ var __toParams = function(model, excludeAttrs) {
     goodsName: model.goodsName,
     goodsDesc: model.goodsDesc,
     goodsType: model.goodsType,
+    goodsAction: model.goodsAction,
     count: model.count,
     goodsIcon: model.goodsIcon,
+    remainingSeconds: model.remainingSeconds,
+    using: !!model.using ? 1:0,
     //goodsProps: model.goodsProps,
     sortIndex: model.sortIndex
   };
