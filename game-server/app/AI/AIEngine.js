@@ -446,7 +446,7 @@ AIEngine.getBestPowerCardInfo = function (pokeCards1, pokeCards2) {
       }
     }
   }
-
+  newPokeCards = cardUtil.sortPokeCards(newPokeCards);
   var newCardInfo = CardInfo.create(newPokeCards);
   CardAnalyzer.analyze(newCardInfo);
 
@@ -462,6 +462,7 @@ AIEngine.getBestPowerCardInfo = function (pokeCards1, pokeCards2) {
       leftPokeCards.push(concat_pokeCards[i]);
     }
   }
+  leftPokeCards = cardUtil.sortPokeCards(leftPokeCards);
   return [newCardInfo,leftPokeCards];
 };
 
@@ -567,7 +568,7 @@ AIEngine.getBestCardInfo = function (pokeCards1, pokeCards2) {
       }
     }
   }
-
+  newPokeCards = cardUtil.sortPokeCards(newPokeCards);
   var newCardInfo = CardInfo.create(newPokeCards);
   CardAnalyzer.analyze(newCardInfo);
 
@@ -583,6 +584,7 @@ AIEngine.getBestCardInfo = function (pokeCards1, pokeCards2) {
       leftPokeCards.push(concat_pokeCards[i]);
     }
   }
+  leftPokeCards = cardUtil.sortPokeCards(leftPokeCards);
   return [newCardInfo,leftPokeCards];
 };
 
