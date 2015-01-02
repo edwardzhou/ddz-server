@@ -63,7 +63,73 @@ ActiveAdmin.register DdzGoodsPackage do
       #f.input :goodsProps
       f.input :sortIndex
     end
+
+    panel "goods" do
+      table_for DdzGoods.all.sort(sortIndex: 1) do
+        column "Goods Id", :id
+        column "Goods Name", :goodsName
+        column "In Package" do |goods|
+          check_box_tag("in_package[]", goods.id)
+        end
+        column "count", :goodsCount do |goods|
+          text_field_tag("#{goods.id}_count")
+        end
+        column "Sort Index", :sortIndex do |goods|
+          number_field_tag("#{goods.id}_sortIndex", in: 0..255)
+        end
+      end
+
+    end
+
     f.actions
   end
 
+  member_action :update_items, :method => :post do
+
+  end
+
+  show do |goodsPkg|
+
+    attributes_table do
+      row :id
+      row :packageId
+      row :packageName
+      row :packageDesc
+      row :packageType
+      row :packageIcon
+      row :price
+      row :sortIndex
+      row :created_at
+      row :updated_at
+    end
+
+    panel "goods items" do
+      table_for goodsPkg.items do
+        column "Goods Id", :goodsId
+        column "Goods Name" do |item|
+          item.goods.goodsName
+        end
+        column "count", :goodsCount
+        column "Sort Index", :sortIndex
+      end
+
+    end
+
+  end
+
+  controller do
+    def update(options={}, &block)
+      object = resource
+
+      goods_ids = params[:in_package]
+      object.items.clear
+      items_attrs = []
+      goods_ids.each do |gid|
+        items_attrs << {goodsId: gid, goodsCount: params["#{gid}_count"], sortIndex: params["#{gid}_sortIndex"]}
+      end
+      object.items_attributes = items_attrs
+
+      super(options, &block)
+    end
+  end
 end
