@@ -26,12 +26,9 @@ class DdzGoodsPackage
     "#{self.packageId} - #{self.packageName}"
   end
 
-  def itemsToGoods()
-    self.items.each do |item|
-      item.goods = DdzGoods.find_by_id(item.goodsId) unless item.respond_to?(:goods)
-    end
-
-    self.items
+  def itemByGoodsId(goodsId)
+    item = items.select{|item| item.goodsId == goodsId}.first
+    item
   end
 
 end

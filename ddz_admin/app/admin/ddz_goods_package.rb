@@ -69,13 +69,13 @@ ActiveAdmin.register DdzGoodsPackage do
         column "Goods Id", :id
         column "Goods Name", :goodsName
         column "In Package" do |goods|
-          check_box_tag("in_package[]", goods.id)
+          check_box_tag("in_package[]", goods.id, resource.itemByGoodsId(goods.id).nil? == false)
         end
         column "count", :goodsCount do |goods|
-          text_field_tag("#{goods.id}_count")
+          text_field_tag("#{goods.id}_count", resource.itemByGoodsId(goods.id).nil? ? "": resource.itemByGoodsId(goods.id).goodsCount)
         end
         column "Sort Index", :sortIndex do |goods|
-          number_field_tag("#{goods.id}_sortIndex", in: 0..255)
+          number_field_tag("#{goods.id}_sortIndex", resource.itemByGoodsId(goods.id).nil? ? "": resource.itemByGoodsId(goods.id).sortIndex, in: 0..255)
         end
       end
 
