@@ -1,0 +1,13 @@
+{
+  "development": {
+    "url": "mongodb://dev2/new_ddz_dev",
+    "options": {}
+  },
+
+  "production": {
+    "host": "dev",
+    "port": 27017,
+    "database": "new_ddz"
+  }
+
+}
