@@ -15,6 +15,8 @@ class DdzGoodsPackage
 
   embeds_many :items, class_name: "GoodsItem"
 
+  accepts_nested_attributes_for :items
+
   def self.serialize_from_session(key, salt)
     record = to_adapter.get((key[0]["$oid"] rescue nil))
     record if record && record.authenticatable_salt == salt
@@ -22,6 +24,11 @@ class DdzGoodsPackage
 
   def to_s
     "#{self.packageId} - #{self.packageName}"
+  end
+
+  def itemByGoodsId(goodsId)
+    item = items.select{|item| item.goodsId == goodsId}.first
+    item
   end
 
 end

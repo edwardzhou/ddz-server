@@ -17,6 +17,8 @@ var ErrorCode = {
   CLIENT_DEVICE_PROHIBITTED: 13,
   // 未登录
   CLIENT_NOT_SIGNED_YET: 14,
+  // 链接握手无效
+  CONNECTION_HANDSAKE_INVALID: 15,
 
   // 用户不存在
   USER_NOT_FOUND: 100,

@@ -4,6 +4,7 @@ var pomelo = require('pomelo');
 var routeUtil = require('./app/util/routeUtil');
 var tableService = require('./app/services/tableService');
 var roomService = require('./app/services/roomService');
+var appSignatureService = require('./app/services/appSignatureService');
 var logger = require('pomelo-logger').getLogger('pomelo', __filename);
 require('./app/domain/ArrayHelper');
 
@@ -63,9 +64,15 @@ app.configure('production|development', 'ddz|gate', function () {
       setNoDelay: true,
       useProtobuf: true,
       handshake: function(msg, cb) {
-        logger.info('handshake -> msg: ', msg, "\n", this, "\n", this.socket);
-        cb(null, {authKey: 'aaaaaaaaaa'});
-      }
+        logger.info('handshake -> msg: ', msg, "\n", this, "\n");
+        appSignatureService.verifyAppSign(msg.user.aa, msg.user.ab, msg.user.ac, function(err, success){
+          if (!!err) {
+            cb(err, null);
+          } else {
+            cb(null, {authKey: 'aaaaaaaaaa'});
+          }
+        });
+       }
     });
 
   var clientIp = require('./app/filters/clientIp');

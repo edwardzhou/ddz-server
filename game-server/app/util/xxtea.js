@@ -80,7 +80,7 @@ function encryptToArray(string, key) {
     if (string == "") {
         return "";
     }
-    var v = stringToLongArray(string, false)
+    var v = stringToLongArray(string, true)
         , k = stringToLongArray(key, false)
         , n = v.length - 1
         , z = v[n]
