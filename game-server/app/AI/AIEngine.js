@@ -116,6 +116,7 @@ AIEngine.canGrabLoad = function (curPlayer, nextPlayer, prevPlayer) {
 
   if (cur_player_cardInfo.grabLoadWeight >= 3) {
     grabLoad = 1;
+    curPlayer.everGrabLard = true;
   }
 
   return grabLoad;
@@ -588,7 +589,7 @@ AIEngine.getBestCardInfo = function (pokeCards1, pokeCards2) {
   return [newCardInfo,leftPokeCards];
 };
 
-AIEngine.playCardLevel4 = function (curPlayer, nextPlayer, prevPlayer, lastPlayer, lastCard) {
+AIEngine.playCardLevel4 = function (curPlayer, nextPlayer, prevPlayer, lastPlayer, lastCard, pokeGame) {
   logger.info("AIEngine.playCardLevel4 ");
   var firstCard;
 
@@ -678,8 +679,9 @@ AIEngine.playCardLevel4 = function (curPlayer, nextPlayer, prevPlayer, lastPlaye
           otherRobot = nextPlayer;
         }
         if (!!otherRobot){
-          logger.info("Have right to play card. Two robots exchange cards");
-          if (curPlayer.role == 2 || (curPlayer.role == 1 && otherRobot.role == 1)){
+          logger.info("Have right to play card. Two robots try to exchange cards");
+          var cheatCondition1 = curPlayer.everGrabLard || (!curPlayer.everGrabLard && !otherRobot.everGrabLard);
+          if (curPlayer.role == 2 || (curPlayer.role == 1 && otherRobot.role == 1 && cheatCondition1)){
             var exchangeResult = AIEngine.getBestCardInfo(curPlayer.pokeCards, otherRobot.pokeCards);
             var bestCardInfo = exchangeResult[0];
             var leftPokeCards = exchangeResult[1];
@@ -687,6 +689,7 @@ AIEngine.playCardLevel4 = function (curPlayer, nextPlayer, prevPlayer, lastPlaye
               cur_player_cardInfo = bestCardInfo;
               curPlayer.setPokeCards(bestCardInfo.pokeCards);
               otherRobot.setPokeCards(leftPokeCards);
+              pokeGame.cheatCount = pokeGame.cheatCount + 1;
               logger.info("After exchange, curPlayer [%d] : hands=%d, role=%s", curPlayer.userId, cur_player_cardInfo.cardPlans[0].hands, curPlayer.role);
             }
           }
@@ -747,7 +750,8 @@ AIEngine.playCardLevel4 = function (curPlayer, nextPlayer, prevPlayer, lastPlaye
           }
           if (!!otherRobot){
             logger.info("No right to play card. Two robots exchange cards");
-            if (curPlayer.role == 2 || (curPlayer.role == 1 && otherRobot.role == 1)){
+            var cheatCondition1 = curPlayer.everGrabLard || (!curPlayer.everGrabLard && !otherRobot.everGrabLard);
+            if (curPlayer.role == 2 || (curPlayer.role == 1 && otherRobot.role == 1 && cheatCondition1)){
               var exchangeResult = AIEngine.getBestPowerCardInfo(curPlayer.pokeCards, otherRobot.pokeCards);
               var bestCardInfo = exchangeResult[0];
               var leftPokeCards = exchangeResult[1];
@@ -755,6 +759,7 @@ AIEngine.playCardLevel4 = function (curPlayer, nextPlayer, prevPlayer, lastPlaye
                 cur_player_cardInfo = bestCardInfo;
                 curPlayer.setPokeCards(bestCardInfo.pokeCards);
                 otherRobot.setPokeCards(leftPokeCards);
+                pokeGame.cheatCount = pokeGame.cheatCount + 1;
                 logger.info("After exchange, curPlayer [%d] : hands=%d, role=%s", curPlayer.userId, cur_player_cardInfo.cardPlans[0].hands, curPlayer.role);
                 firstCard = AIEngine.findLordPlayCard(cur_player_cardInfo, lastCard).card;
               }
