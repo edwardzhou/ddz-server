@@ -32,7 +32,7 @@ gem 'devise'
 gem 'ransack', github: 'activerecord-hackery/ransack'
 gem 'activeadmin', github: 'activeadmin'
 gem 'activeadmin-mongoid', github: 'Zhomart/activeadmin-mongoid', branch: 'ransack'
-
+gem 'rubyzip'
 # Use ActiveModel has_secure_password
 # gem 'bcrypt', '~> 3.1.7'
 

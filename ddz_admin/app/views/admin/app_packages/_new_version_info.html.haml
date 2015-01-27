@@ -1,0 +1,7 @@
+= semantic_form_for(:app_update_info, :url => new_version_admin_app_package_path, :html => { :multipart => true }) do |f|
+  = f.inputs "New Update Version" do
+    = f.input :appVersion
+    = f.input :resVersion
+    = f.input :searchPaths, as: :text
+    = f.input :zipFile, as: :file
+    = f.actions
