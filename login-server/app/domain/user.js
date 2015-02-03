@@ -72,6 +72,7 @@ var userSchema = new mongoose.Schema({
     signedTime: {type: Date, default: Date.now}
   },
   ddzProfile: {type: mongoose.Schema.Types.ObjectId, ref: 'DdzProfile'}, // 个人资料
+  ddzLoginReward: {type: mongoose.Schema.Types.ObjectId, ref: 'DdzLoginReward'}, // 连续登录奖励信息
   created_at: {type: Date, default: Date.now},
   updated_at: {type: Date, default: Date.now}
 });
@@ -217,6 +218,9 @@ var __toParams = function(model, excludeAttrs) {
 
   if (!!model.ddzProfile && !!model.ddzProfile.toParams) {
     transObj.ddzProfile = model.ddzProfile.toParams();
+  }
+  if (!!model.ddzLoginReward && !!model.ddzLoginReward.toParams) {
+    transObj.ddzLoginReward = model.ddzLoginReward.toParams();
   }
 
   if (!!excludeAttrs) {
