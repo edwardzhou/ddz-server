@@ -23,9 +23,6 @@ var ddzLoginRewardsSchema = new mongoose.Schema({
     collection: 'ddz_login_rewards'
 });
 
-
-
-
 var __toParams = function(model, excludeAttrs) {
     var transObj = {
         userId: model.userId,
@@ -55,4 +52,4 @@ ddzLoginRewardsSchema.methods.toParams = function(excludeAttrs) {
 
 var DdzLoginRewards = mongoose.model('DdzLoginRewards', ddzLoginRewardsSchema);
 
-module.exports = ddzLoginRewards;
+module.exports = DdzLoginRewards;
