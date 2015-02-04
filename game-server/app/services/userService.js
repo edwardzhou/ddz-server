@@ -123,7 +123,7 @@ UserService.signInByAuthToken = function(signInParams, callback) {
           }
         }
         logger.info('LoginRewardTemplate.findOneQ() done.');
-        ddzLoginReward.saveQ();
+        return ddzLoginReward.saveQ();
     })
     .then(function(ddzLoginReward){
         logger.info('LoginRewardTemplate.findOneQ() then then');
@@ -236,7 +236,7 @@ UserService.signInByPassword = function(signInParams, callback) {
           }
         }
         logger.info('LoginRewardTemplate.findOneQ() done.');
-        ddzLoginReward.saveQ();
+        return ddzLoginReward.saveQ();
     })
     .then(function(ddzLoginReward){
         logger.info('LoginRewardTemplate.findOneQ() then then');
