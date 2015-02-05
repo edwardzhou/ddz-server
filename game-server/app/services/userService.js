@@ -89,46 +89,8 @@ UserService.signInByAuthToken = function(signInParams, callback) {
           return;
         }
         logger.info('LoginRewardTemplate.findOneQ() then');
-        var today = new Date();
-        today.setHours(0);
-        today.setMinutes(0);
-        today.setSeconds(0);
-        today.setMilliseconds(0);
-
         var ddzLoginReward = result.user.ddzLoginRewards;
-        if (ddzLoginReward == null) {
-          logger.info('LoginRewardTemplate.findOneQ() then ddzLoginReward == null');
-          ddzLoginReward = new DdzLoginRewards();
-          ddzLoginReward.userId = result.user.userId;
-          ddzLoginReward.user_id = result.user.id;
-          ddzLoginReward.last_login_date = today.getTime();
-          ddzLoginReward.login_days = loginRewardTemplate.login_days;
-          ddzLoginReward.total_login_days = 1;
-          ddzLoginReward.reward_detail = loginRewardTemplate.reward_detail;
-          ddzLoginReward.reward_detail["day_1"]["status"] = 1;
-        }
-        else {
-          logger.info('LoginRewardTemplate.findOneQ() then ddzLoginReward == null else');
-          var diff_login_time = today.getTime() - ddzLoginReward.last_login_date;
-          if (diff_login_time > 3600 * 24  * 1000)
-          {
-            logger.info('LoginRewardTemplate.findOneQ() then ddzLoginReward == null else last_login_date_in_day_date.getDate() != today.getDate()');
-            ddzLoginReward.last_login_date = today.getTime();
-            ddzLoginReward.total_login_days = 1;
-            ddzLoginReward.login_days = loginRewardTemplate.login_days;
-            ddzLoginReward.reward_detail = loginRewardTemplate.reward_detail;
-            ddzLoginReward.reward_detail["day_1"]["status"] = 1;
-          }
-          else if(diff_login_time == 3600 * 24  * 1000) {
-            logger.info('LoginRewardTemplate.findOneQ() then ddzLoginReward == null else last_login_date_in_day_date.getDate() != today.getDate() else');
-            ddzLoginReward.last_login_date = today.getTime();
-            ddzLoginReward.total_login_days = ddzLoginReward.total_login_days + 1;
-            var v_day = 'day_'+ddzLoginReward.total_login_days;
-            logger.info('LoginRewardTemplate.findOneQ() then ddzLoginReward == null else last_login_date_in_day_date.getDate() != today.getDate() else ddzLoginReward.reward_detail[v_day]=',ddzLoginReward.reward_detail[v_day]);
-            ddzLoginReward.reward_detail[v_day]["status"] = 1;
-            logger.info('LoginRewardTemplate.findOneQ() then ddzLoginReward == null else last_login_date_in_day_date.getDate() != today.getDate() else ddzLoginReward.reward_detail[v_day]=',ddzLoginReward.reward_detail[v_day]);
-          }
-        }
+        ddzLoginReward = UserService.handleLoginReward(result.user, ddzLoginReward, loginRewardTemplate);
         logger.info('LoginRewardTemplate.findOneQ() done.');
         return ddzLoginReward.saveQ();
     })
@@ -215,45 +177,8 @@ UserService.signInByPassword = function(signInParams, callback) {
           return;
         }
         logger.info('LoginRewardTemplate.findOneQ() then');
-        var today = new Date();
-        today.setHours(0);
-        today.setMinutes(0);
-        today.setSeconds(0);
-        today.setMilliseconds(0);
         var ddzLoginReward = result.user.ddzLoginRewards;
-        if (ddzLoginReward == null) {
-          logger.info('LoginRewardTemplate.findOneQ() then ddzLoginReward == null');
-          ddzLoginReward = new DdzLoginRewards();
-          ddzLoginReward.userId = result.user.userId;
-          ddzLoginReward.user_id = result.user.id;
-          ddzLoginReward.last_login_date = today.getTime();
-          ddzLoginReward.login_days = loginRewardTemplate.login_days;
-          ddzLoginReward.total_login_days = 1;
-          ddzLoginReward.reward_detail = loginRewardTemplate.reward_detail;
-          ddzLoginReward.reward_detail["day_1"]["status"] = 1;
-        }
-        else {
-          logger.info('LoginRewardTemplate.findOneQ() then ddzLoginReward == null else');
-          var diff_login_time = today.getTime() - ddzLoginReward.last_login_date;
-          if (diff_login_time > 3600 * 24  * 1000)
-          {
-            logger.info('LoginRewardTemplate.findOneQ() then ddzLoginReward == null else last_login_date_in_day_date.getDate() != today.getDate()');
-            ddzLoginReward.last_login_date = today.getTime();
-            ddzLoginReward.total_login_days = 1;
-            ddzLoginReward.login_days = loginRewardTemplate.login_days;
-            ddzLoginReward.reward_detail = loginRewardTemplate.reward_detail;
-            ddzLoginReward.reward_detail["day_1"]["status"] = 1;
-          }
-          else if(diff_login_time == 3600 * 24  * 1000) {
-            logger.info('LoginRewardTemplate.findOneQ() then ddzLoginReward == null else last_login_date_in_day_date.getDate() != today.getDate() else');
-            ddzLoginReward.last_login_date = today.getTime();
-            ddzLoginReward.total_login_days = ddzLoginReward.total_login_days + 1;
-            var v_day = 'day_'+ddzLoginReward.total_login_days;
-            logger.info('LoginRewardTemplate.findOneQ() then ddzLoginReward == null else last_login_date_in_day_date.getDate() != today.getDate() else ddzLoginReward.reward_detail[v_day]=',ddzLoginReward.reward_detail[v_day]);
-            ddzLoginReward.reward_detail[v_day]["status"] = 1;
-            logger.info('LoginRewardTemplate.findOneQ() then ddzLoginReward == null else last_login_date_in_day_date.getDate() != today.getDate() else ddzLoginReward.reward_detail[v_day]=',ddzLoginReward.reward_detail[v_day]);
-          }
-        }
+        ddzLoginReward = UserService.handleLoginReward(result.user, ddzLoginReward, loginRewardTemplate);
         logger.info('LoginRewardTemplate.findOneQ() done.');
         return ddzLoginReward.saveQ();
     })
@@ -278,6 +203,49 @@ UserService.signInByPassword = function(signInParams, callback) {
               [{uid: result.user.userId, sid:result.userSession.frontendId}]);
         });
     });
+};
+
+UserService.handleLoginReward = function(cur_user, ddzLoginReward, loginRewardTemplate) {
+  var today = new Date();
+  today.setHours(0);
+  today.setMinutes(0);
+  today.setSeconds(0);
+  today.setMilliseconds(0);
+  var oneDayMillSeconds = 3600 * 24  * 1000;
+
+  if (ddzLoginReward == null) {
+    logger.info('LoginRewardTemplate.findOneQ() then ddzLoginReward == null');
+    ddzLoginReward = new DdzLoginRewards();
+    ddzLoginReward.userId = cur_user.userId;
+    ddzLoginReward.user_id = cur_user.id;
+    ddzLoginReward.last_login_date = today.getTime();
+    ddzLoginReward.login_days = loginRewardTemplate.login_days;
+    ddzLoginReward.total_login_days = 1;
+    ddzLoginReward.reward_detail = loginRewardTemplate.reward_detail;
+    ddzLoginReward.reward_detail["day_1"]["status"] = 1;
+  }
+  else {
+    logger.info('LoginRewardTemplate.findOneQ() then ddzLoginReward == null else');
+    var diff_login_time = today.getTime() - ddzLoginReward.last_login_date;
+    if (diff_login_time > oneDayMillSeconds)
+    {
+      logger.info('LoginRewardTemplate.findOneQ() then ddzLoginReward == null else last_login_date_in_day_date.getDate() != today.getDate()');
+      ddzLoginReward.last_login_date = today.getTime();
+      ddzLoginReward.total_login_days = 1;
+      ddzLoginReward.login_days = loginRewardTemplate.login_days;
+      ddzLoginReward.reward_detail = loginRewardTemplate.reward_detail;
+      ddzLoginReward.reward_detail["day_1"]["status"] = 1;
+    }
+    else if(diff_login_time == oneDayMillSeconds) {
+      logger.info('LoginRewardTemplate.findOneQ() then ddzLoginReward == null else last_login_date_in_day_date.getDate() != today.getDate() else');
+      ddzLoginReward.last_login_date = today.getTime();
+      ddzLoginReward.total_login_days = ddzLoginReward.total_login_days + 1;
+      var v_day = 'day_'+ddzLoginReward.total_login_days;
+      ddzLoginReward.reward_detail[v_day]["status"] = 1;
+      ddzLoginReward.markModified('reward_detail');
+    }
+  }
+  return ddzLoginReward;
 };
 
 UserService.signInByMac = function() {
@@ -354,14 +322,8 @@ UserService.signUp = function(signUpParams, cb) {
           console.log('singUp, loginRewardTemplate is null.');
           return;
         }
-        var ddzLoginReward = new DdzLoginRewards();
-        ddzLoginReward.userId = results.user.userId;
-        ddzLoginReward.user_id = results.user.id;
-        ddzLoginReward.last_login_date = Date.now();
-        ddzLoginReward.login_days = loginRewardTemplate.login_days;
-        ddzLoginReward.total_login_days = 1;
-        ddzLoginReward.reward_detail = loginRewardTemplate.reward_detail;
-        ddzLoginReward.reward_detail["day_1"]["status"] = 1;
+        var ddzLoginReward = results.user.ddzLoginRewards;
+        ddzLoginReward = UserService.handleLoginReward(results.user, ddzLoginReward, loginRewardTemplate);
         return ddzLoginReward.saveQ();
     })
     .then(function(ddzLoginReward){
