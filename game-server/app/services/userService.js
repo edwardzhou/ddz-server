@@ -226,7 +226,7 @@ UserService.signInByPassword = function(signInParams, callback) {
           ddzLoginReward = new DdzLoginRewards();
           ddzLoginReward.userId = result.user.userId;
           ddzLoginReward.user_id = result.user.id;
-          ddzLoginReward.last_login_date = Date.now();
+          ddzLoginReward.last_login_date = today.getTime();
           ddzLoginReward.login_days = loginRewardTemplate.login_days;
           ddzLoginReward.total_login_days = 1;
           ddzLoginReward.reward_detail = loginRewardTemplate.reward_detail;
@@ -238,17 +238,20 @@ UserService.signInByPassword = function(signInParams, callback) {
           if (diff_login_time > 3600 * 24  * 1000)
           {
             logger.info('LoginRewardTemplate.findOneQ() then ddzLoginReward == null else last_login_date_in_day_date.getDate() != today.getDate()');
-            ddzLoginReward.last_login_date = Date.now();
+            ddzLoginReward.last_login_date = today.getTime();
             ddzLoginReward.total_login_days = 1;
+            ddzLoginReward.login_days = loginRewardTemplate.login_days;
             ddzLoginReward.reward_detail = loginRewardTemplate.reward_detail;
             ddzLoginReward.reward_detail["day_1"]["status"] = 1;
           }
-          else if (diff_login_time == 3600 * 24  * 1000){
+          else if(diff_login_time == 3600 * 24  * 1000) {
             logger.info('LoginRewardTemplate.findOneQ() then ddzLoginReward == null else last_login_date_in_day_date.getDate() != today.getDate() else');
-            ddzLoginReward.last_login_date = Date.now();
+            ddzLoginReward.last_login_date = today.getTime();
             ddzLoginReward.total_login_days = ddzLoginReward.total_login_days + 1;
-            var v_day = "day_"+ddzLoginReward.total_login_days;
+            var v_day = 'day_'+ddzLoginReward.total_login_days;
+            logger.info('LoginRewardTemplate.findOneQ() then ddzLoginReward == null else last_login_date_in_day_date.getDate() != today.getDate() else ddzLoginReward.reward_detail[v_day]=',ddzLoginReward.reward_detail[v_day]);
             ddzLoginReward.reward_detail[v_day]["status"] = 1;
+            logger.info('LoginRewardTemplate.findOneQ() then ddzLoginReward == null else last_login_date_in_day_date.getDate() != today.getDate() else ddzLoginReward.reward_detail[v_day]=',ddzLoginReward.reward_detail[v_day]);
           }
         }
         logger.info('LoginRewardTemplate.findOneQ() done.');
