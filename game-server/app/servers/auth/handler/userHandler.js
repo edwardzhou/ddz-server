@@ -22,6 +22,7 @@ var signUpQ = Q.nbind(userService.signUp, userService);
 var signInByAuthTokenQ = Q.nbind(userService.signInByAuthToken, userService);
 var signInByPasswordQ = Q.nbind(userService.signInByPassword, userService);
 var updatePasswordQ = Q.nbind(userService.updatePassword, userService);
+var deliverLoginRewardQ = Q.nbind(userService.deliverLoginReward, userService);
 var createUserSessionQ = Q.nbind(UserSession.createSession, UserSession);
 
 /**
@@ -188,15 +189,31 @@ Handler.prototype.updateHeadIcon = function(msg, session, next) {
   var newHeadIcon = msg.headIcon;
   var userId = session.get('userId');
   User.findOneQ({userId: userId})
-    .then(function(user) {
-      user.headIcon = newHeadIcon;
-      return user.saveQ();
-    })
-    .then(function() {
-      utils.invokeCallback(next, null, new Result(ErrorCode.SUCCESS));
-    })
-    .fail(function(error) {
-      logger.error('[Handler.prototype.updateHeadIcon] error => ', error);
-      utils.invokeCallback(next, null, new Result(ErrorCode.SYSTEM_ERROR));
-    })
+      .then(function(user) {
+        user.headIcon = newHeadIcon;
+        return user.saveQ();
+      })
+      .then(function() {
+        utils.invokeCallback(next, null, new Result(ErrorCode.SUCCESS));
+      })
+      .fail(function(error) {
+        logger.error('[Handler.prototype.updateHeadIcon] error => ', error);
+        utils.invokeCallback(next, null, new Result(ErrorCode.SYSTEM_ERROR));
+      })
+};
+
+Handler.prototype.deliverLoginReward = function(session, next) {
+  var userId = session.get('userId');
+  var result = {};
+  deliverLoginRewardQ({userId: userId})
+      .then(function(r) {
+        result = r
+      })
+      .then(function() {
+        utils.invokeCallback(next, null, {coins:result.rewardCoins});
+      })
+      .fail(function(error) {
+        logger.error('[Handler.prototype.deliverLoginReward] error => ', error);
+        utils.invokeCallback(next, null, error);
+      })
 };
