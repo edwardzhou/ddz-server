@@ -11,11 +11,10 @@ var UserSession = require('../domain/userSession');
 var ErrorCode = require('../consts/errorCode');
 var utils = require('../util/utils');
 var crypto = require('crypto');
-
 var messageService = require('./messageService');
 
 var Q = require('q');
-
+var removeUserSessionQ = Q.nbind(UserSession.removeAllByUserId, UserSession);
 var createUserSessionQ = Q.nbind(UserSession.createSession, UserSession);
 
 var pomeloApp = null;
@@ -357,7 +356,7 @@ UserService.updatePassword = function(userId, newPassword, callback) {
 
 UserService.deliverLoginReward = function(userId, callback) {
   var result = {};
-  User.findOneQ({userId: userId})
+  User.findOne({userId: userId})
       .populate('ddzProfile ddzLoginRewards')
       .execQ()
       .then(function(user){
@@ -391,5 +390,34 @@ UserService.deliverLoginReward = function(userId, callback) {
       })
       .fail(function(error){
         utils.invokeCallback(callback, {code: error.number, msg: error.message}, null);
+      });
+};
+
+UserService.quit = function(userId, callback) {
+    logger.info('UserService.quit');
+    var result = {};
+    removeUserSessionQ(userId)
+      .then(function(){
+        utils.invokeCallback(callback, null, true);
+      })
+      .fail(function(error){
+        utils.invokeCallback(callback, {code: error.number, msg: error.message}, false);
+      });
+};
+
+UserService.updateSession = function(userId, callback) {
+  logger.info('UserService.quit');
+  var result = {};
+  UserSession.findOneQ({userId: userId})
+      .then(function(userSession){
+        if (userSession != null){
+          return userSession.touchQ();
+        }
+      })
+      .then(function(){
+        utils.invokeCallback(callback, null, true);
+      })
+      .fail(function(error){
+        utils.invokeCallback(callback, {code: error.number, msg: error.message}, false);
       });
 };

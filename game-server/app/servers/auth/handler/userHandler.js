@@ -214,18 +214,18 @@ Handler.prototype.updateHeadIcon = function(msg, session, next) {
       })
 };
 
-Handler.prototype.deliverLoginReward = function(session, next) {
+Handler.prototype.deliverLoginReward = function(msg, session, next) {
   var userId = session.get('userId');
   var result = {};
-  deliverLoginRewardQ({userId: userId})
+  deliverLoginRewardQ(userId)
       .then(function(r) {
         result = r
       })
       .then(function() {
-        utils.invokeCallback(next, null, {coins:result.rewardCoins});
+        utils.invokeCallback(next, null, {result:true, coins:result.rewardCoins});
       })
       .fail(function(error) {
         logger.error('[Handler.prototype.deliverLoginReward] error => ', error);
-        utils.invokeCallback(next, null, error);
+        utils.invokeCallback(next, null, {result: false, err: error});
       })
 };
