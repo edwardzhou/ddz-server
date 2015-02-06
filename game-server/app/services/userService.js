@@ -337,6 +337,7 @@ UserService.signUp = function(signUpParams, cb) {
     .fail(function(error) {
       utils.invokeCallback(cb, {code: error.number, msg: error.message}, null);
     });
+
 };
 
 UserService.updatePassword = function(userId, newPassword, callback) {

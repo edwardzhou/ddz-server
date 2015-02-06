@@ -15,6 +15,7 @@ var async = require('async');
 var taskService = require('../../../services/taskService');
 
 var userService = require('../../../services/userService');
+var messageService = require('../../..//services/messageService');
 
 var Q = require('q');
 
@@ -165,6 +166,17 @@ Handler.prototype.signUp = function(msg, session, next) {
     })
     .fail(function(error) {
       utils.invokeCallback(next, null, {err: 502});
+    })
+    .then(function(){
+        return results.user.populateQ('ddzLoginRewards');
+    })
+    .done(function(){
+        logger.info("result.ddzLoginReward.toParams=", results.user.ddzLoginRewards.toParams());
+        process.nextTick(function() {
+          messageService.pushMessage('onLoginReward',
+              {ddzLoginRewards: results.user.ddzLoginRewards.toParams()},
+              [{uid: results.user.userId, sid:results.userSession.frontendId}]);
+        });
     });
 };
 
