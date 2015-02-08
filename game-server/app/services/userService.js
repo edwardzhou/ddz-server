@@ -1,16 +1,20 @@
 /**
  * Created by edwardzhou on 14-7-23.
  */
+var logger = require('pomelo-logger').getLogger('pomelo', __filename);
 var User = require('../domain/user');
 var DataKeyId = require('../domain/dataKeyId');
 var DdzProfile = require('../domain/ddzProfile');
+var DdzLoginRewards = require('../domain/ddzLoginRewards');
+var LoginRewardTemplate = require('../domain/LoginRewardTemplates');
 var UserSession = require('../domain/userSession');
 var ErrorCode = require('../consts/errorCode');
 var utils = require('../util/utils');
 var crypto = require('crypto');
+var messageService = require('./messageService');
 
 var Q = require('q');
-
+var removeUserSessionQ = Q.nbind(UserSession.removeAllByUserId, UserSession);
 var createUserSessionQ = Q.nbind(UserSession.createSession, UserSession);
 
 var pomeloApp = null;
@@ -46,13 +50,13 @@ UserService.signInByAuthToken = function(signInParams, callback) {
   var result = {};
 
   User.findOne({userId: userId})
-    .populate('ddzProfile')
+    .populate('ddzProfile ddzLoginRewards')
     .execQ()
     .then(function(user) {
       if (user == null) {
         throw genError(ErrorCode.USER_NOT_FOUND);
       }
-
+      logger.info('user.ddzLoginRewards', user.ddzLoginRewards);
       if (!user.verifyToken(authToken, mac)) {
         throw genError(ErrorCode.AUTH_TOKEN_INVALID);
       }
@@ -74,6 +78,27 @@ UserService.signInByAuthToken = function(signInParams, callback) {
     .then(function(newUserSession){
       result.userSession = newUserSession;
     })
+    .then(function(){
+        logger.info('LoginRewardTemplate.findOneQ() 1');
+        return LoginRewardTemplate.findOneQ();
+    })
+    .then(function(loginRewardTemplate){
+        if (loginRewardTemplate == null) {
+          console.log('singUp, loginRewardTemplate is null.');
+          return;
+        }
+        logger.info('LoginRewardTemplate.findOneQ() then');
+        var ddzLoginReward = result.user.ddzLoginRewards;
+        ddzLoginReward = UserService.handleLoginReward(result.user, ddzLoginReward, loginRewardTemplate);
+        logger.info('LoginRewardTemplate.findOneQ() done.');
+        return ddzLoginReward.saveQ();
+    })
+    .then(function(ddzLoginReward){
+        logger.info('LoginRewardTemplate.findOneQ() then then');
+        result.ddzLoginReward = ddzLoginReward;
+        result.user.ddzLoginRewards = ddzLoginReward;
+        return result.user.saveQ();
+    })
 //    .then(function() {
 //      return DdzProfile.findOneQ({userId: result.user.userId});
 //    })
@@ -86,6 +111,14 @@ UserService.signInByAuthToken = function(signInParams, callback) {
     .fail(function(error){
       var errCode = error.errCode || ErrorCode.SYSTEM_ERROR;
       utils.invokeCallback(callback, {err: errCode}, null);
+    })
+    .done(function(){
+        logger.info("result.ddzLoginReward.toParams=", result.ddzLoginReward.toParams());
+        process.nextTick(function() {
+          messageService.pushMessage('onLoginReward',
+              {ddzLoginRewards: result.ddzLoginReward.toParams()},
+              [{uid: result.user.userId, sid:result.userSession.frontendId}]);
+        });
     });
 };
 
@@ -103,7 +136,7 @@ UserService.signInByPassword = function(signInParams, callback) {
   var result = {};
 
   User.findOne({userId: userId})
-    .populate('ddzProfile')
+    .populate('ddzProfile ddzLoginRewards')
     .execQ()
     .then(function(user) {
       if (user == null) {
@@ -134,12 +167,84 @@ UserService.signInByPassword = function(signInParams, callback) {
       result.userSession = newUserSession;
     })
     .then(function(){
+        logger.info('LoginRewardTemplate.findOneQ()');
+        return LoginRewardTemplate.findOneQ();
+    })
+    .then(function(loginRewardTemplate){
+        if (loginRewardTemplate == null) {
+          console.log('singUp, loginRewardTemplate is null.');
+          return;
+        }
+        logger.info('LoginRewardTemplate.findOneQ() then');
+        var ddzLoginReward = result.user.ddzLoginRewards;
+        ddzLoginReward = UserService.handleLoginReward(result.user, ddzLoginReward, loginRewardTemplate);
+        logger.info('LoginRewardTemplate.findOneQ() done.');
+        return ddzLoginReward.saveQ();
+    })
+    .then(function(ddzLoginReward){
+        logger.info('LoginRewardTemplate.findOneQ() then then');
+        result.ddzLoginReward = ddzLoginReward;
+        result.user.ddzLoginRewards = ddzLoginReward;
+        return result.user.saveQ();
+    })
+    .then(function(){
       utils.invokeCallback(callback, null, result);
     })
     .fail(function(error){
       var errCode = error.errCode || ErrorCode.SYSTEM_ERROR;
       utils.invokeCallback(callback, {err: errCode}, null);
+    })
+    .done(function(){
+        logger.info("result.ddzLoginReward.toParams=", result.ddzLoginReward.toParams());
+        process.nextTick(function() {
+          messageService.pushMessage('onLoginReward',
+              {ddzLoginRewards: result.ddzLoginReward.toParams()},
+              [{uid: result.user.userId, sid:result.userSession.frontendId}]);
+        });
     });
+};
+
+UserService.handleLoginReward = function(cur_user, ddzLoginReward, loginRewardTemplate) {
+  var today = new Date();
+  today.setHours(0);
+  today.setMinutes(0);
+  today.setSeconds(0);
+  today.setMilliseconds(0);
+  var oneDayMillSeconds = 3600 * 24  * 1000;
+
+  if (ddzLoginReward == null) {
+    logger.info('LoginRewardTemplate.findOneQ() then ddzLoginReward == null');
+    ddzLoginReward = new DdzLoginRewards();
+    ddzLoginReward.userId = cur_user.userId;
+    ddzLoginReward.user_id = cur_user.id;
+    ddzLoginReward.last_login_date = today.getTime();
+    ddzLoginReward.login_days = loginRewardTemplate.login_days;
+    ddzLoginReward.total_login_days = 1;
+    ddzLoginReward.reward_detail = loginRewardTemplate.reward_detail;
+    ddzLoginReward.reward_detail["day_1"]["status"] = 1;
+  }
+  else {
+    logger.info('LoginRewardTemplate.findOneQ() then ddzLoginReward == null else');
+    var diff_login_time = today.getTime() - ddzLoginReward.last_login_date;
+    if (diff_login_time > oneDayMillSeconds)
+    {
+      logger.info('LoginRewardTemplate.findOneQ() then ddzLoginReward == null else last_login_date_in_day_date.getDate() != today.getDate()');
+      ddzLoginReward.last_login_date = today.getTime();
+      ddzLoginReward.total_login_days = 1;
+      ddzLoginReward.login_days = loginRewardTemplate.login_days;
+      ddzLoginReward.reward_detail = loginRewardTemplate.reward_detail;
+      ddzLoginReward.reward_detail["day_1"]["status"] = 1;
+    }
+    else if(diff_login_time == oneDayMillSeconds) {
+      logger.info('LoginRewardTemplate.findOneQ() then ddzLoginReward == null else last_login_date_in_day_date.getDate() != today.getDate() else');
+      ddzLoginReward.last_login_date = today.getTime();
+      ddzLoginReward.total_login_days = ddzLoginReward.total_login_days + 1;
+      var v_day = 'day_'+ddzLoginReward.total_login_days;
+      ddzLoginReward.reward_detail[v_day]["status"] = 1;
+      ddzLoginReward.markModified('reward_detail');
+    }
+  }
+  return ddzLoginReward;
 };
 
 UserService.signInByMac = function() {
@@ -209,11 +314,29 @@ UserService.signUp = function(signUpParams, cb) {
       return results.user.populateQ('ddzProfile');
     })
     .then(function(){
+        return LoginRewardTemplate.findOneQ();
+    })
+    .then(function(loginRewardTemplate){
+        if (loginRewardTemplate == null) {
+          console.log('singUp, loginRewardTemplate is null.');
+          return;
+        }
+        var ddzLoginReward = results.user.ddzLoginRewards;
+        ddzLoginReward = UserService.handleLoginReward(results.user, ddzLoginReward, loginRewardTemplate);
+        return ddzLoginReward.saveQ();
+    })
+    .then(function(ddzLoginReward){
+        results.ddzLoginRewards = ddzLoginReward;
+        results.user.ddzLoginRewards = ddzLoginReward;
+        return results.user.saveQ();
+    })
+    .then(function(){
       utils.invokeCallback(cb, null, results.user);
     })
     .fail(function(error) {
       utils.invokeCallback(cb, {code: error.number, msg: error.message}, null);
     });
+
 };
 
 UserService.updatePassword = function(userId, newPassword, callback) {
@@ -229,4 +352,72 @@ UserService.updatePassword = function(userId, newPassword, callback) {
       logger.error(error);
       utils.invokeCallback(callback, null, false);
     });
+};
+
+UserService.deliverLoginReward = function(userId, callback) {
+  var result = {};
+  User.findOne({userId: userId})
+      .populate('ddzProfile ddzLoginRewards')
+      .execQ()
+      .then(function(user){
+        if (user.ddzLoginRewards == null){
+          throw genError(ErrorCode.LOGIN_REWARD_NULL);
+        }
+        result.user = user;
+        var rewardCoins = 0;
+        for(var i=1;i<=user.ddzLoginRewards.login_days;i++){
+          var v_day = 'day_'+i;
+          if (user.ddzLoginRewards.reward_detail[v_day]["status"] == 1){
+            rewardCoins = rewardCoins + user.ddzLoginRewards.reward_detail[v_day]["bonus"];
+            user.ddzLoginRewards.reward_detail[v_day]["status"] = 2;
+          }
+        }
+        result.rewardCoins = rewardCoins;
+        var funcs = function(){};
+        if (rewardCoins > 0){
+          user.ddzProfile.coins = user.ddzProfile.coins + rewardCoins;
+          user.ddzLoginRewards.markModified('reward_detail');
+          funcs = function(){
+            logger.info('UserService.deliverLoginReward, save ddzProfile and ddzLoginRewards');
+            user.ddzProfile.saveQ();
+            user.ddzLoginRewards.saveQ();
+          };
+        }
+        return Q.all(funcs);
+      })
+      .then(function(){
+        utils.invokeCallback(callback, null, result);
+      })
+      .fail(function(error){
+        utils.invokeCallback(callback, {code: error.number, msg: error.message}, null);
+      });
+};
+
+UserService.quit = function(userId, callback) {
+    logger.info('UserService.quit');
+    var result = {};
+    removeUserSessionQ(userId)
+      .then(function(){
+        utils.invokeCallback(callback, null, true);
+      })
+      .fail(function(error){
+        utils.invokeCallback(callback, {code: error.number, msg: error.message}, false);
+      });
+};
+
+UserService.updateSession = function(userId, callback) {
+  logger.info('UserService.quit');
+  var result = {};
+  UserSession.findOneQ({userId: userId})
+      .then(function(userSession){
+        if (userSession != null){
+          return userSession.touchQ();
+        }
+      })
+      .then(function(){
+        utils.invokeCallback(callback, null, true);
+      })
+      .fail(function(error){
+        utils.invokeCallback(callback, {code: error.number, msg: error.message}, false);
+      });
 };
