@@ -44,6 +44,26 @@ Handler.prototype.getTasks = function (msg, session, next) {
     });
 };
 
+/**
+ * 获取已完成任务数
+ * @param msg
+ * @param session
+ * @param next
+ */
+Handler.prototype.getFinishedTasksCount = function (msg, session, next) {
+  var userId = session.uid;
+  User.findOneQ({userId: userId})
+      .then(function(user) {
+        logger.info('[taskHandler.getTasks] user => ', user);
+        taskService.getFinishedTaskListQ(user)
+            .then(function(tasks) {
+              utils.invokeCallback(next, null, {count: tasks.length});
+            })
+      })
+      .fail(function(err) {
+        utils.invokeCallback(next, {err: err}, null);
+      });
+};
 
 /**
  * 领取任务

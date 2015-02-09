@@ -95,6 +95,7 @@ userTaskSchema.statics.createUserTask = function(user, taskDef) {
   userTask._id = new mongoose.Types.ObjectId();
   userTask.user_id = user.id;
   userTask.task_id = taskDef.id;
+  userTask.taskActivated = true;
   userTask.taskDefUpdatedAt = taskDef.updated_at;
   userTask.created_at = Date.now();
   userTask.updated_at = Date.now();
