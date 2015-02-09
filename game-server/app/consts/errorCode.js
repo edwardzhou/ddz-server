@@ -30,6 +30,8 @@ var ErrorCode = {
   AUTH_TOKEN_INVALID: 102,
   // 会话token过期
   SESSION_TOKEN_EXPIRED: 103,
+  // 无登录奖励记录
+  LOGIN_REWARD_NULL: 104,
 
   // 无效请求
   INVALID_REQUEST: 1001,
@@ -75,6 +77,8 @@ ErrorMessages[ErrorCode.PASSWORD_INCORRECT] = '密码不匹配';
 ErrorMessages[ErrorCode.AUTH_TOKEN_INVALID] = '登录token无效';
 // 会话token过期
 ErrorMessages[ErrorCode.SESSION_TOKEN_EXPIRED] = '会话token过期';
+// 无登录奖励记录
+ErrorMessages[ErrorCode.LOGIN_REWARD_NULL] = '无登录奖励记录';
 
 ErrorCode.getErrorMessage = function(errCode) {
   return ErrorMessages[errCode];

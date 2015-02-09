@@ -1,8 +1,13 @@
 var format = require('util').format;
+var utils = require('../../../util/utils');
 var logger = require('pomelo-logger').getLogger(__filename);
 var GameTable = require('../../../domain/gameTable');
 var Result = require('../../../domain/result');
 var ErrorCode = require('../../../consts/errorCode');
+var Q = require('q');
+var userService = require('../../../services/userService');
+var quitQ = Q.nbind(userService.quit, userService);
+var updateSessionQ = Q.nbind(userService.updateSession, userService);
 
 module.exports = function(app) {
   return new Handler(app);
@@ -177,6 +182,32 @@ Handler.prototype.ackPreStartGame = function(msg, session, next) {
 
     next(null, resp);
   });
+
+};
+
+Handler.prototype.quit = function(msg, session, next) {
+  var self = this;
+  var userId = session.get('userId');
+  quitQ(userId)
+      .then(function(){
+        utils.invokeCallback(callback, null, {result: true});
+      })
+      .fail(function(error){
+        utils.invokeCallback(callback, null, {result: false, err: error});
+      });
+
+};
+
+Handler.prototype.updateSession = function(msg, session, next) {
+  var self = this;
+  var userId = session.get('userId');
+  updateSessionQ(userId)
+      .then(function(){
+        utils.invokeCallback(callback, null, {result: true});
+      })
+      .fail(function(error){
+        utils.invokeCallback(callback, null, {result: false, err: error});
+      });
 
 };
 

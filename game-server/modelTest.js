@@ -174,4 +174,47 @@ testProcessGamingTask = function(user) {
     })
 };
 
-testProcessGamingTask();
+//testProcessGamingTask();
+
+testUpdateUserInfo = function(userId) {
+  var result = {};
+  User.findOne({userId: userId})
+      .populate('ddzProfile ddzLoginRewards')
+      .execQ()
+      .then(function(user){
+        if (user.ddzLoginRewards == null){
+          throw genError(ErrorCode.LOGIN_REWARD_NULL);
+        }
+        result.user = user;
+        var rewardCoins = 0;
+        for(var i=1;i<=user.ddzLoginRewards.login_days;i++){
+          var v_day = 'day_'+i;
+          if (user.ddzLoginRewards.reward_detail[v_day]["status"] == 1){
+            rewardCoins = rewardCoins + user.ddzLoginRewards.reward_detail[v_day]["bonus"];
+            user.ddzLoginRewards.reward_detail[v_day]["status"] = 2;
+          }
+        }
+        result.rewardCoins = rewardCoins;
+        var funcs = function(){
+          logger.info('UserService.deliverLoginReward, empty funcs.');
+        };
+        if (rewardCoins > 0){
+          user.ddzProfile.coins = user.ddzProfile.coins + rewardCoins;
+          user.ddzLoginRewards.markModified('reward_detail');
+          funcs = function(){
+            logger.info('UserService.deliverLoginReward, save ddzProfile and ddzLoginRewards');
+            user.ddzProfile.saveQ();
+            user.ddzLoginRewards.saveQ();
+          };
+        }
+        return Q.all(funcs);
+      })
+      .then(function(){
+        utils.invokeCallback(callback, null, result);
+      })
+      .fail(function(error){
+        utils.invokeCallback(callback, {code: error.number, msg: error.message}, null);
+      });
+};
+
+testUpdateUserInfo(50467);

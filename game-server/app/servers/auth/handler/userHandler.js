@@ -15,6 +15,7 @@ var async = require('async');
 var taskService = require('../../../services/taskService');
 
 var userService = require('../../../services/userService');
+var messageService = require('../../..//services/messageService');
 
 var Q = require('q');
 
@@ -22,6 +23,7 @@ var signUpQ = Q.nbind(userService.signUp, userService);
 var signInByAuthTokenQ = Q.nbind(userService.signInByAuthToken, userService);
 var signInByPasswordQ = Q.nbind(userService.signInByPassword, userService);
 var updatePasswordQ = Q.nbind(userService.updatePassword, userService);
+var deliverLoginRewardQ = Q.nbind(userService.deliverLoginReward, userService);
 var createUserSessionQ = Q.nbind(UserSession.createSession, UserSession);
 
 /**
@@ -164,6 +166,17 @@ Handler.prototype.signUp = function(msg, session, next) {
     })
     .fail(function(error) {
       utils.invokeCallback(next, null, {err: 502});
+    })
+    .then(function(){
+        return results.user.populateQ('ddzLoginRewards');
+    })
+    .done(function(){
+        logger.info("result.ddzLoginReward.toParams=", results.user.ddzLoginRewards.toParams());
+        process.nextTick(function() {
+          messageService.pushMessage('onLoginReward',
+              {ddzLoginRewards: results.user.ddzLoginRewards.toParams()},
+              [{uid: results.user.userId, sid:results.userSession.frontendId}]);
+        });
     });
 };
 
@@ -188,15 +201,31 @@ Handler.prototype.updateHeadIcon = function(msg, session, next) {
   var newHeadIcon = msg.headIcon;
   var userId = session.get('userId');
   User.findOneQ({userId: userId})
-    .then(function(user) {
-      user.headIcon = newHeadIcon;
-      return user.saveQ();
-    })
-    .then(function() {
-      utils.invokeCallback(next, null, new Result(ErrorCode.SUCCESS));
-    })
-    .fail(function(error) {
-      logger.error('[Handler.prototype.updateHeadIcon] error => ', error);
-      utils.invokeCallback(next, null, new Result(ErrorCode.SYSTEM_ERROR));
-    })
+      .then(function(user) {
+        user.headIcon = newHeadIcon;
+        return user.saveQ();
+      })
+      .then(function() {
+        utils.invokeCallback(next, null, new Result(ErrorCode.SUCCESS));
+      })
+      .fail(function(error) {
+        logger.error('[Handler.prototype.updateHeadIcon] error => ', error);
+        utils.invokeCallback(next, null, new Result(ErrorCode.SYSTEM_ERROR));
+      })
+};
+
+Handler.prototype.deliverLoginReward = function(msg, session, next) {
+  var userId = session.get('userId');
+  var result = {};
+  deliverLoginRewardQ(userId)
+      .then(function(r) {
+        result = r
+      })
+      .then(function() {
+        utils.invokeCallback(next, null, {result:true, coins:result.rewardCoins});
+      })
+      .fail(function(error) {
+        logger.error('[Handler.prototype.deliverLoginReward] error => ', error);
+        utils.invokeCallback(next, null, {result: false, err: error});
+      })
 };
