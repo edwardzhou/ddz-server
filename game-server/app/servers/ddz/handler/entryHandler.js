@@ -198,7 +198,7 @@ Handler.prototype.quit = function(msg, session, next) {
 
 };
 
-Handler.prototype.ddz.entryHandler.updateSession = function(msg, session, next) {
+Handler.prototype.updateSession = function(msg, session, next) {
   var self = this;
   var userId = session.get('userId');
   updateSessionQ(userId)

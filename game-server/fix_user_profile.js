@@ -1,8 +1,7 @@
 /**
  * Created by edwardzhou on 14-8-26.
  */
-
-
+var Q = require('q');
 
 cb = function(err, obj) {
   console.log('err => ', err);
@@ -12,12 +11,13 @@ cb = function(err, obj) {
 };
 
 mongoose = require('mongoose');
-mongoose.connect('mongodb://dev/new_ddz_dev');
+mongoose.connect('mongodb://dev2/new_ddz_dev');
 console.log('after connected');
 
 //UserId = require('./app/domain/userId');
 User = require('./app/domain/user');
 DdzProfile = require('./app/domain/ddzProfile');
+DdzLoginRewards = require('./app/domain/ddzLoginRewards');
 
 mongoose.connections[0].on('error', cb);
 
@@ -39,4 +39,6 @@ fix_profile = function() {
       users.forEach(checkDdzProfile);
     });
 };
+
+
 

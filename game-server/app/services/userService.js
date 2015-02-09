@@ -373,15 +373,20 @@ UserService.deliverLoginReward = function(userId, callback) {
           }
         }
         result.rewardCoins = rewardCoins;
-        var funcs = function(){};
+        var funcs = [];
         if (rewardCoins > 0){
           user.ddzProfile.coins = user.ddzProfile.coins + rewardCoins;
           user.ddzLoginRewards.markModified('reward_detail');
-          funcs = function(){
-            logger.info('UserService.deliverLoginReward, save ddzProfile and ddzLoginRewards');
-            user.ddzProfile.saveQ();
-            user.ddzLoginRewards.saveQ();
+          var funca = function(){
+            logger.info('UserService.deliverLoginReward, save ddzProfile');
+            return user.ddzProfile.saveQ();
           };
+          var funcb = function(){
+            logger.info('UserService.deliverLoginReward, save  ddzLoginRewards');
+            return user.ddzLoginRewards.saveQ();
+          };
+          funcs.push(funca());
+          funcs.push(funcb());
         }
         return Q.all(funcs);
       })
