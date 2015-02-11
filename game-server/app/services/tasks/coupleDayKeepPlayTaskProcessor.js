@@ -11,9 +11,8 @@ var coupleDayKeepPlayTaskProcessor = function(opts) {
 coupleDayKeepPlayTaskProcessor.process = function(task, params) {
     var user = params.user;
     var trigger = params.trigger;
-    var isWinner = params.isWinner;
-    var pokeGame = params.pokeGame;
-    logger.info('coupleDayKeepPlayTaskProcessor.process, user=, isWinner=', user.userId, isWinner);
+    var count_per_day = params.count;
+    logger.info('coupleDayKeepPlayTaskProcessor.process, user=', user.userId);
     if (task.user_id != user.id)
         return false;
 
@@ -21,6 +20,9 @@ coupleDayKeepPlayTaskProcessor.process = function(task, params) {
         return false;
 
     if (task.taskTrigger != trigger)
+        return false;
+
+    if (task.taskData.count_per_day != count_per_day)
         return false;
 
     var today = new Date();

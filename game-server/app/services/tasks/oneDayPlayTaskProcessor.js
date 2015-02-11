@@ -4,6 +4,8 @@
 var logger = require('pomelo-logger').getLogger(__filename);
 var utils = require('../../util/utils');
 
+var taskService = require('../taskService');
+
 var oneDayPlayTaskProcessor = function(opts) {
 
 };
@@ -38,6 +40,8 @@ oneDayPlayTaskProcessor.process = function(task, params) {
     if (task.taskData.count <= task.taskData.current) {
         task.taskData.current = task.taskData.count;
         task.taskFinished = true;
+
+        taskService.processOtherTasks(user, 'one_day_play_task_done', {user: user, trigger: 'one_day_play_task_done', count: task.taskData.count});
     }
     task.taskData.last_win_date = today.getTime();
     task.progressDesc = task.taskData.current + ' / ' + task.taskData.count;

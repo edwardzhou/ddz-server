@@ -93,19 +93,35 @@ TaskService.fixUserTaskList = function (user) {
     });
 };
 
-TaskService.processGamingTasks = function(user, trigger, isWinner, pokeGame) {
+TaskService.processGamingTasks = function(user, trigger, isWinner, coins, isSpring, pokeGame) {
   logger.info('[TaskService.processGamingTasks] user: ', user);
   var query = UserTask.find({user_id: user.id, taskTrigger: trigger, taskActivated: true, taskFinished: false});
   query.execQ()
     .then(function(_tasks){
       logger.info('[TaskService.processGamingTasks] _tasks: ', _tasks);
       for(var index=0; index<_tasks.length; index++) {
-        TaskService.processTask(_tasks[index], {user: user, trigger: trigger, isWinner: isWinner, pokeGame: pokeGame});
+        TaskService.processTask(_tasks[index], {user: user, trigger: trigger, isWinner: isWinner,
+          coins: coins, isSpring: isSpring, pokeGame: pokeGame});
       }
     })
     .fail(function(err) {
       logger.error('[TaskService.processGamingTasks] user => ', user, '\n Error: ', err);
     })
+};
+
+TaskService.processOtherTasks = function(user, trigger, params) {
+  logger.info('[TaskService.processOtherTasks] params: ', params);
+  var query = UserTask.find({user_id: user.id, taskTrigger: trigger, taskActivated: true, taskFinished: false});
+  query.execQ()
+      .then(function(_tasks){
+        logger.info('[TaskService.processOtherTasks] _tasks: ', _tasks);
+        for(var index=0; index<_tasks.length; index++) {
+          TaskService.processTask(_tasks[index], params);
+        }
+      })
+      .fail(function(err) {
+        logger.error('[TaskService.processOtherTasks] user => ', user, '\n Error: ', err);
+      })
 };
 
 TaskService.processTask = function(task, params) {
