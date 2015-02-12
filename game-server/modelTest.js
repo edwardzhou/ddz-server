@@ -176,45 +176,79 @@ testProcessGamingTask = function(user) {
 
 //testProcessGamingTask();
 
-testUpdateUserInfo = function(userId) {
-  var result = {};
-  User.findOne({userId: userId})
-      .populate('ddzProfile ddzLoginRewards')
-      .execQ()
-      .then(function(user){
-        if (user.ddzLoginRewards == null){
-          throw genError(ErrorCode.LOGIN_REWARD_NULL);
-        }
-        result.user = user;
-        var rewardCoins = 0;
-        for(var i=1;i<=user.ddzLoginRewards.login_days;i++){
-          var v_day = 'day_'+i;
-          if (user.ddzLoginRewards.reward_detail[v_day]["status"] == 1){
-            rewardCoins = rewardCoins + user.ddzLoginRewards.reward_detail[v_day]["bonus"];
-            user.ddzLoginRewards.reward_detail[v_day]["status"] = 2;
+testFixUsersProfile1 = function() {
+  User.findQ({})
+      .then(function(users){
+        console.log('1th users.count=', users.length);
+        var funcs = users.map(function(user){
+          return user.populateQ('ddzProfile');
+        });
+        return Q.all(funcs);
+      })
+      .then(function(users){
+        console.log('2th users.count=', users.length);
+        var funcs = users.map(function(user){
+          if (user.ddzProfile == null || users.ddzProfile == undefined){
+            ddzProfile = new DdzProfile();
+            User.copyHandset(user.signedUp.handset, ddzProfile.lastSignedIn.handset);
+            ddzProfile.userId = user.userId;
+            ddzProfile.user_id = user.id;
+            return ddzProfile.saveQ();
           }
-        }
-        result.rewardCoins = rewardCoins;
-        var funcs = function(){
-          logger.info('UserService.deliverLoginReward, empty funcs.');
-        };
-        if (rewardCoins > 0){
-          user.ddzProfile.coins = user.ddzProfile.coins + rewardCoins;
-          user.ddzLoginRewards.markModified('reward_detail');
-          funcs = function(){
-            logger.info('UserService.deliverLoginReward, save ddzProfile and ddzLoginRewards');
-            user.ddzProfile.saveQ();
-            user.ddzLoginRewards.saveQ();
-          };
-        }
+        });
         return Q.all(funcs);
       })
       .then(function(){
-        utils.invokeCallback(callback, null, result);
+        console.log("testFixUsersProfile1 done. ");
       })
       .fail(function(error){
-        utils.invokeCallback(callback, {code: error.number, msg: error.message}, null);
+        console.log("testFixUsersProfile1 failed. error=", error);
+      })
+
+};
+var user_map = {};
+
+testFixUsersProfile2 = function() {
+  User.findQ({})
+      .then(function(users){
+        console.log('1th users.count=', users.length);
+        var funcs = users.map(function(user){
+          user_map[user.userId] = user;
+          return DdzProfile.findOneQ({userId: user.userId});
+        });
+        return Q.all(funcs);
+      })
+      .then(function(ddzProfiles){
+        console.log('2th ddzProfiles.count=', ddzProfiles.length);
+        var funcs = ddzProfiles.map(function(ddzProfile){
+          var user = user_map[ddzProfile.userId];
+          user.ddzProfile = ddzProfile;
+          return user.saveQ();
+        });
+        return Q.all(funcs);
+      })
+      .then(function(users){
+        var funcs = users.map(function(user){
+          return user.populateQ('ddzProfile');
+        });
+        return Q.all(funcs);
+      })
+      .then(function(users){
+        for(var i=0;i<users.length;i++){
+          var user = users[i];
+          if (user.ddzProfile == null)
+          {
+            console.log('user.ddzProfile is null, userId=', user.userId);
+          }
+        }
+      })
+      .fail(function(error){
+        console.log("testFixUsersProfile failed. error=", error);
+      })
+      .done(function(){
+        process.exit(0);
       });
+
 };
 
-testUpdateUserInfo(50467);
+//testFixUsersProfile();
