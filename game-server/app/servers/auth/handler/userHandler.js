@@ -168,15 +168,15 @@ Handler.prototype.signUp = function(msg, session, next) {
       utils.invokeCallback(next, null, {err: 502});
     })
     .then(function(){
-        return results.user.populateQ('ddzLoginRewards');
+        //return results.user.populateQ('ddzLoginRewards');
     })
     .done(function(){
-        logger.info("result.ddzLoginReward.toParams=", results.user.ddzLoginRewards.toParams());
-        process.nextTick(function() {
-          messageService.pushMessage('onLoginReward',
-              {ddzLoginRewards: results.user.ddzLoginRewards.toParams()},
-              [{uid: results.user.userId, sid:results.userSession.frontendId}]);
-        });
+        //logger.info("result.ddzLoginReward.toParams=", results.user.ddzLoginRewards.toParams());
+        //process.nextTick(function() {
+        //  messageService.pushMessage('onLoginReward',
+        //      {ddzLoginRewards: results.user.ddzLoginRewards.toParams()},
+        //      [{uid: results.user.userId, sid:results.userSession.frontendId}]);
+        //});
     });
 };
 
