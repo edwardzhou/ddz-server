@@ -113,12 +113,12 @@ UserService.signInByAuthToken = function(signInParams, callback) {
       utils.invokeCallback(callback, {err: errCode}, null);
     })
     .done(function(){
-        logger.info("result.ddzLoginReward.toParams=", result.ddzLoginReward.toParams());
-        process.nextTick(function() {
-          messageService.pushMessage('onLoginReward',
-              {ddzLoginRewards: result.ddzLoginReward.toParams()},
-              [{uid: result.user.userId, sid:result.userSession.frontendId}]);
-        });
+        //logger.info("result.ddzLoginReward.toParams=", result.ddzLoginReward.toParams());
+        //process.nextTick(function() {
+        //  messageService.pushMessage('onLoginReward',
+        //      {ddzLoginRewards: result.ddzLoginReward.toParams()},
+        //      [{uid: result.user.userId, sid:result.userSession.frontendId}]);
+        //});
     });
 };
 
@@ -195,12 +195,12 @@ UserService.signInByPassword = function(signInParams, callback) {
       utils.invokeCallback(callback, {err: errCode}, null);
     })
     .done(function(){
-        logger.info("result.ddzLoginReward.toParams=", result.ddzLoginReward.toParams());
-        process.nextTick(function() {
-          messageService.pushMessage('onLoginReward',
-              {ddzLoginRewards: result.ddzLoginReward.toParams()},
-              [{uid: result.user.userId, sid:result.userSession.frontendId}]);
-        });
+        //logger.info("result.ddzLoginReward.toParams=", result.ddzLoginReward.toParams());
+        //process.nextTick(function() {
+        //  messageService.pushMessage('onLoginReward',
+        //      {ddzLoginRewards: result.ddzLoginReward.toParams()},
+        //      [{uid: result.user.userId, sid:result.userSession.frontendId}]);
+        //});
     });
 };
 
