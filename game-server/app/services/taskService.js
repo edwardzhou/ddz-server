@@ -38,6 +38,13 @@ TaskService.getUserTaskQ = function(user, taskId) {
   return UserTask.findOneQ({user_id: user.id, taskId: taskId});
 };
 
+TaskService.getOneDayPlayUserTasksQ = function(user) {
+  return UserTask.find({user_id: user.id,
+    $or: [{taskId: 'one_day_play_20'}, {taskId: 'one_day_play_40'}, {taskId: 'one_day_play_60'}] ,taskFinished: false})
+      .sort({taskId: 1})
+      .execQ();
+};
+
 TaskService.fixUserTaskList = function (user) {
   var userTasks;
   var taskDefs;

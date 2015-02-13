@@ -252,3 +252,39 @@ testFixUsersProfile2 = function() {
 };
 
 //testFixUsersProfile();
+
+testGetOneDayPlayTaskInfo = function (userId) {
+  var user, userTask;
+
+  User.findOneQ({userId: userId})
+      .then(function(_user) {
+        user = _user;
+        return taskService.getOneDayPlayUserTasksQ(user);
+      })
+      .then(function(_tasks) {
+        console.log('_tasks.length: ', _tasks.length);
+        userTask = null;
+        if (_tasks != null){
+          userTask = _tasks[0];
+        }
+        var result_info = {};
+        if (userTask == null){
+          result_info = {current: 60, count: 60};
+        }
+        else {
+          result_info = {current: userTask.taskData.current, count: userTask.taskData.count};
+        }
+        console.log('result_info: ', result_info);
+        //utils.invokeCallback(next, null, {result: true, task_info: result_info} );
+      })
+      .fail(function(err) {
+        //logger.error('[TaskHandler.getOneDayPlayTaskInfo] error: ', err);
+        //utils.invokeCallback(next, null, {result: false, err: err});
+        console.log('testGetOneDayPlayTaskInfo failed: ', err);
+      })
+      .done(function(){
+        process.exit(0);
+      })
+};
+
+//testGetOneDayPlayTaskInfo(50468);

@@ -124,10 +124,17 @@ Handler.prototype.takeTaskBonus = function (msg, session, next) {
       if (!!userTask && userTask.taskFinished) {
         user.ddzProfile.coins += userTask.taskData.bonus;
         user.ddzProfile.save();
+        var today = new Date();
+        today.setHours(23);
+        today.setMinutes(59);
+        today.setSeconds(59);
+        today.setMilliseconds(0);
 
         var userParams = user.toParams(['authToken', 'lastSignedInTime']);
         messageService.pushMessage('onUserInfoUpdate', {user: userParams}, [{uid: userId, sid: session.frontendId}]);
-        userTask.removeQ()
+        userTask.bonusDelivered = true;
+        userTask.autoReconnectAt = today.getTime();
+        userTask.saveQ()
           .then(function(){
             taskService.fixUserTaskList(user);
           });
@@ -142,3 +149,39 @@ Handler.prototype.takeTaskBonus = function (msg, session, next) {
       utils.invokeCallback(next, null, {task: null, err: err});
     })
 };
+
+/**
+ * 领取任务奖励
+ * @param msg
+ * @param session
+ * @param next
+ */
+Handler.prototype.getOneDayPlayTaskInfo = function (msg, session, next) {
+  var userId = session.uid;
+  var user, userTask;
+
+  User.findOneQ({userId: userId})
+      .then(function(_user) {
+        user = _user;
+        return taskService.getOneDayPlayUserTasksQ(user);
+      })
+      .then(function(_tasks) {
+        userTask = null;
+        if (_tasks != null){
+          userTask = _tasks[0];
+        }
+        var result_info = {};
+        if (userTask == null){
+          result_info = {current: 60, count: 60};
+        }
+        else {
+          result_info = {current: userTask.taskData.current, count: userTask.taskData.count};
+        }
+        utils.invokeCallback(next, null, {result: true, task_info: result_info} );
+      })
+      .fail(function(err) {
+        logger.error('[TaskHandler.getOneDayPlayTaskInfo] error: ', err);
+        utils.invokeCallback(next, null, {result: false, err: err});
+      })
+};
+
