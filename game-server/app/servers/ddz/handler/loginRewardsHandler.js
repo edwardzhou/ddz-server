@@ -23,7 +23,7 @@ var Handler = function (app) {
 
 
 /**
- * 获取任务清单
+ * 获取每日登录奖励
  * @param msg
  * @param session
  * @param next
@@ -44,6 +44,12 @@ Handler.prototype.queryLoginRewards = function (msg, session, next) {
 };
 
 
+/**
+ * 领取每日登录奖励
+ * @param msg
+ * @param session
+ * @param next
+ */
 Handler.prototype.takeLoginRewards = function(msg, session, next) {
   var userId = session.uid;
   deliverLoginRewardQ(userId)
