@@ -26,6 +26,8 @@ var userTaskSchema = new mongoose.Schema({
   progressDesc: String,
   taskActivated: {type: Boolean, default: false},
   taskFinished: {type: Boolean, default: false},
+  bonusDelivered: {type: Boolean, default: false},
+  autoRemoveAt: {type: Date, expires: 0},
   taskProcessor: String,
   taskTrigger: String,
   enabled: {type: Boolean, default: true},
@@ -51,7 +53,7 @@ var __toParams = function(model, excludeAttrs) {
     taskFinished: (model.taskFinished? 1 : 0),
     taskBonusDesc: model.taskBonusDesc,
     progress: model.progress,
-    progressDesc: model.progressDesc
+    bonusDelivered: model.bonusDelivered
   };
 
   if (!!model.user_id || !!model.user_id.userId) {

@@ -33,6 +33,7 @@ GamingTaskProcessor.process = function(task, params) {
     task.taskFinished = true;
   }
   task.progressDesc = task.taskData.current + ' / ' + task.taskData.count;
+  task.progress = Math.round(task.taskData.current*100/task.taskData.count);
   task.markModified('taskData');
   task.saveQ()
     .then(function(_task) {

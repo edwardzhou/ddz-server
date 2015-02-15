@@ -35,7 +35,7 @@ oneDayPlayTaskProcessor.process = function(task, params) {
         task.taskData.current = 1;
     }
     else {
-        task.taskData.current ++;
+        task.taskData.current = task.taskData.current + 1;
     }
     if (task.taskData.count <= task.taskData.current) {
         task.taskData.current = task.taskData.count;
@@ -45,6 +45,7 @@ oneDayPlayTaskProcessor.process = function(task, params) {
     }
     task.taskData.last_win_date = today.getTime();
     task.progressDesc = task.taskData.current + ' / ' + task.taskData.count;
+    task.progress = Math.round(task.taskData.current*100/task.taskData.count);
     task.markModified('taskData');
     task.saveQ()
         .then(function(_task) {

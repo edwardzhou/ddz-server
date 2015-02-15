@@ -3,6 +3,7 @@
  */
 var logger = require('pomelo-logger').getLogger(__filename);
 var utils = require('../../util/utils');
+var oneDayMillSeconds = 3600 * 24  * 1000;
 
 var coupleDayKeepPlayTaskProcessor = function(opts) {
 
@@ -31,7 +32,7 @@ coupleDayKeepPlayTaskProcessor.process = function(task, params) {
     today.setSeconds(0);
     today.setMilliseconds(0);
     var diff_time = today.getTime() - task.taskData.last_win_date;
-    if (diff_time != 0) {
+    if (diff_time > oneDayMillSeconds*(task.taskData.count - 1)) {
         if (isWinner) {
             task.taskData.current = 1;
         }else {
@@ -50,6 +51,7 @@ coupleDayKeepPlayTaskProcessor.process = function(task, params) {
         task.taskFinished = true;
     }
     task.taskData.last_win_date = today.getTime();
+    task.progress = Math.round(task.taskData.current*100/task.taskData.count);
     task.progressDesc = task.taskData.current + ' / ' + task.taskData.count;
     task.markModified('taskData');
     task.saveQ()

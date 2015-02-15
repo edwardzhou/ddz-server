@@ -49,6 +49,7 @@ oneDayKeepWinTaskProcessor.process = function(task, params) {
     }
     task.taskData.last_win_date = today.getTime();
     task.progressDesc = task.taskData.current + ' / ' + task.taskData.count;
+    task.progress = Math.round(task.taskData.current*100/task.taskData.count);
     task.markModified('taskData');
     task.saveQ()
         .then(function(_task) {

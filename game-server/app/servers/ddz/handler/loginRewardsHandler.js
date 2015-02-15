@@ -8,6 +8,7 @@ var Result = require('../../../domain/result');
 var User = require('../../../domain/user');
 var messageService = require('../../../services/messageService');
 var userService = require('../../../services/userService');
+
 var Q = require('q');
 var deliverLoginRewardQ = Q.nbind(userService.deliverLoginReward, userService);
 
