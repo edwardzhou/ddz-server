@@ -12,7 +12,7 @@ oneDayPlayTaskProcessor.process = function(task, params) {
     var user = params.user;
     var trigger = params.trigger;
     var isWinner = params.isWinner;
-    var coins = params.coins;
+    var coins = Math.abs(params.coins);
     var pokeGame = params.pokeGame;
     logger.info('oneDayPlayTaskProcessor.process, user=, isWinner=', user.userId, isWinner);
     if (task.user_id != user.id)
@@ -52,6 +52,7 @@ oneDayPlayTaskProcessor.process = function(task, params) {
 
     task.taskData.last_win_date = today.getTime();
     task.progressDesc = task.taskData.current + ' / ' + task.taskData.count;
+    task.progress = Math.round(task.taskData.current*100/task.taskData.count);
     task.markModified('taskData');
     task.saveQ()
         .then(function(_task) {

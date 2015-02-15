@@ -288,3 +288,26 @@ testGetOneDayPlayTaskInfo = function (userId) {
 };
 
 //testGetOneDayPlayTaskInfo(50468);
+
+testGetUserTasks = function(userId) {
+  User.findOneQ({userId: userId})
+      .then(function(user) {
+        //logger.info('[taskHandler.getTasks] user => ', user);
+        taskService.getTaskListQ(user)
+            .then(function(tasks) {
+              console.log('getTaskListQ done.');
+              console.log(tasks);
+              //utils.invokeCallback(next, null, {tasks: tasks.toParams()});
+            })
+      })
+      .fail(function(err) {
+        console.log('testGetUserTasks failed: ', err);
+        //utils.invokeCallback(next, {err: err}, null);
+      })
+      .done(function(){
+        console.log('testGetUserTasks done: ');
+        //process.exit(0);
+      });
+};
+
+//testGetUserTasks(50471);

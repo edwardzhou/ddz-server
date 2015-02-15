@@ -133,7 +133,7 @@ Handler.prototype.takeTaskBonus = function (msg, session, next) {
         var userParams = user.toParams(['authToken', 'lastSignedInTime']);
         messageService.pushMessage('onUserInfoUpdate', {user: userParams}, [{uid: userId, sid: session.frontendId}]);
         userTask.bonusDelivered = true;
-        userTask.autoReconnectAt = today.getTime();
+        userTask.autoRemoveAt = today.getTime();
         userTask.saveQ()
           .then(function(){
             taskService.fixUserTaskList(user);
