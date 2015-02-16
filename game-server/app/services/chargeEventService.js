@@ -82,6 +82,8 @@ ChargeEventService.dispatchReloadCacheEvent = function(event) {
     pomeloApp.rpc.area.hallRemote.refreshGoodsPackages.toServer('*', null);
   } else if (event.eventData.reloadTarget =='rooms') {
     pomeloApp.rpc.area.roomRemote.reloadRooms.toServer('*', {}, null);
+  }else if (event.eventData.reloadTarget =='level_config') {
+    pomeloApp.rpc.area.userRemote.reloadLevelConfig.toServer('*', {}, null);
   }
 
 };

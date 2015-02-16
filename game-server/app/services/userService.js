@@ -7,6 +7,8 @@ var DataKeyId = require('../domain/dataKeyId');
 var DdzProfile = require('../domain/ddzProfile');
 var DdzLoginRewards = require('../domain/ddzLoginRewards');
 var LoginRewardTemplate = require('../domain/LoginRewardTemplates');
+var DdzUserLevelConfigs = require('../domain/ddzUserLevelConfigs');
+
 var UserSession = require('../domain/userSession');
 var ErrorCode = require('../consts/errorCode');
 var utils = require('../util/utils');
@@ -20,6 +22,7 @@ var createUserSessionQ = Q.nbind(UserSession.createSession, UserSession);
 var pomeloApp = null;
 var UserService = module.exports;
 
+var levelConfigMap = {}；
 
 var _genPasswordDigest = function (password, salt) {
   return crypto.createHash('md5').update(password + "_" + salt).digest('hex');
@@ -425,4 +428,16 @@ UserService.updateSession = function(userId, callback) {
       .fail(function(error){
         utils.invokeCallback(callback, {code: error.number, msg: error.message}, false);
       });
+};
+
+UserService.reloadLevelConfig = function(cb){
+  logger.log('UserService.reloadLevelConfig');
+  DdzUserLevelConfigs.findQ({})
+      .then(function(levels){
+
+      })
+      .fail(function(error){
+
+      });
+  utils.invokeCallback(cb, null, null);
 };

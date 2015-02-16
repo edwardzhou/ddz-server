@@ -12,6 +12,7 @@ var DdzProfileSchema = mongoose.Schema({
   userId: Number,   // 用户Id
   user_id: {type: mongoose.Schema.Types.ObjectId},
   coins: {type:Number, default: 10000}, // 金币数
+  levelName: String,
   gameStat: {     // 输赢统计
     won: {type: Number, default: 0},
     lose: {type: Number, default: 0}
@@ -63,7 +64,13 @@ var __toParams = function(model, excludeAttrs) {
   return transObj;
 };
 
+var __getLevelName = function(model) {
+
+};
+
 DdzProfileSchema.statics.toParams = __toParams;
+
+DdzProfileSchema.methods.getLevel = __getLevelName;
 
 DdzProfileSchema.methods.toParams = function(excludeAttrs) {
   return __toParams(this, excludeAttrs);
