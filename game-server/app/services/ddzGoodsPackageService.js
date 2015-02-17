@@ -4,6 +4,7 @@
 var logger = require('pomelo-logger').getLogger('pomelo', __filename);
 var DdzGoods = require('../domain/ddzGoods');
 var DdzUserAsset = require('../domain/ddzUserAsset');
+var userService = require('../services/userService');
 var User = require('../domain/user');
 var pomeloApp = null;
 var DdzGoodsPackageService = module.exports;
@@ -64,6 +65,7 @@ DdzGoodsPackageService.deliverPackageQ = function(purchaseOrder) {
 DdzGoodsPackageService.doIncreaseCoins = function(user, goodsItem) {
   // 加金币
   user.ddzProfile.coins += goodsItem.goods.goodsProps.coins * goodsItem.goodsCount;
+  user.ddzProfile.levelName = userService.getUserLevelName(user.ddzProfile.coins);
 };
 
 /**

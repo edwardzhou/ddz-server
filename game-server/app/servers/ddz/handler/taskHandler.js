@@ -11,6 +11,7 @@ var DdzGoodsPackage = require('../../../domain/ddzGoodsPackage');
 var messageService = require('../../../services/messageService');
 
 var taskService = require('../../../services/taskService');
+var userService = require('../../../services/userService');
 
 
 module.exports = function (app) {
@@ -123,6 +124,7 @@ Handler.prototype.takeTaskBonus = function (msg, session, next) {
       userTask = _task;
       if (!!userTask && userTask.taskFinished) {
         user.ddzProfile.coins += userTask.taskData.bonus;
+        user.ddzProfile.levelName = userService.getUserLevelName(user.ddzProfile.coins);
         user.ddzProfile.save();
         var today = new Date();
         today.setHours(23);
