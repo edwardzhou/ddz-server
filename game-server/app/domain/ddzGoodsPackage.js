@@ -87,6 +87,10 @@ var __toParams = function(model, excludeAttrs) {
     sortIndex: model.sortIndex
   };
 
+  if (model.packageCoins != null) {
+    transObj.packageCoins = model.packageCoins;
+  }
+
   if (!!excludeAttrs) {
     for (var index=0; index<excludeAttrs.length; index++) {
       delete transObj[excludeAttrs[index]];
