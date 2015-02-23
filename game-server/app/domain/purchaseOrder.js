@@ -18,6 +18,7 @@ var PurchaseOrderSchema = mongoose.Schema({
   paidPrice: Number,    // 支付价格 (渠道有可能做活动打折)
   payment: {},          // 支付数据
   appid: Number,        // 渠道号
+  channelId: String,    // 渠道号
   retryTimes: Number,   // 重试次数
   status: Number,       // 状态
   created_at: {type: Date, default: Date.now},
@@ -39,13 +40,18 @@ PurchaseOrderSchema.statics.createOrderQ = function(userId, goodsPackage, payMet
   var newOrder = new this();
   newOrder.orderId = uuid.v4().replace(/-/g, '').substr(0, 16);
   newOrder.userId = userId;
-  newOrder.appid = appid;
+  newOrder.channelId = appid;
   newOrder.packageId = goodsPackage.packageId;
-  newOrder.packageData = (!!goodsPackage.toParams())? goodsPackage.toParams() : goodsPackage;
+  newOrder.packageData = (!!goodsPackage.toParams)? goodsPackage.toParams() : goodsPackage;
   newOrder.price = goodsPackage.price;
-  newOrder.paidPrice = 0.0;
+  newOrder.paidPrice = goodsPackage.price;
   newOrder.retryTimes = 0;
   newOrder.status = 0;
+  if (!!payMethod) {
+    newOrder.payment = {
+      paymentMethod: (!!payMethod.toParams)? payMethod.toParams() : payMethod
+    }
+  }
   return newOrder.saveQ();
 };
 
@@ -61,6 +67,10 @@ var __toParams = function(model, excludeAttrs) {
     retryTimes: model.retryTimes,
     status: model.status
   };
+
+  if (!!model.payment) {
+    transObj.payment = model.payment;
+  }
 
   if (!!excludeAttrs) {
     for (var index=0; index<excludeAttrs.length; index++) {

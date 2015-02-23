@@ -27,10 +27,52 @@ var cache = {
   goodsPackagesMap: {},
   packagesIdMap: {},
   channelsMap: {},
+  channelsIdMap: {},
   paymentMethodsMap: {},
   paymentPackagesMap: {},
   channelPackagesMaps: {}
 };
+//  getChannel: function(channelId) {
+//    var array = this.channelsMap.filter(function(c) {
+//      return c.channelId == channelId;
+//    });
+//    if (array.length > 0) {
+//      return array[0];
+//    }
+//
+//    return null;
+//  }
+//};
+
+//var cache = new function() {
+//  this.goodsPackages = [];
+//  this.goodsPackagesMap = {};
+//  this.packagesIdMap = {};
+//  this.channelsMap = {};
+//  this.paymentMethodsMap = {};
+//  this.paymentPackagesMap = {};
+//  this.channelPackagesMaps = {};
+//};
+cache.getChannel = function(channelId) {
+  for (var key in this.channelsMap) {
+    var channel = this.channelsMap[key];
+    if (channel.channelId == channelId)
+      return channel;
+  }
+
+  return null;
+};
+//
+//
+
+//cache.getChannel = function(channelId) {
+//  var array = cache.channelsMap.filter(function(c) { return c.channelId == channelId; });
+//  if (array.length > 0) {
+//    return array[0];
+//  }
+//
+//  return null;
+//};
 
 var http = require('http');
 var util = require('util');
@@ -82,10 +124,15 @@ remoteHandler.refreshGoodsPackages = function(cb) {
       // 生成道具包字典
       for (var index=0; index<packages.length; index++) {
         var goodsPackage = packages[index];
+        var pkgCoins = 0;
         for (var itemIndex=0; itemIndex<goodsPackage.items.length; itemIndex++) {
           var goodsItem = goodsPackage.items[itemIndex];
           goodsItem.goods = cache.goodsMap[goodsItem.goodsId];
+          if (goodsItem.goods.goodsType == 'Coins') {
+            pkgCoins += goodsItem.goods.goodsProps.coins * goodsItem.goodsCount;
+          }
         }
+        goodsPackage.packageCoins = pkgCoins;
         cache.goodsPackagesMap[goodsPackage.packageId] = goodsPackage;
         cache.packagesIdMap[goodsPackage.id] = goodsPackage;
         cache.goodsPackages.push(goodsPackage.toParams(['items']));
@@ -98,7 +145,8 @@ remoteHandler.refreshGoodsPackages = function(cb) {
       // 生成渠道字典
       _channels = channels;
       channels.forEach(function(channel) {
-        cache.channelsMap[channel.id] = channel.toParams();
+        var asParams = channel.toParams();
+        cache.channelsMap[channel.id] = asParams;
       });
 
       // 加载支付方式
@@ -154,6 +202,7 @@ remoteHandler.buyPackage = function(msg, cb) {
   var channelId = msg.channelId;
 
   //var package = cache.goodsPackagesMap[packageId];
+  var channel = cache.getChannel(channelId);
   var channelPkgs = cache.channelPackagesMaps[channelId];
   var packPayments = channelPkgs.filter(function(packPayment) {return packPayment.package.packageId == packageId});
   var package = null;
@@ -161,7 +210,7 @@ remoteHandler.buyPackage = function(msg, cb) {
     package = packPayments[0].package;
   }
 
-  PurchaseOrder.createOrderQ(userId, package, null, 1000)
+  PurchaseOrder.createOrderQ(userId, package, channel.paymentMethod, 1000)
     .then(function(po) {
       utils.invokeCallback(cb, null, po.toParams());
       setTimeout(function() {

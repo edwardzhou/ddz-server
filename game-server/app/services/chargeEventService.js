@@ -102,19 +102,7 @@ ChargeEventService.dispatchChargeEvent = function(event) {
   var purchaseOrder = null;
   var userSession = null;
 
-//  event.saveQ()
-////    .then(function() {
-////      return User.findOne({userId: userId})
-////        .populate('ddzProfile')
-////        .execQ();
-////    })
-////    .then(function(u) {
-////      user = u;
-////    })
-//    .then(function(){
-//      return PurchaseOrder.findOneQ({orderId: orderId});
-//    })
-    PurchaseOrder.findOneQ({orderId: orderId})
+  PurchaseOrder.findOneQ({orderId: orderId})
     .then(function(po) {
       purchaseOrder = po;
       return DdzGoodsPackageService.deliverPackageQ(purchaseOrder);
@@ -133,8 +121,14 @@ ChargeEventService.dispatchChargeEvent = function(event) {
     })
     .then(function(pomeloSession) {
       if (!!pomeloSession) {
+        var msgBody = {
+          success: true,
+          purchaseOrderId: purchaseOrder.orderId,
+          user: user.toParams(['authToken', 'lastSignedInTime'])
+        };
+
         return pushMessageQ('onChargeResult',
-          {success: true, user: user.toParams()},
+          msgBody,
           [{uid: user.userId, sid:userSession.frontendId}]);
       } else {
         console.log('[ChargeEventService.onChargeEvent] user not online');
