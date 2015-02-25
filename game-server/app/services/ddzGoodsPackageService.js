@@ -5,6 +5,7 @@ var logger = require('pomelo-logger').getLogger('pomelo', __filename);
 var DdzGoods = require('../domain/ddzGoods');
 var DdzUserAsset = require('../domain/ddzUserAsset');
 var userService = require('../services/userService');
+var userLevelService = require('../services/userLevelService');
 var User = require('../domain/user');
 var pomeloApp = null;
 var DdzGoodsPackageService = module.exports;
@@ -31,6 +32,8 @@ DdzGoodsPackageService.init = function(app, opts) {
  */
 DdzGoodsPackageService.deliverPackageQ = function(purchaseOrder) {
   var user = null;
+  var coinsChanged = false;
+  var coinsUp = 1;
   // 获取订单的用户
   return User.findOne({userId: purchaseOrder.userId})
     .populate('ddzProfile') // 加载ddzProfile
@@ -39,14 +42,26 @@ DdzGoodsPackageService.deliverPackageQ = function(purchaseOrder) {
       user = u;
       // 对每个道具项发放
       var items = purchaseOrder.packageData.items;
+        var old_coins = user.ddzProfile.coins;
       for (index=0; index<items.length; index++) {
         var item = items[index];
         DdzGoodsPackageService['do' + item.goods.goodsAction](user, item);
       }
+      if (old_coins != user.ddzProfile.coins){
+        coinsChanged = true;
+        if (old_coins < user.ddzProfile.coins){
+          coinsUp = false;
+        }
+      }
+
       // 保存ddzProfile
       return user.ddzProfile.saveQ();
     })
     .then(function() {
+      if (coinsChanged){
+        userLevelService.onUserCoinsChanged(user.userId, coinsUp);
+      }
+
       // 标记订单已处理
       purchaseOrder.status = 1;
       return purchaseOrder.saveQ();
@@ -65,7 +80,7 @@ DdzGoodsPackageService.deliverPackageQ = function(purchaseOrder) {
 DdzGoodsPackageService.doIncreaseCoins = function(user, goodsItem) {
   // 加金币
   user.ddzProfile.coins += goodsItem.goods.goodsProps.coins * goodsItem.goodsCount;
-  user.ddzProfile.levelName = userService.getUserLevelName(user.ddzProfile.coins);
+  //user.ddzProfile.levelName = pomeloApp.rpc.userSystem.userRemote.getUserLevelName(user.ddzProfile.coins);
 };
 
 /**

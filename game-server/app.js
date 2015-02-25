@@ -4,6 +4,7 @@ var pomelo = require('pomelo');
 var routeUtil = require('./app/util/routeUtil');
 var tableService = require('./app/services/tableService');
 var roomService = require('./app/services/roomService');
+var userLevelService = require('./app/services/userLevelService');
 var appSignatureService = require('./app/services/appSignatureService');
 var logger = require('pomelo-logger').getLogger('pomelo', __filename);
 require('./app/domain/ArrayHelper');
@@ -77,7 +78,7 @@ app.configure('production|development', 'ddz|gate', function () {
 
   var clientIp = require('./app/filters/clientIp');
   app.before(clientIp());
-
+  userLevelService.init(app);
 });
 
 // Configure for area server
@@ -92,6 +93,7 @@ app.configure('production|development', 'area', function () {
       .then(function(gameServer) {
         logger.info('Server: %s init with rooms: %j', curServerId, gameServer.roomIds);
         roomService.init(app, gameServer.roomIds);
+          userLevelService.init(app);
       })
       .fail(function(error) {
         logger.error('ERROR: failed to load GameServerInstance for [%s]', curServerId, error);
@@ -113,6 +115,7 @@ app.configure('production|development', 'area', function () {
 app.configure('production|development', 'events', function() {
   var chargeEventService = require('./app/services/chargeEventService');
   chargeEventService.init(app, {});
+  userLevelService.init(app);
 });
 
 app.configure('production|development', function () {

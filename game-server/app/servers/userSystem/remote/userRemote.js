@@ -49,7 +49,3 @@ UserRemote.prototype.updateUserInfo = function(userInfo, callback) {
   });
 
 };
-
-UserRemote.prototype.reloadLevelConfig = function(msg, cb) {
-  userService.reloadLevelConfig(cb);
-};

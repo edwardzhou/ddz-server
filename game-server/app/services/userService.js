@@ -14,6 +14,7 @@ var ErrorCode = require('../consts/errorCode');
 var utils = require('../util/utils');
 var crypto = require('crypto');
 var messageService = require('./messageService');
+var userLevelService = require('./userLevelService');
 
 var Q = require('q');
 var removeUserSessionQ = Q.nbind(UserSession.removeAllByUserId, UserSession);
@@ -21,8 +22,6 @@ var createUserSessionQ = Q.nbind(UserSession.createSession, UserSession);
 
 var pomeloApp = null;
 var UserService = module.exports;
-
-var levelConfigCache = {levels:[]};
 
 var _genPasswordDigest = function (password, salt) {
   return crypto.createHash('md5').update(password + "_" + salt).digest('hex');
@@ -358,7 +357,7 @@ UserService.updatePassword = function(userId, newPassword, callback) {
 };
 
 UserService.deliverLoginReward = function(userId, callback) {
-  var result = {};
+  var result = {coinsChanged:false};
   User.findOne({userId: userId})
       .populate('ddzProfile ddzLoginRewards')
       .execQ()
@@ -378,8 +377,8 @@ UserService.deliverLoginReward = function(userId, callback) {
         result.rewardCoins = rewardCoins;
         var funcs = [];
         if (rewardCoins > 0){
+          result.coinsChanged = true;
           user.ddzProfile.coins = user.ddzProfile.coins + rewardCoins;
-          user.ddzProfile.levelName = UserService.getUserLevelName(user.ddzProfile.coins);
           user.ddzLoginRewards.markModified('reward_detail');
           var funca = function(){
             logger.info('UserService.deliverLoginReward, save ddzProfile');
@@ -395,6 +394,10 @@ UserService.deliverLoginReward = function(userId, callback) {
         return Q.all(funcs);
       })
       .then(function(){
+        if (result.coinsChanged ){
+          userLevelService.onUserCoinsChanged(userId, true);
+        }
+
         utils.invokeCallback(callback, null, result);
       })
       .fail(function(error){
@@ -431,62 +434,5 @@ UserService.updateSession = function(userId, callback) {
       });
 };
 
-UserService.reloadLevelConfig = function(cb){
-  logger.info('UserService.reloadLevelConfig');
-  DdzUserLevelConfigs.findQ({})
-      .then(function(levels){
-        levelConfigCache.levels = levels;
-        logger.info('UserService.reloadLevelConfig, levels.length=', levelConfigCache.levels.length);
-      })
-      .fail(function(error){
-        logger.error('UserService.reloadLevelConfig failed.', error);
-      });
-  utils.invokeCallback(cb, null, null);
-};
 
-UserService.getUserLevelName = function(coins) {
-  logger.info('UserService.getUserLevelName, coins=',coins);
-  logger.info('UserService.getUserLevelName, evelConfigMap.length=',this.levelConfigCache.levels.length);
-  if (levelConfigCache.levels.length == 0)
-    return '';
-  for(var u_level in levelConfigCache.levels){
-    logger.info('UserService.getUserLevelName, u_level=',u_level);
-    if (coins >= u_level.min_coins && (coins < u_level.max_coins || u_level.max_coins == 0)) {
-      return u_level.level_name;
-    }
-  }
-  return '';
-};
-
-UserService.updateUserCoinsAfterGameOver = function(userId, coins, callback) {
-  logger.info('UserService.updateUserCoinsAfterGameOverQ');
-  User.findOne({userId: userId})
-      .populate('ddzProfile')
-      .execQ()
-      .then(function(user){
-        logger.info('UserService.updateUserCoinsAfterGameOverQ, user.ddzProfile=', user.ddzProfile);
-        user.ddzProfile.coins = user.ddzProfile.coins + coins;
-        user.ddzProfile.levelName = UserService.getUserLevelName(user.ddzProfile.coins);
-        var won, lose;
-        if (coins > 0 ) {
-          won = 1;
-          lose = 0;
-        } else {
-          won = 0;
-          lose = 1;
-        }
-        user.ddzProfile.gameStat.won = won;
-        user.ddzProfile.gameStat.lose = lose;
-        user.ddzProfile.markModified('gameStat');
-        return user.ddzProfile.saveQ();
-      })
-      .then(function(ddzProfile){
-        logger.info('UserService.updateUserCoinsAfterGameOverQ, after save, ddzProfile=', ddzProfile);
-        utils.invokeCallback(callback, null, ddzProfile);
-      })
-      .fail(function(error){
-        logger.error('UserService.updateUserCoinsAfterGameOver failed.', error)
-        utils.invokeCallback(callback, {code: error.number, msg: error.message}, false);
-      });
-};
 

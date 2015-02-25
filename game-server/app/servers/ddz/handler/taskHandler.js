@@ -12,6 +12,7 @@ var messageService = require('../../../services/messageService');
 
 var taskService = require('../../../services/taskService');
 var userService = require('../../../services/userService');
+var userLevelService = require('../../../services/userLevelService');
 
 
 module.exports = function (app) {
@@ -112,7 +113,7 @@ Handler.prototype.takeTaskBonus = function (msg, session, next) {
   var taskId = msg.taskId;
 
   var user, userTask;
-
+  var coinsChanged = false;
   User.findOne({userId: userId})
     .populate('ddzProfile')
     .execQ()
@@ -124,8 +125,9 @@ Handler.prototype.takeTaskBonus = function (msg, session, next) {
       userTask = _task;
       if (!!userTask && userTask.taskFinished) {
         user.ddzProfile.coins += userTask.taskData.bonus;
-        user.ddzProfile.levelName = userService.getUserLevelName(user.ddzProfile.coins);
+        //user.ddzProfile.levelName =  this.app.rpc.userSystem.userRemote.getUserLevelName(user.ddzProfile.coins);
         user.ddzProfile.save();
+        coinsChanged = true;
         var today = new Date();
         today.setHours(23);
         today.setMinutes(59);
@@ -144,6 +146,9 @@ Handler.prototype.takeTaskBonus = function (msg, session, next) {
       }
     })
     .then(function(){
+        if (coinsChanged) {
+          userLevelService.onUserCoinsChanged(userId, true);
+        }
       utils.invokeCallback(next, null, {result: true});
     })
     .fail(function(err) {
