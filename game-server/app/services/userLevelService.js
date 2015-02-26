@@ -63,12 +63,14 @@ UserLevelService.onUserCoinsChanged = function(userId, coinsUp, callback) {
         utils.invokeCallback(callback, null, false);
         return;
     }
+    logger.info('UserLevelService.onUserCoinsChanged, begin');
     var result = {levelChanged: false};
     User.findOne({userId: userId})
         .populate('ddzProfile')
         .execQ()
         .then(function(user){
             result.user = user;
+            logger.info('UserLevelService.onUserCoinsChanged, user.ddzProfile.levelName=',user.ddzProfile.levelName);
             for(var i=0;i<levelConfigCache.levels.length;i++){
                 var u_level = levelConfigCache.levels[i];
                 //logger.info('UserService.getUserLevelName, u_level=',u_level);
@@ -78,19 +80,30 @@ UserLevelService.onUserCoinsChanged = function(userId, coinsUp, callback) {
                         result.levelChanged = true;
                         user.ddzProfile.levelName = u_level.level_name;
                     }
-                    break;
                 }
             }
-            if (result.levelChanged)
-                user.ddzProfile.saveQ();
+            return user.ddzProfile.saveQ();
         })
         .then(function(ddzProfile){
+            logger.info('UserLevelService.onUserCoinsChanged, done. result.levelChanged=',result.levelChanged);
             if (result.levelChanged){
                 logger.info('UserLevelService.onUserCoinsChanged, after saved, ddzProfile.levelName=',ddzProfile.levelName);
+                result.ddzProfile = ddzProfile;
+                return UserSession.findOneQ({userId: userId});
+            }
+        })
+        .then(function(userSession){
+            if (result.levelChanged) {
+                process.nextTick(function () {
+                    messageService.pushMessage('onUserLevelChanged',
+                        {levelName: result.ddzProfile.levelName},
+                        [{uid: result.user.userId, sid: userSession.frontendId}]);
+                });
             }
             utils.invokeCallback(callback, null, true);
         })
         .fail(function(error){
+            logger.error('UserLevelService.onUserCoinsChanged, failed. ', error);
             utils.invokeCallback(callback, {code: error.number, msg: error.message}, false);
         });
 
