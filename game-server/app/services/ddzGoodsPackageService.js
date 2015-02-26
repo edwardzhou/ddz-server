@@ -4,6 +4,8 @@
 var logger = require('pomelo-logger').getLogger('pomelo', __filename);
 var DdzGoods = require('../domain/ddzGoods');
 var DdzUserAsset = require('../domain/ddzUserAsset');
+var userService = require('../services/userService');
+var userLevelService = require('../services/userLevelService');
 var User = require('../domain/user');
 var pomeloApp = null;
 var DdzGoodsPackageService = module.exports;
@@ -30,6 +32,8 @@ DdzGoodsPackageService.init = function(app, opts) {
  */
 DdzGoodsPackageService.deliverPackageQ = function(purchaseOrder) {
   var user = null;
+  var coinsChanged = false;
+  var coinsUp = 1;
   // 获取订单的用户
   return User.findOne({userId: purchaseOrder.userId})
     .populate('ddzProfile') // 加载ddzProfile
@@ -38,14 +42,26 @@ DdzGoodsPackageService.deliverPackageQ = function(purchaseOrder) {
       user = u;
       // 对每个道具项发放
       var items = purchaseOrder.packageData.items;
+        var old_coins = user.ddzProfile.coins;
       for (index=0; index<items.length; index++) {
         var item = items[index];
         DdzGoodsPackageService['do' + item.goods.goodsAction](user, item);
       }
+      if (old_coins != user.ddzProfile.coins){
+        coinsChanged = true;
+        if (old_coins < user.ddzProfile.coins){
+          coinsUp = false;
+        }
+      }
+
       // 保存ddzProfile
       return user.ddzProfile.saveQ();
     })
     .then(function() {
+      if (coinsChanged){
+        userLevelService.onUserCoinsChanged(user.userId, coinsUp);
+      }
+
       // 标记订单已处理
       purchaseOrder.status = 1;
       return purchaseOrder.saveQ();
@@ -64,6 +80,7 @@ DdzGoodsPackageService.deliverPackageQ = function(purchaseOrder) {
 DdzGoodsPackageService.doIncreaseCoins = function(user, goodsItem) {
   // 加金币
   user.ddzProfile.coins += goodsItem.goods.goodsProps.coins * goodsItem.goodsCount;
+  //user.ddzProfile.levelName = pomeloApp.rpc.userSystem.userRemote.getUserLevelName(user.ddzProfile.coins);
 };
 
 /**
@@ -87,12 +104,38 @@ DdzGoodsPackageService.doAddToAsset = function(user, goodsItem) {
       used_at: null
     });
     newAsset.saveQ()
-      .then(function(asset) {
-        logger.info('[DdzGoodsPackageService.doAddToAsset] add asset "%s" to user "%d" successfully:',
-          asset.goodsId, user.userId, asset );
-      })
-      .fail(function(err) {
-        logger.error('[DdzGoodsPackageService.doAddToAsset] Error: ', err);
-      });
+        .then(function(asset) {
+          logger.info('[DdzGoodsPackageService.doAddToAsset] add asset "%s" to user "%d" successfully:',
+              asset.goodsId, user.userId, asset );
+        })
+        .fail(function(err) {
+          logger.error('[DdzGoodsPackageService.doAddToAsset] Error: ', err);
+        });
   }
+};
+
+DdzGoodsPackageService.doAddTaskGoodToAsset = function(user, goodsId, count) {
+  DdzGoods.findOneQ({id: goodsId})
+      .then(function(goods){
+        for (var i=0; i<count; i++) {
+          var newAsset = new DdzUserAsset({
+            userId: user.userId,
+            goodsId: goods.goodsId,
+            goodsName: goods.goodsName,
+            goodsDesc: goods.goodsDesc,
+            goodsType: goods.goodsType,
+            goodsAction: goods.goodsAction,
+            goodsIcon: goods.goodsIcon,
+            goodsProps: goods.goodsProps,
+            sortIndex: goods.sortIndex,
+            used_at: null
+          });
+          newAsset.save();
+        }
+        logger.info('DdzGoodsPackageService.doAddTaskGoodToAsset done.');
+      })
+      .fail(function(error){
+        logger.error('DdzGoodsPackageService.doAddTaskGoodToAsset failed.',error);
+      });
+
 };

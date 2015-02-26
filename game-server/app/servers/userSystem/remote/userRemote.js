@@ -4,6 +4,7 @@ var format = require('util').format;
 var User = require('../../../domain/user');
 var userDao = require('../../../dao/userDao');
 var utils = require('../../../util/utils');
+var userService = require('../../../services/userService');
 
 module.exports = function(app) {
   return new UserRemote(app);
@@ -46,7 +47,5 @@ UserRemote.prototype.updateUserInfo = function(userInfo, callback) {
       });
     });
   });
-
-
 
 };

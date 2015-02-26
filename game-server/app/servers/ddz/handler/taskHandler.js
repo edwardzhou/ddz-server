@@ -11,6 +11,9 @@ var DdzGoodsPackage = require('../../../domain/ddzGoodsPackage');
 var messageService = require('../../../services/messageService');
 
 var taskService = require('../../../services/taskService');
+var userService = require('../../../services/userService');
+var userLevelService = require('../../../services/userLevelService');
+var ddzGoodsPackageService = require('../../../services/ddzGoodsPackageService');
 
 
 module.exports = function (app) {
@@ -111,7 +114,7 @@ Handler.prototype.takeTaskBonus = function (msg, session, next) {
   var taskId = msg.taskId;
 
   var user, userTask;
-
+  var coinsChanged = false;
   User.findOne({userId: userId})
     .populate('ddzProfile')
     .execQ()
@@ -122,8 +125,15 @@ Handler.prototype.takeTaskBonus = function (msg, session, next) {
     .then(function(_task) {
       userTask = _task;
       if (!!userTask && userTask.taskFinished) {
-        user.ddzProfile.coins += userTask.taskData.bonus;
-        user.ddzProfile.save();
+        if (userTask.taskData.bonusType == "coins") {
+          user.ddzProfile.coins += userTask.taskData.bonus;
+          //user.ddzProfile.levelName =  this.app.rpc.userSystem.userRemote.getUserLevelName(user.ddzProfile.coins);
+          user.ddzProfile.save();
+          coinsChanged = true;
+        }
+        else if (userTask.taskData.bonusType == "ddz_good") {
+          ddzGoodsPackageService.doAddTaskGoodToAsset(user, userTask.taskData.bonus_id, userTask.taskData.bonus_count);
+        }
         var today = new Date();
         today.setHours(23);
         today.setMinutes(59);
@@ -142,6 +152,9 @@ Handler.prototype.takeTaskBonus = function (msg, session, next) {
       }
     })
     .then(function(){
+        if (coinsChanged) {
+          userLevelService.onUserCoinsChanged(userId, true);
+        }
       utils.invokeCallback(next, null, {result: true});
     })
     .fail(function(err) {

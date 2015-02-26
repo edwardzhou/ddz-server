@@ -7,11 +7,14 @@ var DataKeyId = require('../domain/dataKeyId');
 var DdzProfile = require('../domain/ddzProfile');
 var DdzLoginRewards = require('../domain/ddzLoginRewards');
 var LoginRewardTemplate = require('../domain/LoginRewardTemplates');
+var DdzUserLevelConfigs = require('../domain/ddzUserLevelConfigs');
+
 var UserSession = require('../domain/userSession');
 var ErrorCode = require('../consts/errorCode');
 var utils = require('../util/utils');
 var crypto = require('crypto');
 var messageService = require('./messageService');
+var userLevelService = require('./userLevelService');
 
 var Q = require('q');
 var removeUserSessionQ = Q.nbind(UserSession.removeAllByUserId, UserSession);
@@ -19,7 +22,6 @@ var createUserSessionQ = Q.nbind(UserSession.createSession, UserSession);
 
 var pomeloApp = null;
 var UserService = module.exports;
-
 
 var _genPasswordDigest = function (password, salt) {
   return crypto.createHash('md5').update(password + "_" + salt).digest('hex');
@@ -355,7 +357,7 @@ UserService.updatePassword = function(userId, newPassword, callback) {
 };
 
 UserService.deliverLoginReward = function(userId, callback) {
-  var result = {};
+  var result = {coinsChanged:false};
   User.findOne({userId: userId})
       .populate('ddzProfile ddzLoginRewards')
       .execQ()
@@ -375,6 +377,7 @@ UserService.deliverLoginReward = function(userId, callback) {
         result.rewardCoins = rewardCoins;
         var funcs = [];
         if (rewardCoins > 0){
+          result.coinsChanged = true;
           user.ddzProfile.coins = user.ddzProfile.coins + rewardCoins;
           user.ddzLoginRewards.markModified('reward_detail');
           var funca = function(){
@@ -391,6 +394,10 @@ UserService.deliverLoginReward = function(userId, callback) {
         return Q.all(funcs);
       })
       .then(function(){
+        if (result.coinsChanged ){
+          userLevelService.onUserCoinsChanged(userId, true);
+        }
+
         utils.invokeCallback(callback, null, result);
       })
       .fail(function(error){
@@ -426,3 +433,6 @@ UserService.updateSession = function(userId, callback) {
         utils.invokeCallback(callback, {code: error.number, msg: error.message}, false);
       });
 };
+
+
+

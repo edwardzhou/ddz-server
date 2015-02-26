@@ -7,6 +7,8 @@ var pomeloApp = null;
 var sessionService = null;
 var getSessionBySidQ = null;
 var msgService = require('./messageService');
+var userService = require('./userService');
+var userLevelService = require('./userLevelService');
 var pushMessageQ = null;
 
 var PubSubEvent = require('../domain/pubSubEvent');
@@ -82,6 +84,10 @@ ChargeEventService.dispatchReloadCacheEvent = function(event) {
     pomeloApp.rpc.area.hallRemote.refreshGoodsPackages.toServer('*', null);
   } else if (event.eventData.reloadTarget =='rooms') {
     pomeloApp.rpc.area.roomRemote.reloadRooms.toServer('*', {}, null);
+  }else if (event.eventData.reloadTarget =='level_config') {
+    pomeloApp.rpc.area.userLevelRemote.reloadLevelConfig.toServer('*', {}, null);
+    pomeloApp.rpc.ddz.userLevelRemote.reloadLevelConfig.toServer('*', {}, null);
+    userLevelService.reloadLevelConfig();
   }
 
 };
