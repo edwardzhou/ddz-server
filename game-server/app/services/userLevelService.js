@@ -13,6 +13,7 @@ var ErrorCode = require('../consts/errorCode');
 var utils = require('../util/utils');
 var crypto = require('crypto');
 var messageService = require('./messageService');
+var taskService = require('./taskService');
 
 var Q = require('q');
 
@@ -98,6 +99,7 @@ UserLevelService.onUserCoinsChanged = function(userId, coinsUp, callback) {
                     messageService.pushMessage('onUserLevelChanged',
                         {levelName: result.ddzProfile.levelName},
                         [{uid: result.user.userId, sid: userSession.frontendId}]);
+                    taskService.processOtherTasks(result.user, 'level_up', {user: result.user, trigger: 'level_up'});
                 });
             }
             utils.invokeCallback(callback, null, true);

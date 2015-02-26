@@ -104,12 +104,38 @@ DdzGoodsPackageService.doAddToAsset = function(user, goodsItem) {
       used_at: null
     });
     newAsset.saveQ()
-      .then(function(asset) {
-        logger.info('[DdzGoodsPackageService.doAddToAsset] add asset "%s" to user "%d" successfully:',
-          asset.goodsId, user.userId, asset );
-      })
-      .fail(function(err) {
-        logger.error('[DdzGoodsPackageService.doAddToAsset] Error: ', err);
-      });
+        .then(function(asset) {
+          logger.info('[DdzGoodsPackageService.doAddToAsset] add asset "%s" to user "%d" successfully:',
+              asset.goodsId, user.userId, asset );
+        })
+        .fail(function(err) {
+          logger.error('[DdzGoodsPackageService.doAddToAsset] Error: ', err);
+        });
   }
+};
+
+DdzGoodsPackageService.doAddTaskGoodToAsset = function(user, goodsId, count) {
+  DdzGoods.findOneQ({id: goodsId})
+      .then(function(goods){
+        for (var i=0; i<count; i++) {
+          var newAsset = new DdzUserAsset({
+            userId: user.userId,
+            goodsId: goods.goodsId,
+            goodsName: goods.goodsName,
+            goodsDesc: goods.goodsDesc,
+            goodsType: goods.goodsType,
+            goodsAction: goods.goodsAction,
+            goodsIcon: goods.goodsIcon,
+            goodsProps: goods.goodsProps,
+            sortIndex: goods.sortIndex,
+            used_at: null
+          });
+          newAsset.save();
+        }
+        logger.info('DdzGoodsPackageService.doAddTaskGoodToAsset done.');
+      })
+      .fail(function(error){
+        logger.error('DdzGoodsPackageService.doAddTaskGoodToAsset failed.',error);
+      });
+
 };

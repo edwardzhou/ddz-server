@@ -13,6 +13,7 @@ var messageService = require('../../../services/messageService');
 var taskService = require('../../../services/taskService');
 var userService = require('../../../services/userService');
 var userLevelService = require('../../../services/userLevelService');
+var ddzGoodsPackageService = require('../../../services/ddzGoodsPackageService');
 
 
 module.exports = function (app) {
@@ -124,10 +125,15 @@ Handler.prototype.takeTaskBonus = function (msg, session, next) {
     .then(function(_task) {
       userTask = _task;
       if (!!userTask && userTask.taskFinished) {
-        user.ddzProfile.coins += userTask.taskData.bonus;
-        //user.ddzProfile.levelName =  this.app.rpc.userSystem.userRemote.getUserLevelName(user.ddzProfile.coins);
-        user.ddzProfile.save();
-        coinsChanged = true;
+        if (userTask.taskData.bonusType == "coins") {
+          user.ddzProfile.coins += userTask.taskData.bonus;
+          //user.ddzProfile.levelName =  this.app.rpc.userSystem.userRemote.getUserLevelName(user.ddzProfile.coins);
+          user.ddzProfile.save();
+          coinsChanged = true;
+        }
+        else if (userTask.taskData.bonusType == "ddz_good") {
+          ddzGoodsPackageService.doAddTaskGoodToAsset(user, userTask.taskData.bonus_id, userTask.taskData.bonus_count);
+        }
         var today = new Date();
         today.setHours(23);
         today.setMinutes(59);
