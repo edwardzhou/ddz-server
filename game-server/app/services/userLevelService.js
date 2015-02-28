@@ -94,12 +94,17 @@ UserLevelService.onUserCoinsChanged = function(userId, coinsUp, callback) {
             }
         })
         .then(function(userSession){
-            if (result.levelChanged) {
+            if (result.levelChanged && !result.user.robot) {
                 process.nextTick(function () {
                     messageService.pushMessage('onUserLevelChanged',
                         {levelName: result.ddzProfile.levelName},
                         [{uid: result.user.userId, sid: userSession.frontendId}]);
-                    taskService.processOtherTasks(result.user, 'level_up', {user: result.user, trigger: 'level_up'});
+                    if (coinsUp) {
+                        taskService.processOtherTasks(result.user, 'level_up', {
+                            user: result.user,
+                            trigger: 'level_up'
+                        });
+                    }
                 });
             }
             utils.invokeCallback(callback, null, true);
