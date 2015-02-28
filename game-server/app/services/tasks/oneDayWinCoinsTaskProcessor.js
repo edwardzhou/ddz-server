@@ -34,14 +34,14 @@ oneDayPlayTaskProcessor.process = function(task, params) {
         if (isWinner) {
             task.taskData.current = coins;
         }else {
-            task.taskData.current = -coins;
+            //task.taskData.current = -coins;
         }
     }
     else {
         if (isWinner) {
             task.taskData.current = task.taskData.current + coins;
         }else {
-            task.taskData.current = task.taskData.current - coins;
+            //task.taskData.current = task.taskData.current - coins;
         }
     }
 

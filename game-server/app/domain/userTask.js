@@ -52,6 +52,7 @@ var __toParams = function(model, excludeAttrs) {
     taskActivated: (model.taskActivated? 1 : 0),
     taskFinished: (model.taskFinished? 1 : 0),
     taskBonusDesc: model.taskBonusDesc,
+    progressDesc: model.progressDesc,
     progress: model.progress,
     bonusDelivered: model.bonusDelivered
   };
