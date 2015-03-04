@@ -3,6 +3,7 @@ var mongoose = require('mongoose-q')();
 
 var crypto = require('crypto');
 var DomainBase = require('./domainBase');
+var DdzLoginRewards = require('../domain/ddzLoginRewards');
 //var DdzProfile = require('./ddzProfile');
 
 //var signUpSchema = mongoose
@@ -219,6 +220,7 @@ var __toParams = function(model, excludeAttrs) {
   if (!!model.ddzProfile && !!model.ddzProfile.toParams) {
     transObj.ddzProfile = model.ddzProfile.toParams();
   }
+
   if (!!model.ddzLoginRewards && !!model.ddzLoginRewards.toParams) {
     transObj.ddzLoginRewards = model.ddzLoginRewards.toParams();
   }

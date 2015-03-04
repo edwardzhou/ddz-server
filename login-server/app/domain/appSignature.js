@@ -4,10 +4,9 @@
 
 
 var mongoose = require('mongoose-q')();
-var PaymentMethod = require('./paymentMethod');
 
 /**
- * 渠道
+ * 认证的应用签名
  */
 var appSignature = new mongoose.Schema({
   appId: String,
@@ -24,15 +23,6 @@ var appSignature = new mongoose.Schema({
 });
 
 
-/**
- * 获取启用的渠道
- * @returns {*}
- */
-appSignature.statics.getEnabledChannelsQ = function() {
-  return this.find({enabled: true})
-    .populate('paymentMethod_id')
-    .execQ();
-};
 
 var __toParams = function(model, excludeAttrs) {
   var transObj = {

@@ -3,6 +3,7 @@
  */
 
 xxtea = require('./app/util/xxtea');
+crypto = require('crypto') ;
 
 e2 = new Buffer('htiVSgHS7GjJqtT4', 'base64');
 
@@ -35,3 +36,14 @@ b = xxtea.bufferToLongArray(a, false);
 c = xxtea.decryptToArray(b, key);
 d = xxtea.longArrayToBuffer(c, true);
 console.log(a , ' decoded ==> ', d.toString());
+
+
+xx = xxtea.encryptToArray('D4DB1295EA1B3298DD256AF4BEBCFC0C', '3b231fa12a107950e87207843dcb8e2c');
+s3 = xxtea.longArrayToBuffer(xx, false);
+s4 = s3.toString('base64');
+//s4 = Buffer.concat([ s3,  new Buffer('3b231fa12a107950e87207843dcb8e2c', 'ascii')]);
+s5 = 'D4DB1295EA1B3298DD256AF4BEBCFC0C' + '3b231fa12a107950e87207843dcb8e2c';
+console.log('xxtea.longArrayToBuffer s3 =>' , s3);
+console.log('xxtea.longArrayToBuffer s4 =>', s4);
+a = crypto.createHash('md5').update(s5).digest('hex');
+console.log(a);

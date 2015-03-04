@@ -1,0 +1,3 @@
+var PlayerService = function(app) {
+
+};

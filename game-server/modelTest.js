@@ -32,6 +32,9 @@ Channel = require('./app/domain/channel');
 require('./app/domain/ArrayHelper');
 taskService = require('./app/services/taskService');
 
+AppServerInfo = require('./app/domain/appServerInfo');
+
+
 TaskDef = require('./app/domain/taskDef');
 UserTask = require('./app/domain/userTask');
 
