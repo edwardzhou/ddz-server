@@ -7,7 +7,8 @@ var Schema = mongoose.Schema;
 var crypto = require('crypto');
 var uuid = require('node-uuid');
 var utils = require('../util/utils');
-
+var xxtea = require('../util/xxtea');
+var Result = require('./result');
 
 /**
  * 用户会话数据
@@ -18,6 +19,8 @@ var userSessionSchema = new mongoose.Schema({
   mac: String,    // 用户登录时的mac
   frontendId: String, // 前端服务器ID
   frontendSessionId: Number,  // 前端服务器的SessionId
+  sessionKK: String,
+  sessionKV: String,
   sessionToken: {type:String, default: uuid.v1},  // 会话token
   sessionStart: {type:Date, default: Date.now},   // 会话起始时间
   sessionData: {type: Schema.Types.Mixed, default: {_placeholder:0}}, // 会话数据
@@ -43,6 +46,8 @@ userSessionSchema.statics.createSession = function(userId, mac, frontendId, fron
   newSession.mac = mac;
   newSession.frontendId = frontendId;
   newSession.frontendSessionId = frontendSessionId;
+  newSession.sessionKK = crypto.createHash('md5').update(Date.now().toString()).digest('hex');
+  newSession.sessionKV = xxtea.encryptToBuffer(mac + newSession.sessionKK, newSession.sessionKK).toString('base64');
   newSession.save(function(err, session) {
     utils.invokeCallback(cb, err, session);
   });
@@ -79,6 +84,20 @@ userSessionSchema.statics.getByUserId = function(userId, cb) {
  */
 userSessionSchema.statics.removeAllByUserId = function(userId, cb) {
   this.remove({userId: userId}, cb);
+};
+
+userSessionSchema.statics.verifySession = function(userId, sessionId, verifyToken, cb) {
+  this.findOneQ({sessionToken: sessionId})
+    .then(function(userSession) {
+      if (userSession.userId == userId && userSession.sessionKV == verifyToken) {
+        utils.invokeCallback(cb, null, true);
+      } else {
+        throw Result.genErrorResult(1000000, 0, 'invalid session');
+      }
+    })
+    .fail(function(err) {
+      utils.invokeCallback(cb, err, null);
+    });
 };
 
 

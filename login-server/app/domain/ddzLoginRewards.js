@@ -23,18 +23,18 @@ var ddzLoginRewardsSchema = new mongoose.Schema({
     collection: 'ddz_login_rewards'
 });
 
-
-
-
 var __toParams = function(model, excludeAttrs) {
+
     var transObj = {
-        userId: model.userId,
-        user_id: model.user_id,
-        login_days: model.login_days,
-        total_login_days: model.total_login_days,
-        last_login_date: model.last_login_date,
-        reward_detail: model.reward_detail
+        totalDayCount: model.login_days,
+        dayRewards: []
     };
+    for(var i=1;i<=model.login_days;i++){
+        var v_day = 'day_'+i;
+        var v_day_reward = {day:v_day, status: model.reward_detail[v_day]["status"],
+            bonus:model.reward_detail[v_day]["bonus"]};
+        transObj.dayRewards.push(v_day_reward);
+    }
 
     if (!!excludeAttrs) {
         for (var index=0; index<excludeAttrs.length; index++) {
@@ -55,4 +55,4 @@ ddzLoginRewardsSchema.methods.toParams = function(excludeAttrs) {
 
 var DdzLoginRewards = mongoose.model('DdzLoginRewards', ddzLoginRewardsSchema);
 
-module.exports = ddzLoginRewards;
+module.exports = DdzLoginRewards;

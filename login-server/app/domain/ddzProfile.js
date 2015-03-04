@@ -12,6 +12,7 @@ var DdzProfileSchema = mongoose.Schema({
   userId: Number,   // 用户Id
   user_id: {type: mongoose.Schema.Types.ObjectId},
   coins: {type:Number, default: 10000}, // 金币数
+  levelName: {type:String, default: '商人'},
   gameStat: {     // 输赢统计
     won: {type: Number, default: 0},
     lose: {type: Number, default: 0}
@@ -51,6 +52,7 @@ var DdzProfileSchema = mongoose.Schema({
 var __toParams = function(model, excludeAttrs) {
   var transObj = {
     coins: model.coins,
+    levelName: model.levelName,
     gameStat: model.gameStat
   };
 

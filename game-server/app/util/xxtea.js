@@ -158,6 +158,19 @@ function decrypt(string, key) {
   return longArrayToString(result, false);
 }
 
+function encryptToBuffer(string, key) {
+  var result = encryptToArray(string, key);
+  var buf = longArrayToBuffer(result, false);
+
+  return buf;
+}
+
+function decryptFromBuffer(buf, key) {
+  //var result = bufferToLongArray(buf, false);
+  var decryptedArray = decryptToArray(buf);
+  var result = longArrayToBuffer(decryptedArray, true);
+  return result;
+}
 
 exports.encryptToArray  =  encryptToArray;
 exports.encrypt  =  encrypt;
@@ -167,4 +180,6 @@ exports.stringToLongArray = stringToLongArray;
 exports.longArrayToString = longArrayToString;
 exports.bufferToLongArray = bufferToLongArray;
 exports.longArrayToBuffer = longArrayToBuffer;
+exports.encryptToBuffer = encryptToBuffer;
+exports.decryptFromBuffer = decryptFromBuffer;
 

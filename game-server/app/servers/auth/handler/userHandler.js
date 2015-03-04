@@ -117,16 +117,17 @@ Handler.prototype.signUp = function(msg, session, next) {
 
   // 1. 创建新用户
   signUpQ(userInfo)
-    .then(function(user) {
+    .then(function(r) {
+      results = r;
       // 2. 创建userSession用于跨链接共享用户数据
-      results.user = user;
-      return createUserSessionQ(user.userId, handsetInfo.mac, session.frontendId, session.id);
-    })
-    .then(function(newUserSession) {
-      results.userSession = newUserSession;
-//      if (!!session.uid) {
-//        return Q.nbind(sessionService.unbind, sessionService)(session.uid);
-//      }
+//      results.user = user;
+//      return createUserSessionQ(user.userId, handsetInfo.mac, session.frontendId, session.id);
+//    })
+//    .then(function(newUserSession) {
+//      results.userSession = newUserSession;
+////      if (!!session.uid) {
+////        return Q.nbind(sessionService.unbind, sessionService)(session.uid);
+////      }
     })
     .then(function() {
       // 3. 绑定到session
@@ -138,7 +139,7 @@ Handler.prototype.signUp = function(msg, session, next) {
     })
     .then(function() {
       var resp = {
-        user : results.user.toParams(),
+        user : results.user.toParams(['ddzLoginRewards']),
         sessionToken : results.userSession.sessionToken
       };
 
@@ -166,17 +167,6 @@ Handler.prototype.signUp = function(msg, session, next) {
     })
     .fail(function(error) {
       utils.invokeCallback(next, null, {err: 502});
-    })
-    .then(function(){
-        //return results.user.populateQ('ddzLoginRewards');
-    })
-    .done(function(){
-        //logger.info("result.ddzLoginReward.toParams=", results.user.ddzLoginRewards.toParams());
-        //process.nextTick(function() {
-        //  messageService.pushMessage('onLoginReward',
-        //      {ddzLoginRewards: results.user.ddzLoginRewards.toParams()},
-        //      [{uid: results.user.userId, sid:results.userSession.frontendId}]);
-        //});
     });
 };
 
