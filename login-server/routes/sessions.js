@@ -11,6 +11,7 @@ var UserSession = require('../app/domain/userSession');
 var DdzProfile = require('../app/domain/ddzProfile');
 var AppServerInfo = require('../app/domain/appServerInfo');
 var Result = require('../app/domain/result');
+var ErrorCode = require('../app/consts/errorCode');
 
 var utils = require('../app/util/utils');
 
@@ -110,7 +111,7 @@ var doLoginPost = function(req, res) {
       resp.sessionToken = results.userSession.sessionToken;
       resp.sk = results.userSession.sessionKK;
       var len = results.serverInfo.gameServers.length;
-      resp.serverInfo = results.serverInfo.gameServers[userId % len];
+      resp.serverInfo = results.serverInfo.gameServers[resp.user.userId % len];
       taskService.fixUserTaskList(results.user);
 
       console.info('[doLoginPost] resp: ', resp);
@@ -119,8 +120,9 @@ var doLoginPost = function(req, res) {
     .fail(function(err) {
       console.error('[doLoginPost] Error: ', err);
       var resp = {};
-      resp.errCode = err.errCode || 500;
+      resp.errCode = err.errCode || err.err || ErrorCode.SYSTEM_ERROR;
       resp.error = err;
+      resp.message = ErrorCode.getErrorMessage(resp.errCode);
       res.end(JSON.stringify(resp));
     });
 
