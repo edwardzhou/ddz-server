@@ -5,6 +5,7 @@ class AppServerInfo
   field :appName, type: String
   field :updateVersionUrl, type: String
   field :updateManifestUrl, type: String
+  field :updatePackageUrl, type: String
   field :gameServers, type: Array
   field :enabled, type: Boolean, default: true
   include Mongoid::Timestamps
