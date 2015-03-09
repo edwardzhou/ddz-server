@@ -47,6 +47,7 @@ var appServerInfoSchema = new mongoose.Schema({
   appName: String,
   updateVersionUrl: String,
   updateManifestUrl: String,
+  updatePackageUrl: String,
   gameServers: [{host: String, port: Number, enabled: {type: Boolean, default: true}, memo: String}],
   enabled: {type: Boolean, default: true},  // 是否启用
   created_at: {type: Date, default: Date.now},

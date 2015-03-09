@@ -6,6 +6,7 @@ ActiveAdmin.register AppServerInfo do
     permitted << :appName
     permitted << :updateVersionUrl
     permitted << :updateManifestUrl
+    permitted << :updatePackageUrl
     permitted << :gameServers_hash
     permitted << :enabled
     permitted
@@ -18,6 +19,7 @@ ActiveAdmin.register AppServerInfo do
     column :appName
     column :updateVersionUrl
     column :updateManifestUrl
+    column :updatePackageUrl
     column :gameServers_hash
     column :enabled
     column :created_at
@@ -35,6 +37,7 @@ ActiveAdmin.register AppServerInfo do
       f.input :appName, required: true
       f.input :updateVersionUrl, required: true
       f.input :updateManifestUrl, required: true
+      f.input :updatePackageUrl, required: true
       f.input :gameServers_hash, required: true, as: :text
       f.input :enabled
     end

@@ -101,7 +101,8 @@ var doLoginPost = function(req, res) {
       results.serverInfo = {
         gameServers: appServerInfo.get('gameServers'),
         updateVersionUrl: appServerInfo.updateVersionUrl,
-        updateManifestUrl: appServerInfo.updateManifestUrl
+        updateManifestUrl: appServerInfo.updateManifestUrl,
+        updatePackageUrl: appServerInfo.updatePackageUrl
       }
     })
     .then(function() {
@@ -112,6 +113,9 @@ var doLoginPost = function(req, res) {
       resp.sk = results.userSession.sessionKK;
       var len = results.serverInfo.gameServers.length;
       resp.serverInfo = results.serverInfo.gameServers[resp.user.userId % len];
+      resp.updateVersionUrl = results.serverInfo.updateVersionUrl;
+      resp.updateManifestUrl = results.serverInfo.updateManifestUrl;
+      resp.updatePackageUrl = results.serverInfo.updatePackageUrl;
       taskService.fixUserTaskList(results.user);
 
       console.info('[doLoginPost] resp: ', resp);

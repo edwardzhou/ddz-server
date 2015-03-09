@@ -53,11 +53,15 @@ ActiveAdmin.register AppPackage do
       end
     end
 
+    uploadedVersionInfo = JSON.parse(IO.read(File.join(updateFilesPath, 'versionInfo.json')))
+    updateVersion = uploadedVersionInfo["version"] + "_" + uploadedVersionInfo["timestamp"]
+
+
     versionInfo = {
         packageUrl: URI.join(resource.baseUrl, resource.updateUrl).to_s.gsub(':pkg_id:', resource.appPackageId),
         remoteVersionUrl: URI.join(resource.baseUrl, resource.versionUrl).to_s.gsub(':pkg_id:', resource.appPackageId),
         remoteManifestUrl: URI.join(resource.baseUrl, resource.manifestUrl).to_s.gsub(':pkg_id:', resource.appPackageId),
-        version: newParams[:resVersion],
+        version: updateVersion,
         engineVersion: resource.engineVersion
     }
 
@@ -74,8 +78,8 @@ ActiveAdmin.register AppPackage do
 
     newInfo = AppUpdateInfo.new
     newInfo.app_package = resource
-    newInfo.appVersion = newParams[:appVersion]
-    newInfo.resVersion = newParams[:resVersion]
+    newInfo.appVersion = uploadedVersionInfo["version"]
+    newInfo.resVersion = updateVersion
     newInfo.searchPaths = newParams[:searchPaths]
     newInfo.enabled = true
     newInfo.app_package = resource

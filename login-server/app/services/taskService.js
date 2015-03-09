@@ -59,7 +59,7 @@ TaskService.fixUserTaskList = function (user) {
 
   UserTask.findByUserIdQ(user.userId)
     .then(function (_userTasks) {
-      //console.log('got user tasks: ', _userTasks);
+      console.log('got user tasks: ', _userTasks);
       userTasks = _userTasks;
       return TaskDef.findQ({});
     })
@@ -72,7 +72,7 @@ TaskService.fixUserTaskList = function (user) {
       var taskDef;
       for (var index = 0; index < taskDefs.length; index++) {
         taskDef = taskDefs[index];
-        //console.log('check task def: ', taskDef);
+        console.log('check task def: ', taskDef);
         userTask = getByTaskId(userTasks, taskDef.taskId);
         if (userTask == null) {
           if (taskDef.enabled) {
@@ -105,7 +105,7 @@ TaskService.processGamingTasks = function(user, trigger, isWinner, coins, isSpri
   var query = UserTask.find({user_id: user.id, taskTrigger: trigger, taskActivated: true, taskFinished: false});
   query.execQ()
     .then(function(_tasks){
-      //logger.info('[TaskService.processGamingTasks] _tasks: ', _tasks);
+      logger.info('[TaskService.processGamingTasks] _tasks: ', _tasks);
       for(var index=0; index<_tasks.length; index++) {
         TaskService.processTask(_tasks[index], {user: user, trigger: trigger, isWinner: isWinner,
           coins: coins, isSpring: isSpring, pokeGame: pokeGame});
