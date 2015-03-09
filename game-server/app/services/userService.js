@@ -8,6 +8,8 @@ var DdzProfile = require('../domain/ddzProfile');
 var DdzLoginRewards = require('../domain/ddzLoginRewards');
 var LoginRewardTemplate = require('../domain/LoginRewardTemplates');
 var DdzUserLevelConfigs = require('../domain/ddzUserLevelConfigs');
+var BrokenSaveTemplates = require('../domain/BrokenSaveTemplates');
+var DdzBrokenSavings = require('../domain/ddzBrokenSavings');
 
 var UserSession = require('../domain/userSession');
 var ErrorCode = require('../consts/errorCode');
@@ -440,6 +442,72 @@ UserService.updateSession = function(userId, callback) {
       })
       .fail(function(error){
         utils.invokeCallback(callback, {code: error.number, msg: error.message}, false);
+      });
+};
+
+UserService.doBrokenSaving = function(userId,  callback) {
+  logger.info('UserService.doBrokenSaving, userId=', userId);
+  var result = {broken_saved:false};
+  User.findOne({userId: userId})
+      .populate('ddzProfile, ddzBrokenSavings')
+      .execQ()
+      .then(function(user){
+        result.user = user;
+        if (user.ddzBrokenSavings == null) {
+          return BrokenSaveTemplates.findQ();
+        }
+      })
+      .then(function(saveTemplate){
+        var ddzBrokenSavings = result.user.ddzBrokenSavings;
+        var ddzProfile = result.user.ddzProfile;
+        if (ddzBrokenSavings == null){
+          var today = new Date();
+          today.setHours(23);
+          today.setMinutes(59);
+          today.setSeconds(59);
+          today.setMilliseconds(500);
+
+          logger.info('UserService.doBrokenSaving, create new DdzBrokenSavings');
+          ddzBrokenSavings = new DdzBrokenSavings();
+          ddzBrokenSavings.userId = cur_user.userId;
+          ddzBrokenSavings.user_id = cur_user.id;
+          ddzBrokenSavings.last_login_date = today.getTime();
+          ddzBrokenSavings.count = saveTemplate.count;
+          ddzBrokenSavings.threshold = saveTemplate.threshold;
+          ddzBrokenSavings.reward_detail = saveTemplate.reward_detail;
+          ddzBrokenSavings.save();
+        }
+        logger.info('UserService.doBrokenSaving, ddzBrokenSavings.saved_times=', ddzBrokenSavings.saved_times);
+        logger.info('UserService.doBrokenSaving, ddzBrokenSavings.count=', ddzBrokenSavings.count);
+        logger.info('UserService.doBrokenSaving, ddzProfile.coins=', ddzProfile.coins);
+        if (ddzProfile.coins < ddzBrokenSavings.threshold && ddzBrokenSavings.saved_times < ddzBrokenSavings.count){
+          ddzBrokenSavings.saved_times = ddzBrokenSavings.saved_times + 1;
+          var key = ddzBrokenSavings.saved_times + '_broken';
+          var saving_coins = ddzBrokenSavings[key];
+          ddzProfile.coins = ddzProfile.coins + saving_coins;
+          ddzProfile.save();
+          ddzBrokenSavings.save();
+          result.saving_coins = saving_coins;
+          result.broken_saved = true;
+        }
+
+        if (result.broken_saved){
+          return UserSession.findOneQ({userId: userId});
+        }
+      })
+      .then(function(userSession){
+        logger.info('UserService.doBrokenSaving, try to push broken saving message.result.broken_saved=',result.broken_saved);
+        if (result.broken_saved) {
+          process.nextTick(function () {
+            messageService.pushMessage('onUserBrokenSaved',
+                {save_coins: result.saving_coins},
+                [{uid: result.user.userId, sid: userSession.frontendId}]);
+          });
+        }
+        utils.invokeCallback(callback, null, true);
+      })
+      .fail(function(error){
+        utils.invokeCallback(callback, {code: error.number, msg: error.message}, null);
       });
 };
 
