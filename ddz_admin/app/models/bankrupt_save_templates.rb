@@ -1,4 +1,4 @@
-class BrokenSaveTemplates
+class BankruptSaveTemplates
    include Mongoid::Document
    field :count, type: Integer
    field :threshold, type: Integer

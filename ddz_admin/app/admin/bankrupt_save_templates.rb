@@ -1,4 +1,4 @@
-ActiveAdmin.register BrokenSaveTemplates do
+ActiveAdmin.register BankruptSaveTemplates do
 
 
 permit_params do
@@ -25,7 +25,7 @@ permit_params do
   filter :count
 
   form do |f|
-    f.inputs "BrokenSaveTemplates Details" do
+    f.inputs "BankruptSaveTemplates Details" do
       f.input :count
       f.input :threshold
       f.input :save_detail_hash, as: :text

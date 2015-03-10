@@ -8,8 +8,8 @@ var DdzProfile = require('../domain/ddzProfile');
 var DdzLoginRewards = require('../domain/ddzLoginRewards');
 var LoginRewardTemplate = require('../domain/LoginRewardTemplates');
 var DdzUserLevelConfigs = require('../domain/ddzUserLevelConfigs');
-var BrokenSaveTemplates = require('../domain/BrokenSaveTemplates');
-var DdzBrokenSavings = require('../domain/ddzBrokenSavings');
+var BankruptSaveTemplate = require('../domain/BankruptSaveTemplates');
+var DdzBankruptSave = require('../domain/ddzBankruptSaves');
 
 var UserSession = require('../domain/userSession');
 var ErrorCode = require('../consts/errorCode');
@@ -445,103 +445,97 @@ UserService.updateSession = function(userId, callback) {
       });
 };
 
-UserService.doBrokenSaving = function(userId,  callback) {
-  logger.info('UserService.doBrokenSaving, userId=', userId);
+UserService.doBankruptProcess = function(userId,  callback) {
+  logger.info('UserService.doBankruptProcess, userId=', userId);
   var result = {broken_saved:false, new_broken_saving:false};
   User.findOne({userId: userId})
-      .populate('ddzProfile ddzBrokenSavings')
+      .populate('ddzProfile ddzBankruptSave')
       .execQ()
       .then(function(user){
-        logger.info('UserService.doBrokenSaving, find user 1.');
+        logger.info('UserService.doBankruptProcess, find user 1.');
 
         if(user.robot) {
-          throw genError("doBrokenSaving: Robot is not be saved.");
+          throw genError("doBankruptProcess: Robot is not be saved.");
         }
         result.user = user;
-        result.ddzBrokenSavings = user.ddzBrokenSavings;
+        result.ddzBankruptSave = user.ddzBankruptSave;
         result.ddzProfile = user.ddzProfile;
-        logger.info('UserService.doBrokenSaving, result.ddzBrokenSavings=',result.ddzBrokenSavings);
-        logger.info('UserService.doBrokenSaving, result.ddzProfile=',result.ddzProfile);
-        var func = function(){};
+        logger.info('UserService.doBankruptProcess, result.ddzBankruptSave=',result.ddzBankruptSave);
+        logger.info('UserService.doBankruptProcess, result.ddzProfile=',result.ddzProfile);
         if (user.ddzBrokenSavings == null) {
-          func = function() {
-            return BrokenSaveTemplates.findQ({});
-          }
+          return BankruptSaveTemplate.findOneQ({});
         }
-        return Q.all([func()]);
+        else {
+          return null;
+        }
       })
-      .then(function(saveTemplates){
-        logger.info('UserService.doBrokenSaving, find saveTemplate.');
-        var func = function(){};
-        if (result.ddzBrokenSavings == null){
+      .then(function(saveTemplate){
+        logger.info('UserService.doBankruptProcess, find saveTemplate.');
+        if (result.ddzBankruptSave == null){
           var today = new Date();
           today.setHours(23);
           today.setMinutes(59);
           today.setSeconds(59);
           today.setMilliseconds(500);
 
-          saveTemplate = saveTemplates[0][0];
-          logger.info('UserService.doBrokenSaving, find saveTemplate. saveTemplate=', saveTemplate);
-          result.ddzBrokenSavings = new DdzBrokenSavings();
-          result.ddzBrokenSavings.userId = result.user.userId;
-          result.ddzBrokenSavings.user_id = result.user.id;
-          result.ddzBrokenSavings.last_login_date = today.getTime();
-          result.ddzBrokenSavings.count = saveTemplate.count;
-          result.ddzBrokenSavings.threshold = saveTemplate.threshold;
-          result.ddzBrokenSavings.save_detail = saveTemplate.save_detail;
+          logger.info('UserService.doBankruptProcess, find saveTemplate. saveTemplate=', saveTemplate);
+          result.ddzBankruptSave = new DdzBankruptSave();
+          result.ddzBankruptSave.userId = result.user.userId;
+          result.ddzBankruptSave.user_id = result.user.id;
+          result.ddzBankruptSave.last_login_date = today.getTime();
+          result.ddzBankruptSave.count = saveTemplate.count;
+          result.ddzBankruptSave.threshold = saveTemplate.threshold;
+          result.ddzBankruptSave.save_detail = saveTemplate.save_detail;
 
           result.new_broken_saving = true;
-          func = function() {
-            logger.info('UserService.doBrokenSaving, result.ddzBrokenSavings.saveQ()');
-            return result.ddzBrokenSavings.saveQ();
-          }
+          return result.ddzBankruptSave.saveQ();
         }
-        return Q.all([func()]);
+        else {
+          return null;
+        }
       })
-      .then(function(ddzBrokenSavings){
-        logger.info('UserService.doBrokenSaving, save user.ddzBrokenSavings');
-        var func = function(){};
+      .then(function(ddzBankruptSave){
+        logger.info('UserService.doBankruptProcess, save user.ddzBrokenSavings');
         if (result.new_broken_saving){
-          result.ddzBrokenSavings = ddzBrokenSavings[0];
-          result.user.ddzBrokenSavings = result.ddzBrokenSavings;
-          func = function() {
-            logger.info('UserService.doBrokenSaving, result.user.saveQ()');
-            return result.user.saveQ();
-          }
+          result.ddzBankruptSave = ddzBankruptSave;
+          result.user.ddzBankruptSave = result.ddzBankruptSave;
+          return result.user.saveQ();
         }
-        return Q.all([func()]);
+        else {
+          return null;
+        }
       })
       .then(function(user){
-        logger.info('UserService.doBrokenSaving, ddzBrokenSavings.saved_times=', result.ddzBrokenSavings.saved_times);
-        logger.info('UserService.doBrokenSaving, ddzBrokenSavings.count=', result.ddzBrokenSavings.count);
-        logger.info('UserService.doBrokenSaving, ddzProfile.coins=', result.ddzProfile.coins);
-        if (result.ddzProfile.coins < result.ddzBrokenSavings.threshold && result.ddzBrokenSavings.saved_times < result.ddzBrokenSavings.count){
-          result.ddzBrokenSavings.saved_times = result.ddzBrokenSavings.saved_times + 1;
-          var key = result.ddzBrokenSavings.saved_times + '_broken';
-          var saving_coins = result.ddzBrokenSavings.save_detail[key];
+        logger.info('UserService.doBankruptProcess, ddzBankruptSave.saved_times=', result.ddzBankruptSave.saved_times);
+        logger.info('UserService.doBankruptProcess, ddzBankruptSave.count=', result.ddzBankruptSave.count);
+        logger.info('UserService.doBankruptProcess, ddzProfile.coins=', result.ddzProfile.coins);
+        if (result.ddzProfile.coins < result.ddzBankruptSave.threshold && result.ddzBankruptSave.saved_times < result.ddzBankruptSave.count){
+          result.ddzBankruptSave.saved_times = result.ddzBankruptSave.saved_times + 1;
+          var key = 'bankrupt_' + result.ddzBankruptSave.saved_times;
+          var saving_coins = result.ddzBankruptSave.save_detail[key];
           result.ddzProfile.coins = result.ddzProfile.coins + saving_coins;
           result.ddzProfile.save();
-          result.ddzBrokenSavings.save();
+          result.ddzBankruptSave.save();
           result.saving_coins = saving_coins;
           result.broken_saved = true;
         }
-        var func = function(){};
         if (result.broken_saved){
-          func = function() {
-            return UserSession.findOneQ({userId: userId});
-          }
+          return UserSession.findOneQ({userId: userId});
         }
-        return Q.all([func()]);
+        else {
+          return null;
+        }
       })
       .then(function(userSession){
-        logger.info('UserService.doBrokenSaving, try to push broken saving message.');
-        logger.info('UserService.doBrokenSaving. result.broken_saved=',result.broken_saved);
-        logger.info('UserService.doBrokenSaving, userSession=',userSession);
+        logger.info('UserService.doBankruptProcess, try to push broken saving message.');
+        logger.info('UserService.doBankruptProcess. result.broken_saved=',result.broken_saved);
         if (result.broken_saved) {
-          process.nextTick(function () {
-            messageService.pushMessage('onUserBrokenSaved',
-                {save_coins: result.saving_coins},
-                [{uid: result.user.userId, sid: userSession.frontendId}]);
+          var msgData = {save_coins: result.saving_coins};
+          var target = [{uid: result.user.userId, sid: userSession.frontendId}]
+          process.nextTick(function() {
+            logger.info('[UserService.doBankruptProcess] msgData: ', msgData);
+            logger.info('[UserService.doBankruptProcess] target: ', target);
+            messageService.pushMessage('onUserBankruptSaved', msgData, target);
           });
         }
         utils.invokeCallback(callback, null, true);

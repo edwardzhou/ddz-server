@@ -108,7 +108,7 @@ UserLevelService.onUserCoinsChanged = function(userId, coinsUp, callback) {
                     }
                 });
             }
-            userService.doBrokenSaving(userId);
+            userService.doBankruptProcess(userId);
             utils.invokeCallback(callback, null, true);
         })
         .fail(function(error){

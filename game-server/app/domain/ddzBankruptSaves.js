@@ -11,7 +11,7 @@ var uuid = require('node-uuid');
  * 玩家破产补助情况
  * @type {Mongoose.Schema}
  */
-var DdzBrokenSavingsSchema = new mongoose.Schema({
+var DdzBankruptSaveSchema = new mongoose.Schema({
     userId: Number,    // 用户Id
     user_id: {type: mongoose.Schema.Types.ObjectId},
     count: Number,    // 奖励周期
@@ -23,7 +23,7 @@ var DdzBrokenSavingsSchema = new mongoose.Schema({
     created_at: {type: Date, default: Date.now},
     updated_at: {type: Date, default: Date.now}
 }, {
-    collection: 'ddz_broken_savings'
+    collection: 'ddz_bankrupt_saves'
 });
 
 var __toParams = function(model, excludeAttrs) {
@@ -41,14 +41,14 @@ var __toParams = function(model, excludeAttrs) {
     return transObj;
 };
 
-DdzBrokenSavingsSchema.statics.toParams = __toParams;
+DdzBankruptSaveSchema.statics.toParams = __toParams;
 
-DdzBrokenSavingsSchema.methods.toParams = function(excludeAttrs) {
+DdzBankruptSaveSchema.methods.toParams = function(excludeAttrs) {
     return __toParams(this, excludeAttrs);
 };
 
 
 
-var DdzBrokenSavings = mongoose.model('DdzBrokenSavings', DdzBrokenSavingsSchema);
+var DdzBankruptSave = mongoose.model('DdzBankruptSave', DdzBankruptSaveSchema);
 
-module.exports = DdzBrokenSavings;
+module.exports = DdzBankruptSave;
