@@ -447,56 +447,96 @@ UserService.updateSession = function(userId, callback) {
 
 UserService.doBrokenSaving = function(userId,  callback) {
   logger.info('UserService.doBrokenSaving, userId=', userId);
-  var result = {broken_saved:false};
+  var result = {broken_saved:false, new_broken_saving:false};
   User.findOne({userId: userId})
-      .populate('ddzProfile, ddzBrokenSavings')
+      .populate('ddzProfile ddzBrokenSavings')
       .execQ()
       .then(function(user){
-        result.user = user;
-        if (user.ddzBrokenSavings == null) {
-          return BrokenSaveTemplates.findQ();
+        logger.info('UserService.doBrokenSaving, find user 1.');
+
+        if(user.robot) {
+          throw genError("doBrokenSaving: Robot is not be saved.");
         }
+        result.user = user;
+        result.ddzBrokenSavings = user.ddzBrokenSavings;
+        result.ddzProfile = user.ddzProfile;
+        logger.info('UserService.doBrokenSaving, result.ddzBrokenSavings=',result.ddzBrokenSavings);
+        logger.info('UserService.doBrokenSaving, result.ddzProfile=',result.ddzProfile);
+        var func = function(){};
+        if (user.ddzBrokenSavings == null) {
+          func = function() {
+            return BrokenSaveTemplates.findQ({});
+          }
+        }
+        return Q.all([func()]);
       })
-      .then(function(saveTemplate){
-        var ddzBrokenSavings = result.user.ddzBrokenSavings;
-        var ddzProfile = result.user.ddzProfile;
-        if (ddzBrokenSavings == null){
+      .then(function(saveTemplates){
+        logger.info('UserService.doBrokenSaving, find saveTemplate.');
+        var func = function(){};
+        if (result.ddzBrokenSavings == null){
           var today = new Date();
           today.setHours(23);
           today.setMinutes(59);
           today.setSeconds(59);
           today.setMilliseconds(500);
 
-          logger.info('UserService.doBrokenSaving, create new DdzBrokenSavings');
-          ddzBrokenSavings = new DdzBrokenSavings();
-          ddzBrokenSavings.userId = cur_user.userId;
-          ddzBrokenSavings.user_id = cur_user.id;
-          ddzBrokenSavings.last_login_date = today.getTime();
-          ddzBrokenSavings.count = saveTemplate.count;
-          ddzBrokenSavings.threshold = saveTemplate.threshold;
-          ddzBrokenSavings.reward_detail = saveTemplate.reward_detail;
-          ddzBrokenSavings.save();
+          saveTemplate = saveTemplates[0][0];
+          logger.info('UserService.doBrokenSaving, find saveTemplate. saveTemplate=', saveTemplate);
+          result.ddzBrokenSavings = new DdzBrokenSavings();
+          result.ddzBrokenSavings.userId = result.user.userId;
+          result.ddzBrokenSavings.user_id = result.user.id;
+          result.ddzBrokenSavings.last_login_date = today.getTime();
+          result.ddzBrokenSavings.count = saveTemplate.count;
+          result.ddzBrokenSavings.threshold = saveTemplate.threshold;
+          result.ddzBrokenSavings.save_detail = saveTemplate.save_detail;
+
+          result.new_broken_saving = true;
+          func = function() {
+            logger.info('UserService.doBrokenSaving, result.ddzBrokenSavings.saveQ()');
+            return result.ddzBrokenSavings.saveQ();
+          }
         }
-        logger.info('UserService.doBrokenSaving, ddzBrokenSavings.saved_times=', ddzBrokenSavings.saved_times);
-        logger.info('UserService.doBrokenSaving, ddzBrokenSavings.count=', ddzBrokenSavings.count);
-        logger.info('UserService.doBrokenSaving, ddzProfile.coins=', ddzProfile.coins);
-        if (ddzProfile.coins < ddzBrokenSavings.threshold && ddzBrokenSavings.saved_times < ddzBrokenSavings.count){
-          ddzBrokenSavings.saved_times = ddzBrokenSavings.saved_times + 1;
-          var key = ddzBrokenSavings.saved_times + '_broken';
-          var saving_coins = ddzBrokenSavings[key];
-          ddzProfile.coins = ddzProfile.coins + saving_coins;
-          ddzProfile.save();
-          ddzBrokenSavings.save();
+        return Q.all([func()]);
+      })
+      .then(function(ddzBrokenSavings){
+        logger.info('UserService.doBrokenSaving, save user.ddzBrokenSavings');
+        var func = function(){};
+        if (result.new_broken_saving){
+          result.ddzBrokenSavings = ddzBrokenSavings[0];
+          result.user.ddzBrokenSavings = result.ddzBrokenSavings;
+          func = function() {
+            logger.info('UserService.doBrokenSaving, result.user.saveQ()');
+            return result.user.saveQ();
+          }
+        }
+        return Q.all([func()]);
+      })
+      .then(function(user){
+        logger.info('UserService.doBrokenSaving, ddzBrokenSavings.saved_times=', result.ddzBrokenSavings.saved_times);
+        logger.info('UserService.doBrokenSaving, ddzBrokenSavings.count=', result.ddzBrokenSavings.count);
+        logger.info('UserService.doBrokenSaving, ddzProfile.coins=', result.ddzProfile.coins);
+        if (result.ddzProfile.coins < result.ddzBrokenSavings.threshold && result.ddzBrokenSavings.saved_times < result.ddzBrokenSavings.count){
+          result.ddzBrokenSavings.saved_times = result.ddzBrokenSavings.saved_times + 1;
+          var key = result.ddzBrokenSavings.saved_times + '_broken';
+          var saving_coins = result.ddzBrokenSavings.save_detail[key];
+          result.ddzProfile.coins = result.ddzProfile.coins + saving_coins;
+          result.ddzProfile.save();
+          result.ddzBrokenSavings.save();
           result.saving_coins = saving_coins;
           result.broken_saved = true;
         }
-
+        var func = function(){};
         if (result.broken_saved){
-          return UserSession.findOneQ({userId: userId});
+          func = function() {
+            return UserSession.findOneQ({userId: userId});
+          }
         }
+        return Q.all([func()]);
       })
       .then(function(userSession){
-        logger.info('UserService.doBrokenSaving, try to push broken saving message.result.broken_saved=',result.broken_saved);
+        logger.info('UserService.doBrokenSaving, try to push broken saving message.');
+        logger.info('UserService.doBrokenSaving. result.broken_saved=',result.broken_saved);
+        logger.info('UserService.doBrokenSaving, userSession=',userSession);
         if (result.broken_saved) {
           process.nextTick(function () {
             messageService.pushMessage('onUserBrokenSaved',
