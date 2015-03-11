@@ -14,6 +14,7 @@ var utils = require('../util/utils');
 var crypto = require('crypto');
 var messageService = require('./messageService');
 var taskService = require('./taskService');
+var userService = require('./userService');
 
 var Q = require('q');
 
@@ -107,6 +108,7 @@ UserLevelService.onUserCoinsChanged = function(userId, coinsUp, callback) {
                     }
                 });
             }
+            userService.doBankruptProcess(userId);
             utils.invokeCallback(callback, null, true);
         })
         .fail(function(error){
@@ -115,4 +117,5 @@ UserLevelService.onUserCoinsChanged = function(userId, coinsUp, callback) {
         });
 
 };
+
 
