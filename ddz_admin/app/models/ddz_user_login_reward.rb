@@ -1,6 +1,6 @@
 class DdzUserLoginReward
    include Mongoid::Document
-   filed :userId, type: Integer
+   field :userId, type: Integer
    field :login_days, type: Integer
    field :total_login_days, type: Integer
    field :reward_detail, type: Hash, default: ->{ {:_placeholder => 0} }
