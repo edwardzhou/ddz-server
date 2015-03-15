@@ -27,95 +27,97 @@ module.exports = GameOverAction;
  * @param player - 逃跑玩家
  */
 var calcPlayerEscape = function(table, player) {
-  var pokeGame = table.pokeGame;
-  var player1 = pokeGame.getNextPlayer(player.userId);
-  var player2 = pokeGame.getNextPlayer(player1.userId);
+    var result = {ddzProfiles: {}};
+    var pokeGame = table.pokeGame;
+    var player1 = pokeGame.getNextPlayer(player.userId);
+    var player2 = pokeGame.getNextPlayer(player1.userId);
 
-  if (player.role == PlayerRole.NONE) {
-    player.role = PlayerRole.LORD;
-  }
+    var player = result.player;
+    var player1 = result.player1;
+    var player2 = result.player2;
+    var pokeGame = result.pokeGame;
 
-  if (!pokeGame.lordValue || pokeGame.lordValue < 1) {
-    if (!!pokeGame.grabbingLord.lordValue && pokeGame.grabbingLord.lordValue > 0) {
-      pokeGame.lordValue = pokeGame.grabbingLord.lordValue;
-    } else {
-      pokeGame.lordValue = 1;
-    }
-  }
+    DdzProfile.findOneQ({userId: player.userId})
+        .then(function(ddzProfile){
+            result.ddzProfiles[player.userId] = ddzProfile;
+            return DdzProfile.findOneQ({userId: player1.userId});
+        })
+        .then(function(ddzProfile){
+            result.ddzProfiles[player1.userId] = ddzProfile;
+            return DdzProfile.findOneQ({userId: player2.userId});
+        })
+        .then(function(ddzProfile) {
+            result.ddzProfiles[player2.userId] = ddzProfile;
 
-  var cardInfo;
-  cardInfo = CardInfo.create(PokeCard.pokeCardsFromChars(player.initPokeCards));
-  pokeGame.lordValue <<= cardInfo.bombs.length + cardInfo.rockets.length;
+            if (player.role == PlayerRole.NONE) {
+                player.role = PlayerRole.LORD;
+            }
 
-  cardInfo = CardInfo.create(PokeCard.pokeCardsFromChars(player1.initPokeCards));
-  pokeGame.lordValue <<= cardInfo.bombs.length + cardInfo.rockets.length;
+            if (!pokeGame.lordValue || pokeGame.lordValue < 1) {
+                if (!!pokeGame.grabbingLord.lordValue && pokeGame.grabbingLord.lordValue > 0) {
+                    pokeGame.lordValue = pokeGame.grabbingLord.lordValue;
+                } else {
+                    pokeGame.lordValue = 1;
+                }
+            }
 
-  cardInfo = CardInfo.create(PokeCard.pokeCardsFromChars(player2.initPokeCards));
-  pokeGame.lordValue <<= cardInfo.bombs.length + cardInfo.rockets.length;
+            var cardInfo;
+            cardInfo = CardInfo.create(PokeCard.pokeCardsFromChars(player.initPokeCards));
+            pokeGame.lordValue <<= cardInfo.bombs.length + cardInfo.rockets.length;
 
-  // 如果未产生地主，则逃跑的player为地主，
-  if (pokeGame.lordUserId <= 0) {
-    player.role = PlayerRole.LORD;
-  }
+            cardInfo = CardInfo.create(PokeCard.pokeCardsFromChars(player1.initPokeCards));
+            pokeGame.lordValue <<= cardInfo.bombs.length + cardInfo.rockets.length;
 
-  if (player.isLord()) {
-    // 如果只出过一手牌以下，判为反春
-    if (!player.plays || player.plays <= 1) {
-      pokeGame.score.spring = -1;
-      pokeGame.lordValue *= 2;
-    }
-    pokeGame.lordWon = false;
+            cardInfo = CardInfo.create(PokeCard.pokeCardsFromChars(player2.initPokeCards));
+            pokeGame.lordValue <<= cardInfo.bombs.length + cardInfo.rockets.length;
 
-  } else {
-    var farmerUser = null;
-    if (!player1.isLord()) {
-      farmerUser = player1;
-    } else {
-      farmerUser = player2;
-    }
-    if ( (!farmerUser.plays || farmerUser.plays <=0) && (!player.plays || player.plays <=0) ) {
-      // 两农民都未出过牌，判春天
-      pokeGame.score.spring = 1;
-      pokeGame.lordValue <<= 1;
-    }
-    pokeGame.lordWon = true;
-  }
+            // 如果未产生地主，则逃跑的player为地主，
+            if (pokeGame.lordUserId <= 0) {
+                player.role = PlayerRole.LORD;
+            }
 
-  pokeGame.escapeUserId = player.userId;
+            if (player.isLord()) {
+                // 如果只出过一手牌以下，判为反春
+                if (!player.plays || player.plays <= 1) {
+                    pokeGame.score.spring = -1;
+                    pokeGame.lordValue *= 2;
+                }
+                pokeGame.lordWon = false;
 
-  var score = pokeGame.score;
-  score.rake = pokeGame.gameRake;
-  score.ante = pokeGame.gameAnte;
-  score.lordValue = pokeGame.lordValue;
-  score.total = score.ante * score.lordValue;
-  if (score.rake >= 1) {
-    score.raked_total = score.total - score.rake;
-  } else if (score.rake > 0) {
-    score.raked_total = score.total * (1 - score.rake);
-  }
+            } else {
+                var farmerUser = null;
+                if (!player1.isLord()) {
+                    farmerUser = player1;
+                } else {
+                    farmerUser = player2;
+                }
+                if ( (!farmerUser.plays || farmerUser.plays <=0) && (!player.plays || player.plays <=0) ) {
+                    // 两农民都未出过牌，判春天
+                    pokeGame.score.spring = 1;
+                    pokeGame.lordValue <<= 1;
+                }
+                pokeGame.lordWon = true;
+            }
 
-  pokeGame.playersResults = {};
+            pokeGame.escapeUserId = player.userId;
 
-  score.players = [];
-  if (player.isLord()) {
-    pokeGame.playersResults[player.userId] = -1 * score.total;
-    pokeGame.playersResults[player1.userId] = score.raked_total / 2;
-    pokeGame.playersResults[player2.userId] = score.raked_total / 2;
-  } else {
-    var lordUser, farmerUser;
-    if (player1.isLord()) {
-      lordUser = player1;
-      farmerUser = player2;
-    } else {
-      lordUser = player2;
-      farmerUser = player1;
-    }
+            var score = pokeGame.score;
+            score.rake = pokeGame.gameRake;
+            score.ante = pokeGame.gameAnte;
+            score.lordValue = pokeGame.lordValue;
+            score.total = score.ante * score.lordValue;
+            if (score.rake >= 1) {
+                score.raked_total = score.total - score.rake;
+            } else if (score.rake > 0) {
+                score.raked_total = score.total * (1 - score.rake);
+            }
 
-    pokeGame.playersResults[player.userId] = -1 * score.total;
-    pokeGame.playersResults[lordUser.userId] = score.raked_total;
-    pokeGame.playersResults[farmerUser.userId] = 0;
+            pokeGame.playersResults = {};
 
-  }
+            score.players = [];
+            calcGameOver(result);
+
+        });
 
 };
 
@@ -125,63 +127,147 @@ var calcPlayerEscape = function(table, player) {
  * @param player - 赢家
  */
 var calcNormalGameOver = function(table, player) {
-  var pokeGame = table.pokeGame;
+    var result = {ddzProfiles: {}};
 
-  var player1 = pokeGame.getNextPlayer(player.userId);
-  var player2 = pokeGame.getNextPlayer(player1.userId);
+    var pokeGame = table.pokeGame;
+    var player1 = pokeGame.getNextPlayer(player.userId);
+    var player2 = pokeGame.getNextPlayer(player1.userId);
 
-  pokeGame.lordWon = false;
+    result.player = player;
+    result.player1 = player1;
+    result.player2 = player2;
+    result.pokeGame = pokeGame;
 
-  if (player.isLord()) {
-    // 两家农民都没有出过牌,春天
-    if (player1.plays == 0 && player2.plays ==0) {
-      pokeGame.score.spring = 1;
-      pokeGame.lordValue *= 2;
-    }
-    pokeGame.lordWon = true;
-  } else {
-    var lord = player1.isLord()? player1 : player2;
-    // 如果地主只出过一手牌,反春天
-    if (lord.plays == 1) {
-      pokeGame.score.spring = -1;
-      pokeGame.lordValue *= 2;
-    }
-  }
+    DdzProfile.findOneQ({userId: player.userId})
+        .then(function(ddzProfile){
+            result.ddzProfiles[player.userId] = ddzProfile;
+            return DdzProfile.findOneQ({userId: player1.userId});
+        })
+        .then(function(ddzProfile){
+            result.ddzProfiles[player1.userId] = ddzProfile;
+            return DdzProfile.findOneQ({userId: player2.userId});
+        })
+        .then(function(ddzProfile){
+            result.ddzProfiles[player2.userId] = ddzProfile;
 
-  pokeGame.playersResults = {};
+            pokeGame.lordWon = false;
 
-  var score = pokeGame.score;
-  score.rake = pokeGame.gameRake;
-  score.ante = pokeGame.gameAnte;
-  score.lordValue = pokeGame.lordValue;
-  score.total = score.ante * score.lordValue * Math.pow(2, Math.abs(score.spring));
-  if (score.rake >= 1) {
-    score.raked_total = score.total - score.rake;
-  } else if (score.rake > 0) {
-    score.raked_total = score.total * (1 - score.rake);
-  }
+            if (player.isLord()) {
+                // 两家农民都没有出过牌,春天
+                if (player1.plays == 0 && player2.plays ==0) {
+                    pokeGame.score.spring = 1;
+                    pokeGame.lordValue *= 2;
+                }
+                pokeGame.lordWon = true;
+            } else {
+                var lord = player1.isLord()? player1 : player2;
+                // 如果地主只出过一手牌,反春天
+                if (lord.plays == 1) {
+                    pokeGame.score.spring = -1;
+                    pokeGame.lordValue *= 2;
+                }
+            }
 
-  score.players = [];
-  if (player.isLord()) {
-    pokeGame.playersResults[player.userId] = score.raked_total;
-    pokeGame.playersResults[player1.userId] = score.total / -2;
-    pokeGame.playersResults[player2.userId] = score.total / -2;
-  } else {
-    var lordUser, farmerUser;
-    if (player1.isLord()) {
-      lordUser = player1;
-      farmerUser = player2;
+            pokeGame.playersResults = {};
+
+            var score = pokeGame.score;
+            score.rake = pokeGame.gameRake;
+            score.ante = pokeGame.gameAnte;
+            score.lordValue = pokeGame.lordValue;
+            score.total = score.ante * score.lordValue * Math.pow(2, Math.abs(score.spring));
+            if (score.rake >= 1) {
+                score.raked_total = score.total - score.rake;
+            } else if (score.rake > 0) {
+                score.raked_total = score.total * (1 - score.rake);
+            }
+
+            score.players = [];
+            calcGameOver(result);
+        });
+
+};
+
+var calcGameOver = function(calcResult){
+    var result = calcResult;
+    var player = result.player;
+    var player1 = result.player1;
+    var player2 = result.player2;
+    var pokeGame = result.pokeGame;
+    if (player.isLord()) {
+
+        var real_win_total = score.raked_total;
+        if (result.ddProfiles[player.userId].coins < score.raked_total){
+            real_win_total = result.ddProfiles[player.userId].coins;
+        }
+        pokeGame.playersResults[player.userId] = real_win_total;
+        var plan_farmer_lose = real_win_total / 2;
+
+        var max_farmer_userId = player1.userId;
+        var min_farmer_userId = player2.userId;
+        if (result.ddzProfiles[player1.userId].coins > result.ddzProfiles[player2.userId].coins){
+            max_farmer_userId = player2.userId;
+            min_farmer_userId = player1.userId;
+        }
+        if (result.ddzProfiles[min_farmer_userId].coins < plan_farmer_lose){
+            pokeGame.playersResults[min_farmer_userId] = -1 * result.ddzProfiles[min_farmer_userId].coins;
+            var max_farmer_lose = (2 * plan_farmer_lose) - result.ddzProfiles[min_farmer_userId].coins;
+            if (max_farmer_lose > (score.raked_total / 2)){
+                max_farmer_lose = score.raked_total / 2;
+            }
+            if (max_farmer_lose > result.ddzProfiles[max_farmer_userId].coins){
+                max_farmer_lose = -result.ddzProfiles[max_farmer_userId].coins;
+            }
+            pokeGame.playersResults[max_farmer_userId] = -1 * max_farmer_lose;
+        }
+        else {
+            pokeGame.playersResults[player1.userId] = -1 * plan_farmer_lose;
+            pokeGame.playersResults[player2.userId] = -1 * plan_farmer_lose;
+        }
+
     } else {
-      lordUser = player2;
-      farmerUser = player1;
+        var lordUser, farmerUser;
+        if (player1.isLord()) {
+            lordUser = player1;
+            farmerUser = player2;
+        } else {
+            lordUser = player2;
+            farmerUser = player1;
+        }
+        var winScore = Math.round(score.raked_total / 2)
+
+        pokeGame.playersResults[lordUser.userId] = -1 * score.total;
+        pokeGame.playersResults[player.userId] = winScore;
+        pokeGame.playersResults[farmerUser.userId] = winScore;
+
+        var real_lord_lose = score.total;
+        if (result.ddzProfiles[lordUser.userId].coins < real_lord_lose){
+            real_lord_lose = result.ddzProfiles[lordUser.userId].coins;
+        }
+        pokeGame.playersResults[lordUser.userId] = -1 * real_lord_lose;
+
+        var max_farmer_userId = player.userId;
+        var min_farmer_userId = farmerUser.userId;
+        if (result.ddzProfiles[farmerUser.userId].coins > result.ddzProfiles[player.userId].coins){
+            max_farmer_userId = farmerUser.userId;
+            min_farmer_userId = player.userId;
+        }
+        var plan_farmer_win = real_lord_lose / 2;
+        if (result.ddzProfiles[min_farmer_userId].coins < plan_farmer_win){
+            pokeGame.playersResults[min_farmer_userId] = result.ddzProfiles[min_farmer_userId].coins;
+            var max_farmer_win = 2 * plan_farmer_win - result.ddzProfiles[min_farmer_userId].coins;
+            if (max_farmer_win > winScore){
+                max_farmer_win = winScore;
+            }
+            if (max_farmer_win > result.ddzProfiles[max_farmer_userId].coins){
+                max_farmer_win = result.ddzProfiles[max_farmer_userId].coins;
+            }
+            pokeGame.playersResults[min_farmer_userId] = max_farmer_win;
+        }
+        else {
+            pokeGame.playersResults[player.userId] = plan_farmer_win;
+            pokeGame.playersResults[farmerUser.userId] = plan_farmer_win;
+        }
     }
-    var winScore = Math.round(score.raked_total / 2)
-
-    pokeGame.playersResults[lordUser.userId] = -1 * score.total;
-    pokeGame.playersResults[player.userId] = winScore;
-    pokeGame.playersResults[farmerUser.userId] = winScore;
-
-  }
 };
 
 /**
@@ -215,6 +301,7 @@ GameOverAction.doGameOver = function(table, player, cb) {
       // 设置第一个玩家的ddzProfile
         logger.info('set 1th player ddzprofile,', ddzProfile);
         userLevelService.onUserCoinsChanged(pokeGame.players[0].userId, pre_p_win_coins > 0);
+      userService.doBankruptProcess(pokeGame.players[0].userId);
       pokeGame.players[0].ddzProfile = ddzProfile;
 
       // 3. 更新第二位玩家的ddzProfile
@@ -228,6 +315,7 @@ GameOverAction.doGameOver = function(table, player, cb) {
       // 设置第二位玩家的ddzProfile
         logger.info('set 2th player ddzprofile,', ddzProfile);
         userLevelService.onUserCoinsChanged(pokeGame.players[1].userId, pre_p_win_coins > 0);
+      userService.doBankruptProcess(pokeGame.players[1].userId);
       pokeGame.players[1].ddzProfile = ddzProfile;
 
       // 4. 更新第三位玩家的ddzProfile
@@ -241,6 +329,7 @@ GameOverAction.doGameOver = function(table, player, cb) {
       // 设置第三位玩家的ddzProfile
         logger.info('set 3th player ddzprofile,', ddzProfile);
         userLevelService.onUserCoinsChanged(pokeGame.players[2].userId, pre_p_win_coins > 0);
+      userService.doBankruptProcess(pokeGame.players[2].userId);
       pokeGame.players[2].ddzProfile = ddzProfile;
 
       // 结算结果信息存入pokeGame
