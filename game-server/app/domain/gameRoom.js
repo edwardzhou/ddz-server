@@ -95,6 +95,10 @@ roomSchema.methods.initRoom = function(opts) {
 
   this.startNewGameCallback = null;
 
+  if (this._onPlayerReadyTimeout == null) {
+    this._onPlayerReadyTimeout = this.onPlayerReadyTimeout.bind(this);
+  }
+
   this.loadRobots();
 
 };
@@ -212,9 +216,7 @@ roomSchema.methods.cancelTable = function(table) {
     }
   }
 
-  process.nextTick(function(){
-    self.onPlayerReadyTimeout();
-  });
+  process.nextTick(this._onPlayerReadyTimeout);
 };
 
 roomSchema.methods.releaseTable = function(table) {
@@ -294,7 +296,7 @@ roomSchema.methods.playerReady = function(player, callback) {
 
   if (this.readyPlayers.length >0) {
     if (!this.playerReadyTimeout) {
-      this.playerReadyTimeout = setTimeout(this.onPlayerReadyTimeout.bind(this), 10 * 1000);
+      this.playerReadyTimeout = setTimeout(this._onPlayerReadyTimeout, 10 * 1000);
     }
   }
 };

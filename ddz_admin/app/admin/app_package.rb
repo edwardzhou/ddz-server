@@ -42,7 +42,7 @@ ActiveAdmin.register AppPackage do
           dst_dir = File.dirname(dst_file)
           FileUtils.makedirs(dst_dir) unless File.exists?(dst_dir)
         end
-        entry.extract dst_file
+        entry.extract dst_file, proc { true }
         unless entry.name_is_directory?
           entry.get_input_stream do |fis|
             md5 = ::Digest::MD5.new

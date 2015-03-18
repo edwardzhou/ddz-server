@@ -530,8 +530,12 @@ UserService.doBankruptProcess = function(userId,  callback) {
         logger.info('UserService.doBankruptProcess, try to push broken saving message.');
         logger.info('UserService.doBankruptProcess. result.broken_saved=',result.broken_saved);
         if (result.broken_saved) {
-          var msgData = {save_coins: result.saving_coins};
-          var target = [{uid: result.user.userId, sid: userSession.frontendId}]
+          var msgData = {
+            save_times: result.ddzBankruptSave.saved_times,
+            save_coins: result.saving_coins,
+            coins: result.ddzProfile.coins
+          };
+          var target = [{uid: result.user.userId, sid: userSession.frontendId}];
           process.nextTick(function() {
             logger.info('[UserService.doBankruptProcess] msgData: ', msgData);
             logger.info('[UserService.doBankruptProcess] target: ', target);
