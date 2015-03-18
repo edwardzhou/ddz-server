@@ -8,6 +8,12 @@ var exp = module.exports;
 var roomsMap = {};
 var pomeloApp = null;
 
+/**
+ * 初始化房间信息
+ * @param app
+ * @param roomIds
+ * @returns {*}
+ */
 exp.init = function(app, roomIds) {
   logger.info("roomIds: ", roomIds);
   pomeloApp = app;
@@ -25,11 +31,20 @@ exp.init = function(app, roomIds) {
   return exp;
 };
 
+/**
+ * 根据房间id获取房间实例。
+ * @param roomId
+ * @returns {*}
+ */
 exp.getRoom = function(roomId) {
   //logger.info("roomsMap: %j", roomsMap);
   return roomsMap[roomId];
 };
 
+/**
+ * 重新加载房间信息
+ * @param cb
+ */
 exp.reloadRooms = function(cb) {
   logger.info("[RoomService.reloadRooms] reload rooms...");
   for (var roomId in roomsMap) {
@@ -40,6 +55,13 @@ exp.reloadRooms = function(cb) {
   utils.invokeCallback(cb);
 };
 
+/**
+ * 玩家进入房间
+ * @param player - 玩家
+ * @param roomId - 房间id
+ * @param lastTableId - 玩家上次进入时的table id
+ * @param cb
+ */
 exp.enterRoom = function(player, roomId, lastTableId, cb) {
   var room = roomsMap[roomId];
 
@@ -62,6 +84,13 @@ exp.enterRoom = function(player, roomId, lastTableId, cb) {
   //return table;
 };
 
+
+/**
+ * 获取房间指定的table
+ * @param roomId
+ * @param tableId
+ * @returns {*}
+ */
 exp.getTable = function(roomId, tableId) {
   var room = roomsMap[roomId];
   if (!room)
@@ -69,6 +98,12 @@ exp.getTable = function(roomId, tableId) {
   return room.tablesMap[tableId];
 };
 
+/**
+ * 玩家离开房间
+ * @param roomId
+ * @param playerId
+ * @param cb
+ */
 exp.leave = function(roomId, playerId, cb) {
   var room = roomsMap[roomId];
   var player = room.getPlayer(playerId);
@@ -83,6 +118,11 @@ exp.leave = function(roomId, playerId, cb) {
 
 };
 
+/**
+ * 加载房间
+ * @param roomId
+ * @param callback
+ */
 var loadRoom = function(roomId, callback) {
 
   GameRoom.findOne({roomId:roomId}, function(err, room) {
@@ -93,9 +133,4 @@ var loadRoom = function(roomId, callback) {
     }
     utils.invokeCallback(callback, err, room);
   });
-//
-//  var room = new GameRoom({roomId:roomId, roomName: 'room_' + roomId});
-//  room.initRoom();
-//
-//  return room;
 };
