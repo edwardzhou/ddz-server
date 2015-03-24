@@ -321,7 +321,7 @@ testGetUserTasks = function(userId) {
 
 //testGetUserTasks(50471);
 
-testCreateRobots = function(u_count, cb) {
+testCreateRobotsQ = Q.async(function(u_count, cb) {
   console.log('testCreateRobots u_count=',u_count);
   var userInfo = {};
   // 随机生成盐值
@@ -392,7 +392,9 @@ testCreateRobots = function(u_count, cb) {
         console.log('testCreateRobots done: user=', results.user);
         //process.exit(0);
       });
-};
+  console.log('testCreateRobots end.');
+  return u_count;
+});
 
 //for(var i=0;i<2;i++) {
 //  Q.fcall(testCreateRobots,i)
@@ -402,12 +404,20 @@ testCreateRobots = function(u_count, cb) {
 //
 //};
 var c_u_jobs = [0,1];
-var createRobotQ = Q.nfbind(testCreateRobots);
+//var createRobotQ = Q.fbind(testCreateRobots, this);
 
-for(var i=0;i<2;i++) {
-  Q.nfapply(createRobotQ,[i]).done(function() {
-    console.log('testCreateRobots..', i);
-  });
+//for(var i=0;i<2;i++) {
+//  Q.nfapply(createRobotQ,[i]).done(function() {
+//    console.log('testCreateRobots..', i);
+//  });
+//
+//};
+
+for(var i=0;i<1;i++) {
+  testCreateRobotsQ(i)
+      .then(function(u_count) {
+        console.log('testCreateRobots..', u_count);
+      });
 
 };
 
