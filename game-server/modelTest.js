@@ -321,7 +321,7 @@ testGetUserTasks = function(userId) {
 
 //testGetUserTasks(50471);
 
-testCreateRobotsQ = Q.async(function(u_count, cb) {
+testCreateRobot = function(u_count, cb) {
   console.log('testCreateRobots u_count=',u_count);
   var userInfo = {};
   // 随机生成盐值
@@ -389,60 +389,19 @@ testCreateRobotsQ = Q.async(function(u_count, cb) {
         console.log('testCreateRobots faild. error=', error);
       })
       .done(function(){
-        console.log('testCreateRobots done: user=', results.user);
+        console.log('testCreateRobots done: user=%s, gender=%s', results.user.userId, results.user.gender);
         //process.exit(0);
       });
-  console.log('testCreateRobots end.');
-  return u_count;
-});
-
-//for(var i=0;i<2;i++) {
-//  Q.fcall(testCreateRobots,i)
-//      .then(function(){
-//        console.log('testCreateRobots..',i);
-//      });
-//
-//};
-var c_u_jobs = [0,1];
-//var createRobotQ = Q.fbind(testCreateRobots, this);
-
-//for(var i=0;i<2;i++) {
-//  Q.nfapply(createRobotQ,[i]).done(function() {
-//    console.log('testCreateRobots..', i);
-//  });
-//
-//};
-
-for(var i=0;i<1;i++) {
-  testCreateRobotsQ(i)
-      .then(function(u_count) {
-        console.log('testCreateRobots..', u_count);
-      });
-
+  //console.log('testCreateRobots end.');
 };
 
-//return c_u_jobs.reduce(function (previous, job) {
-//  return previous.then(function () {
-//    console.log('testCreateRobots..',job);
-//    return createRobotQ(job);
-//  });
-//}, Q());
 
-//var funcs = c_u_jobs.map(function(job){
-//  console.log('testCreateRobots..0..',job);
-//  return testCreateRobots(job);
-//});
-//
-//return funcs.reduce(Q.when, Q());
+testCreateRobots = function() {
+  for (var i = 0; i < 2000; i++) {
+    testCreateRobot(i);
 
-//return c_u_jobs.reduceRight(function (next, job) {
-//  return function (previous) {
-//    return createRobotQ(job).then(function (result) {
-//          console.log('testCreateRobots..0..',job);
-//          return next(result);
-//        });
-//  };
-//}, function fallthrough(previous) {
-//      console.log('testCreateRobots..2..No result was satisfactory');
-//}
-//)();
+  }
+};
+
+testCreateRobots();
+
