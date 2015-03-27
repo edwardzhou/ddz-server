@@ -127,6 +127,11 @@ app.configure('production|development', 'events', function() {
   userLevelService.init(app);
 });
 
+app.configure('production|development', 'robot_service', function() {
+  var robotService = require('./app/services/robotService');
+  robotService.init(app, {});
+});
+
 app.configure('production|development', function () {
   app.route("area", routeUtil.area);
 });
