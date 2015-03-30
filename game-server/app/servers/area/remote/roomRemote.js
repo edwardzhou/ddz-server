@@ -134,7 +134,7 @@ remoteHandler.onPreStartNewGame = function(table) {
 
   if (realPlayers.length == 0) {
     logger.warn("no real player for the table: %d, will cancel the table.", tableId);
-    table.room.cancelTable(table);
+    roomService.cancelTable(table, table.room);
   } else {
     messageService.pushTableMessage(table, 'onPreStartGame', {tableId: tableId, roomId: roomId}, null);
     setTimeout( function(){
@@ -151,7 +151,7 @@ remoteHandler.onPreStartNewGame = function(table) {
       }
 
       logger.info('[roomRemote.onPreStartNewGame] [timeout] the table do not BUSY in time, cancel it.');
-      timeoutTable.room.cancelTable(timeoutTable);
+      roomService.cancelTable(timeoutTable, timeoutTable.room);
     }, 4 * 1000);
   }
 };

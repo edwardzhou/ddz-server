@@ -83,6 +83,65 @@ exp.leave = function(roomId, playerId, cb) {
 
 };
 
+
+exp.cancelTable = function(table, room) {
+  //var self = this;
+  var index = room.tables.indexOf(table);
+  room.tables.splice(index, 1);
+  delete room.tablesMap[table.tableId];
+  table.room = null;
+
+  for (var playerIndex=0; playerIndex<table.players.length; playerIndex++) {
+    var player = table.players[playerIndex];
+    player.reset();
+    var pIndex = room.readyPlayers.indexOf(player);
+    if (pIndex >=0 ) {
+      room.readyPlayers.splice(pIndex, 1);
+    }
+
+    if (!!player.robot) {
+      room.idle_robots.push(player);
+    } else if (!!room.playersMap[player.userId] && !player.connectionLost) {
+      room.readyPlayers.unshift(player);
+    }
+  }
+
+  process.nextTick(function(){
+    exp.onPlayerReadyTimeout(room);
+  });
+};
+
+exp.onPlayerReadyTimeout = function(room) {
+  if (!!room.playerReadyTimeout) {
+    clearTimeout(room.playerReadyTimeout);
+    room.playerReadyTimeout = null;
+  }
+
+  var readyPlayers = room.readyPlayers.filter(function(p) {return !p.left;});
+
+  if (readyPlayers.length < 3 && readyPlayers.length>0) {
+    if (room.idle_robots.length >= 3 - readyPlayers.length) {
+      var players = readyPlayers.splice(0, 3);
+      utils.arrayRemove(room.readyPlayers, players);
+      var robotPlayers = room.idle_robots.splice(0, 3-players.length);
+      players = players.concat(robotPlayers);
+      for (var robotIndex=0; robotIndex<robotPlayers.length; robotIndex++) {
+        robotPlayers[robotIndex].readyForStartGame = true;
+      }
+
+      console.log('[roomSchema.methods.onPlayerReadyTimeout] arrange robots:', players);
+      var table = room.arrangeTable(players);
+      this.tables.push(table);
+      this.tablesMap[table.tableId] = table;
+
+      console.log('this.startNewGameCallback ', room.startNewGameCallback);
+      utils.invokeCallback(room.startNewGameCallback, table);
+    } else {
+      room.playerReadyTimeout = setTimeout(exp.onPlayerReadyTimeout.bind(room), 10 * 1000);
+    }
+  }
+};
+
 var loadRoom = function(roomId, callback) {
 
   GameRoom.findOne({roomId:roomId}, function(err, room) {
