@@ -142,6 +142,30 @@ exp.onPlayerReadyTimeout = function(room) {
   }
 };
 
+
+exp.releaseTable = function(room, table) {
+  var index = room.tables.indexOf(table);
+  room.tables.splice(index, 1);
+  delete room.tablesMap[table.tableId];
+  table.room = null;
+
+  for (var playerIndex=0; playerIndex<table.players.length; playerIndex++) {
+    var player = table.players[playerIndex];
+    if (!!player) {
+      player.reset();
+      var pIndex = room.readyPlayers.indexOf(player);
+      if (pIndex >=0 ) {
+        room.readyPlayers.splice(pIndex, 1);
+      }
+
+      if (player.robot)
+        room.idle_robots.push(player);
+    }
+  }
+};
+
+
+
 var loadRoom = function(roomId, callback) {
 
   GameRoom.findOne({roomId:roomId}, function(err, room) {
