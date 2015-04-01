@@ -46,6 +46,8 @@ app.configure('production|development', function () {
       app.set('gameInstances', instances);
     })
 
+
+
 });
 
 app.configure('production|development', 'userSystem|area|auth|ddz', function() {
@@ -54,6 +56,7 @@ app.configure('production|development', 'userSystem|area|auth|ddz', function() {
 //  var mongoose = require('mongoose');
 //  mongoose.connect(mongodbCfg.url, mongodbCfg.options, function(err) {
 //  });
+
 });
 
 // app configuration
@@ -84,7 +87,6 @@ app.configure('production|development', 'ddz|gate', function () {
         });
        }
     });
-
   var clientIp = require('./app/filters/clientIp');
   app.before(clientIp());
   userLevelService.init(app);
@@ -111,12 +113,10 @@ app.configure('production|development', 'area', function () {
 
   var cardService = require('./app/services/cardServiceFactory').createNormalCardService();
   app.set('cardService', cardService);
+  tableService.init();
   var robotService = require('./app/services/robotService');
   robotService.init(app, {});
   app.set('robotService', robotService);
-
-  tableService.init();
-
 //  if (curServerId == 'room-server') {
 //    var chargeEventService = require('./app/services/chargeEventService');
 //    chargeEventService.init(app, {});

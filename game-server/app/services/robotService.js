@@ -10,7 +10,7 @@ var utils = require('../util/utils');
 
 var RobotService = module.exports;
 
-var allRobots = [];
+var allRobotsMap = {};
 var idleRobots = [];
 
 RobotService.init = function(app) {
@@ -20,10 +20,10 @@ RobotService.init = function(app) {
         .then(function(users){
             for (var index=0; index<users.length; index++) {
                 var robotPlayer = new Player(users[index]);
-                allRobots.push(robotPlayer);
+                allRobotsMap[robotPlayer.id] = robotPlayer;
                 idleRobots.push(robotPlayer);
             }
-            logger.info('RobotService.init, allRobots.length=', allRobots.length);
+            logger.info('RobotService.init, idleRobots.length=', idleRobots.length);
         })
         .fail(function(error){
             logger.error('RobotService.init failed.', error);
@@ -44,6 +44,9 @@ RobotService.getRobotPlayers = function(robots_count) {
     else {
         robotPlayers = idleRobots.splice();
     }
+    for(var i=0;i<robotPlayers.length;i++){
+        allRobotsMap[robotPlayers[i].id] = null;
+    }
     logger.info("[RobotService.getRobotPlayers], idleRobots.length=", idleRobots.length);
     return robotPlayers
 };
@@ -52,8 +55,18 @@ RobotService.releaseRobotPlayers = function(robot_players) {
     logger.info("[RobotService.releaseRobotPlayers]");
     logger.info("[RobotService.releaseRobotPlayers], robot_players.length=", robot_players.length);
     logger.info("[RobotService.releaseRobotPlayers], idleRobots.length=", idleRobots.length);
+
     for (var i=0;i<robot_players.length;i++) {
-        idleRobots.push(robot_players[i]);
+        logger.info("[RobotService.releaseRobotPlayers], allRobotsMap[robot_players[i].id]=", allRobotsMap[robot_players[i].id]);
+        if (allRobotsMap[robot_players[i].id] == null) {
+            allRobotsMap[robot_players[i].id] = robot_players[i];
+            idleRobots.push(robot_players[i]);
+        }
+        else{
+            idleRobots.pop(allRobotsMap[robot_players[i].id]);
+            allRobotsMap[robot_players[i].id] = robot_players[i];
+            idleRobots.push(robot_players[i]);
+        }
     }
     logger.info("[RobotService.releaseRobotPlayers], idleRobots.length=", idleRobots.length);
 };
@@ -63,11 +76,15 @@ RobotService.reloadAllRobots = function(cb){
     logger.info('RobotService.reloadAllRobots');
     Users.findQ({robot:true})
         .then(function(users){
+            allRobotsMap = {};
+            idleRobots = [];
+            logger.info('RobotService.reloadAllRobots, idleRobots.length=', idleRobots.length);
             for (var index=0; index<users.length; index++) {
                 var robotPlayer = new Player(users[index]);
-                allRobots.push(robotPlayer);
+                allRobotsMap[robotPlayer.id] = robotPlayer;
                 idleRobots.push(robotPlayer);
             }
+            logger.info('RobotService.reloadAllRobots, idleRobots.length=', idleRobots.length);
         })
         .fail(function(error){
             logger.error('RobotService.reloadAllRobots failed.', error);
