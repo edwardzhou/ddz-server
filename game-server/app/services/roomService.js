@@ -2,7 +2,11 @@ var logger = require('pomelo-logger').getLogger('pomelo', __filename);
 var util = require('util');
 var GameRoom = require('../domain/gameRoom');
 var utils = require('../util/utils');
+var GameTable = require('../domain/gameTable');
+var PlayerState = require('../consts/consts').PlayerState;
+var Player = require('../domain/player');
 
+var robotService = require('./robotService');
 var exp = module.exports;
 
 var roomsMap = {};
@@ -11,6 +15,8 @@ var pomeloApp = null;
 exp.init = function(app, roomIds) {
   logger.info("roomIds: ", roomIds);
   pomeloApp = app;
+  this.robotService = app.get('robotService');
+
   for (var index=0; index<roomIds.length; index++) {
     var roomId = roomIds[index];
     loadRoom(roomId, function(err, room) {
@@ -49,7 +55,7 @@ exp.enterRoom = function(player, roomId, lastTableId, cb) {
 //  }
 
   room.enter(player, lastTableId);
-  room.playerReady(player, function(table) {
+  exp.playerReady(room, player, function(table) {
     utils.invokeCallback(cb, table);
   });
 
@@ -100,7 +106,8 @@ exp.cancelTable = function(table, room) {
     }
 
     if (!!player.robot) {
-      room.idle_robots.push(player);
+      this.robotService.releaseRobotPlayers([player]);
+      //room.idle_robots.push(player);
     } else if (!!room.playersMap[player.userId] && !player.connectionLost) {
       room.readyPlayers.unshift(player);
     }
@@ -109,6 +116,29 @@ exp.cancelTable = function(table, room) {
   process.nextTick(function(){
     exp.onPlayerReadyTimeout(room);
   });
+};
+
+exp.playerReady = function(room, player, callback) {
+  // this.clearPlayerReadyTimeout();
+  var player = room.playersMap[player.userId];
+  player.state = PlayerState.READY;
+  if (room.readyPlayers.indexOf(player) < 0)
+    room.readyPlayers.push(player);
+
+  while (room.readyPlayers.length > 2) {
+    var players = room.readyPlayers.splice(0, 3);
+    var table = room.arrangeTable(players);
+    room.tables.push(table);
+    room.tablesMap[table.tableId] = table;
+
+    utils.invokeCallback(callback, table);
+  }
+
+  if (room.readyPlayers.length >0) {
+    if (!room.playerReadyTimeout) {
+      room.playerReadyTimeout = setTimeout(exp.onPlayerReadyTimeout.bind(this, room), 10 * 1000);
+    }
+  }
 };
 
 exp.onPlayerReadyTimeout = function(room) {
@@ -120,10 +150,11 @@ exp.onPlayerReadyTimeout = function(room) {
   var readyPlayers = room.readyPlayers.filter(function(p) {return !p.left;});
 
   if (readyPlayers.length < 3 && readyPlayers.length>0) {
-    if (room.idle_robots.length >= 3 - readyPlayers.length) {
+    if (this.robotService.idelRobotsCount() >= 3 - readyPlayers.length) {
       var players = readyPlayers.splice(0, 3);
       utils.arrayRemove(room.readyPlayers, players);
-      var robotPlayers = room.idle_robots.splice(0, 3-players.length);
+      //var robotPlayers = room.idle_robots.splice(0, 3-players.length);
+      var robotPlayers = this.robotService.getRobotPlayers(3-players.length);
       players = players.concat(robotPlayers);
       for (var robotIndex=0; robotIndex<robotPlayers.length; robotIndex++) {
         robotPlayers[robotIndex].readyForStartGame = true;
@@ -131,8 +162,8 @@ exp.onPlayerReadyTimeout = function(room) {
 
       console.log('[roomSchema.methods.onPlayerReadyTimeout] arrange robots:', players);
       var table = room.arrangeTable(players);
-      this.tables.push(table);
-      this.tablesMap[table.tableId] = table;
+      room.tables.push(table);
+      room.tablesMap[table.tableId] = table;
 
       console.log('this.startNewGameCallback ', room.startNewGameCallback);
       utils.invokeCallback(room.startNewGameCallback, table);
@@ -159,7 +190,11 @@ exp.releaseTable = function(room, table) {
       }
 
       if (player.robot)
-        room.idle_robots.push(player);
+      {
+        this.robotService.releaseRobotPlayers([player]);
+        //room.idle_robots.push(player);
+      }
+
     }
   }
 };

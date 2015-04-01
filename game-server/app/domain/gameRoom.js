@@ -189,54 +189,54 @@ roomSchema.methods.arrangeTable = function(players) {
 
   return newTable;
 };
-
-roomSchema.methods.cancelTable = function(table) {
-  var self = this;
-  var index = this.tables.indexOf(table);
-  this.tables.splice(index, 1);
-  delete this.tablesMap[table.tableId];
-  table.room = null;
-
-  for (var playerIndex=0; playerIndex<table.players.length; playerIndex++) {
-    var player = table.players[playerIndex];
-    player.reset();
-    var pIndex = this.readyPlayers.indexOf(player);
-    if (pIndex >=0 ) {
-      this.readyPlayers.splice(pIndex, 1);
-    }
-
-    if (!!player.robot) {
-      this.idle_robots.push(player);
-    } else if (!!this.playersMap[player.userId] && !player.connectionLost) {
-      this.readyPlayers.unshift(player);
-    }
-  }
-
-  process.nextTick(function(){
-    self.onPlayerReadyTimeout();
-  });
-};
-
-roomSchema.methods.releaseTable = function(table) {
-  var index = this.tables.indexOf(table);
-  this.tables.splice(index, 1);
-  delete this.tablesMap[table.tableId];
-  table.room = null;
-
-  for (var playerIndex=0; playerIndex<table.players.length; playerIndex++) {
-    var player = table.players[playerIndex];
-    if (!!player) {
-      player.reset();
-      var pIndex = this.readyPlayers.indexOf(player);
-      if (pIndex >=0 ) {
-        this.readyPlayers.splice(pIndex, 1);
-      }
-
-      if (player.robot)
-        this.idle_robots.push(player);
-    }
-  }
-};
+//
+//roomSchema.methods.cancelTable = function(table) {
+//  var self = this;
+//  var index = this.tables.indexOf(table);
+//  this.tables.splice(index, 1);
+//  delete this.tablesMap[table.tableId];
+//  table.room = null;
+//
+//  for (var playerIndex=0; playerIndex<table.players.length; playerIndex++) {
+//    var player = table.players[playerIndex];
+//    player.reset();
+//    var pIndex = this.readyPlayers.indexOf(player);
+//    if (pIndex >=0 ) {
+//      this.readyPlayers.splice(pIndex, 1);
+//    }
+//
+//    if (!!player.robot) {
+//      this.idle_robots.push(player);
+//    } else if (!!this.playersMap[player.userId] && !player.connectionLost) {
+//      this.readyPlayers.unshift(player);
+//    }
+//  }
+//
+//  process.nextTick(function(){
+//    self.onPlayerReadyTimeout();
+//  });
+//};
+//
+//roomSchema.methods.releaseTable = function(table) {
+//  var index = this.tables.indexOf(table);
+//  this.tables.splice(index, 1);
+//  delete this.tablesMap[table.tableId];
+//  table.room = null;
+//
+//  for (var playerIndex=0; playerIndex<table.players.length; playerIndex++) {
+//    var player = table.players[playerIndex];
+//    if (!!player) {
+//      player.reset();
+//      var pIndex = this.readyPlayers.indexOf(player);
+//      if (pIndex >=0 ) {
+//        this.readyPlayers.splice(pIndex, 1);
+//      }
+//
+//      if (player.robot)
+//        this.idle_robots.push(player);
+//    }
+//  }
+//};
 
 roomSchema.methods.clearPlayerReadyTimeout = function() {
   if (!!this.playerReadyTimeout) {
@@ -245,59 +245,59 @@ roomSchema.methods.clearPlayerReadyTimeout = function() {
   this.playerReadyTimeout = null;
 };
 
-roomSchema.methods.onPlayerReadyTimeout = function() {
-  if (!!this.playerReadyTimeout) {
-    clearTimeout(this.playerReadyTimeout);
-    this.playerReadyTimeout = null;
-  }
-
-  var readyPlayers = this.readyPlayers.filter(function(p) {return !p.left;});
-
-  if (readyPlayers.length < 3 && readyPlayers.length>0) {
-    if (this.idle_robots.length >= 3 - readyPlayers.length) {
-      var players = readyPlayers.splice(0, 3);
-      utils.arrayRemove(this.readyPlayers, players);
-      var robotPlayers = this.idle_robots.splice(0, 3-players.length);
-      players = players.concat(robotPlayers);
-      for (var robotIndex=0; robotIndex<robotPlayers.length; robotIndex++) {
-        robotPlayers[robotIndex].readyForStartGame = true;
-      }
-
-      console.log('[roomSchema.methods.onPlayerReadyTimeout] arrange robots:', players);
-      var table = this.arrangeTable(players);
-      this.tables.push(table);
-      this.tablesMap[table.tableId] = table;
-
-      console.log('this.startNewGameCallback ', this.startNewGameCallback);
-      utils.invokeCallback(this.startNewGameCallback, table);
-    } else {
-      this.playerReadyTimeout = setTimeout(this.onPlayerReadyTimeout.bind(this), 10 * 1000);
-    }
-  }
-};
-
-roomSchema.methods.playerReady = function(player, callback) {
-  // this.clearPlayerReadyTimeout();
-  var player = this.playersMap[player.userId];
-  player.state = PlayerState.READY;
-  if (this.readyPlayers.indexOf(player) < 0)
-    this.readyPlayers.push(player);
-
-  while (this.readyPlayers.length > 2) {
-    var players = this.readyPlayers.splice(0, 3);
-    var table = this.arrangeTable(players);
-    this.tables.push(table);
-    this.tablesMap[table.tableId] = table;
-
-    utils.invokeCallback(callback, table);
-  }
-
-  if (this.readyPlayers.length >0) {
-    if (!this.playerReadyTimeout) {
-      this.playerReadyTimeout = setTimeout(this.onPlayerReadyTimeout.bind(this), 10 * 1000);
-    }
-  }
-};
+//roomSchema.methods.onPlayerReadyTimeout = function() {
+//  if (!!this.playerReadyTimeout) {
+//    clearTimeout(this.playerReadyTimeout);
+//    this.playerReadyTimeout = null;
+//  }
+//
+//  var readyPlayers = this.readyPlayers.filter(function(p) {return !p.left;});
+//
+//  if (readyPlayers.length < 3 && readyPlayers.length>0) {
+//    if (this.idle_robots.length >= 3 - readyPlayers.length) {
+//      var players = readyPlayers.splice(0, 3);
+//      utils.arrayRemove(this.readyPlayers, players);
+//      var robotPlayers = this.idle_robots.splice(0, 3-players.length);
+//      players = players.concat(robotPlayers);
+//      for (var robotIndex=0; robotIndex<robotPlayers.length; robotIndex++) {
+//        robotPlayers[robotIndex].readyForStartGame = true;
+//      }
+//
+//      console.log('[roomSchema.methods.onPlayerReadyTimeout] arrange robots:', players);
+//      var table = this.arrangeTable(players);
+//      this.tables.push(table);
+//      this.tablesMap[table.tableId] = table;
+//
+//      console.log('this.startNewGameCallback ', this.startNewGameCallback);
+//      utils.invokeCallback(this.startNewGameCallback, table);
+//    } else {
+//      this.playerReadyTimeout = setTimeout(this.onPlayerReadyTimeout.bind(this), 10 * 1000);
+//    }
+//  }
+//};
+//
+//roomSchema.methods.playerReady = function(player, callback) {
+//  // this.clearPlayerReadyTimeout();
+//  var player = this.playersMap[player.userId];
+//  player.state = PlayerState.READY;
+//  if (this.readyPlayers.indexOf(player) < 0)
+//    this.readyPlayers.push(player);
+//
+//  while (this.readyPlayers.length > 2) {
+//    var players = this.readyPlayers.splice(0, 3);
+//    var table = this.arrangeTable(players);
+//    this.tables.push(table);
+//    this.tablesMap[table.tableId] = table;
+//
+//    utils.invokeCallback(callback, table);
+//  }
+//
+//  if (this.readyPlayers.length >0) {
+//    if (!this.playerReadyTimeout) {
+//      this.playerReadyTimeout = setTimeout(this.onPlayerReadyTimeout.bind(this), 10 * 1000);
+//    }
+//  }
+//};
 
 /**
  * 取指定id的桌子

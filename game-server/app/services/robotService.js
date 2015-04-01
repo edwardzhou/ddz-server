@@ -30,7 +30,13 @@ RobotService.init = function(app) {
         });
 };
 
-RobotService.getRobot = function(robots_count) {
+RobotService.idelRobotsCount = function() {
+    return idleRobots.length;
+}
+
+RobotService.getRobotPlayers = function(robots_count) {
+    logger.info("[RobotService.getRobotPlayers]");
+    logger.info("[RobotService.getRobotPlayers], idleRobots.length=", idleRobots.length);
     var robotPlayers = [];
     if (idleRobots.length >= robots_count) {
         robotPlayers = idleRobots.splice(0, robots_count);
@@ -38,17 +44,18 @@ RobotService.getRobot = function(robots_count) {
     else {
         robotPlayers = idleRobots.splice();
     }
+    logger.info("[RobotService.getRobotPlayers], idleRobots.length=", idleRobots.length);
     return robotPlayers
 };
 
-RobotService.releaseRobot = function(robot_players, cb) {
-    logger.info("[RoomService.reloadRooms] reload rooms...");
-    for (var roomId in roomsMap) {
-        var room = roomsMap[roomId];
-        room.reloadFromDb();
+RobotService.releaseRobotPlayers = function(robot_players) {
+    logger.info("[RobotService.releaseRobotPlayers]");
+    logger.info("[RobotService.releaseRobotPlayers], robot_players.length=", robot_players.length);
+    logger.info("[RobotService.releaseRobotPlayers], idleRobots.length=", idleRobots.length);
+    for (var i=0;i<robot_players.length;i++) {
+        idleRobots.push(robot_players[i]);
     }
-
-    utils.invokeCallback(cb);
+    logger.info("[RobotService.releaseRobotPlayers], idleRobots.length=", idleRobots.length);
 };
 
 

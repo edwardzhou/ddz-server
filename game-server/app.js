@@ -111,6 +111,10 @@ app.configure('production|development', 'area', function () {
 
   var cardService = require('./app/services/cardServiceFactory').createNormalCardService();
   app.set('cardService', cardService);
+  var robotService = require('./app/services/robotService');
+  robotService.init(app, {});
+  app.set('robotService', robotService);
+
   tableService.init();
 
 //  if (curServerId == 'room-server') {
@@ -125,11 +129,6 @@ app.configure('production|development', 'events', function() {
   var chargeEventService = require('./app/services/chargeEventService');
   chargeEventService.init(app, {});
   userLevelService.init(app);
-});
-
-app.configure('production|development', 'robot_service', function() {
-  var robotService = require('./app/services/robotService');
-  robotService.init(app, {});
 });
 
 app.configure('production|development', function () {
