@@ -6,7 +6,7 @@
     "start": "node ./bin/www"
   },
   "dependencies": {
-    "pomelo": "1.1.5",
+    "pomelo": "1.1.6",
     "pomelo-logger": "*",
     "express": "~4.10.6",
     "body-parser": "~1.10.1",
@@ -16,7 +16,7 @@
     "debug": "~2.1.1",
     "jade": "~1.8.2",
     "mongodb": "*",
-    "mongoose": "3.x",
+    "mongoose": "4.x",
     "mongoose-q": "*",
     "q": "*",
     "bufferpack": "*",
