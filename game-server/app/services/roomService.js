@@ -151,7 +151,7 @@ exp.onPlayerReadyTimeout = function(room) {
   var readyPlayers = room.readyPlayers.filter(function(p) {return !p.left;});
   pomeloApp.rpc.robotServer.robotRemote.idelRobotsCount.toServer('*',{}, function(err, robots_count){
     console.log('[roomService.onPlayerReadyTimeout] robots_count=', robots_count);
-    if (robots_count >=  - readyPlayers.length){
+    if (robots_count >= readyPlayers.length){
       var players = readyPlayers.splice(0, 3);
       utils.arrayRemove(room.readyPlayers, players);
       pomeloApp.rpc.robotServer.robotRemote.getRobotPlayers.toServer('*',3-players.length, function(err, robotPlayers){
