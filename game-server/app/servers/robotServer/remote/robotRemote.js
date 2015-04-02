@@ -49,5 +49,5 @@ remoteHandler.getRobotPlayers = function(robots_count, cb) {
 remoteHandler.releaseRobotPlayers = function(robot_players, cb) {
     logger.info("[remoteHandler.releaseRobotPlayers]");
     robotService.releaseRobotPlayers(robot_players);
-    utils.invokeCallback(cb, null, null);
+    //utils.invokeCallback(cb, null, null);
 };
