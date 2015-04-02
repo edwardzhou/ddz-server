@@ -671,11 +671,11 @@ AIEngine.playCardLevel4 = function (curPlayer, nextPlayer, prevPlayer, lastPlaye
       if (!firstCard && curPlayer.robot) {
         var otherRobot;
         if (prevPlayer.robot) {
-          logger.info("Have right to play card. prevPlayer is another robot");
+          logger.info("Have right to play card. prevPlayer is another robotServer");
           otherRobot = prevPlayer;
         }
         else if (nextPlayer.robot) {
-          logger.info("Have right to play card. nextPlayer is another robot");
+          logger.info("Have right to play card. nextPlayer is another robotServer");
           otherRobot = nextPlayer;
         }
         if (!!otherRobot){
@@ -741,11 +741,11 @@ AIEngine.playCardLevel4 = function (curPlayer, nextPlayer, prevPlayer, lastPlaye
         if (!firstCard && curPlayer.robot) {
           var otherRobot;
           if (prevPlayer.robot) {
-            logger.info("No right to play card. prevPlayer is another robot");
+            logger.info("No right to play card. prevPlayer is another robotServer");
             otherRobot = prevPlayer;
           }
           else if (nextPlayer.robot) {
-            logger.info("No right to play card. nextPlayer is another robot");
+            logger.info("No right to play card. nextPlayer is another robotServer");
             otherRobot = nextPlayer;
           }
           if (!!otherRobot){

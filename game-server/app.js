@@ -46,8 +46,6 @@ app.configure('production|development', function () {
       app.set('gameInstances', instances);
     })
 
-
-
 });
 
 app.configure('production|development', 'userSystem|area|auth|ddz', function() {
@@ -114,9 +112,7 @@ app.configure('production|development', 'area', function () {
   var cardService = require('./app/services/cardServiceFactory').createNormalCardService();
   app.set('cardService', cardService);
   tableService.init();
-  var robotService = require('./app/services/robotService');
-  robotService.init(app, {});
-  app.set('robotService', robotService);
+
 //  if (curServerId == 'room-server') {
 //    var chargeEventService = require('./app/services/chargeEventService');
 //    chargeEventService.init(app, {});
@@ -129,6 +125,12 @@ app.configure('production|development', 'events', function() {
   var chargeEventService = require('./app/services/chargeEventService');
   chargeEventService.init(app, {});
   userLevelService.init(app);
+});
+
+app.configure('production|development', 'robotServer', function() {
+  var robotService = require('./app/services/robotService');
+  robotService.init(app, {});
+  //app.set('robotService', robotService);
 });
 
 app.configure('production|development', function () {

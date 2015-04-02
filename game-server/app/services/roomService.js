@@ -15,7 +15,7 @@ var pomeloApp = null;
 exp.init = function(app, roomIds) {
   logger.info("roomIds: ", roomIds);
   pomeloApp = app;
-  this.robotService = app.get('robotService');
+  //this.robotService = app.get('robotService');
 
   for (var index=0; index<roomIds.length; index++) {
     var roomId = roomIds[index];
@@ -106,8 +106,9 @@ exp.cancelTable = function(table, room) {
     }
 
     if (!!player.robot) {
-      this.robotService.releaseRobotPlayers([player]);
+      //this.robotService.releaseRobotPlayers([player]);
       //room.idle_robots.push(player);
+      pomeloApp.rpc.robotServer.robotRemote.releaseRobotPlayers.toServer('*',[player], null);
     } else if (!!room.playersMap[player.userId] && !player.connectionLost) {
       room.readyPlayers.unshift(player);
     }
@@ -148,29 +149,55 @@ exp.onPlayerReadyTimeout = function(room) {
   }
 
   var readyPlayers = room.readyPlayers.filter(function(p) {return !p.left;});
-
-  if (readyPlayers.length < 3 && readyPlayers.length>0) {
-    if (this.robotService.idelRobotsCount() >= 3 - readyPlayers.length) {
+  pomeloApp.rpc.robotServer.robotRemote.idelRobotsCount.toServer('*',{}, function(err, robots_count){
+    console.log('[roomService.onPlayerReadyTimeout] robots_count=', robots_count);
+    if (robots_count >=  - readyPlayers.length){
       var players = readyPlayers.splice(0, 3);
       utils.arrayRemove(room.readyPlayers, players);
-      //var robotPlayers = room.idle_robots.splice(0, 3-players.length);
-      var robotPlayers = this.robotService.getRobotPlayers(3-players.length);
-      players = players.concat(robotPlayers);
-      for (var robotIndex=0; robotIndex<robotPlayers.length; robotIndex++) {
-        robotPlayers[robotIndex].readyForStartGame = true;
-      }
+      pomeloApp.rpc.robotServer.robotRemote.getRobotPlayers.toServer('*',3-players.length, function(err, robotPlayers){
+        players = players.concat(robotPlayers);
+        for (var robotIndex=0; robotIndex<robotPlayers.length; robotIndex++) {
+          robotPlayers[robotIndex].readyForStartGame = true;
+        }
 
-      console.log('[roomSchema.methods.onPlayerReadyTimeout] arrange robots:', players);
-      var table = room.arrangeTable(players);
-      room.tables.push(table);
-      room.tablesMap[table.tableId] = table;
+        console.log('[roomService.onPlayerReadyTimeout] arrange robots:', players);
+        var table = room.arrangeTable(players);
+        room.tables.push(table);
+        room.tablesMap[table.tableId] = table;
 
-      console.log('this.startNewGameCallback ', room.startNewGameCallback);
-      utils.invokeCallback(room.startNewGameCallback, table);
-    } else {
+        console.log('this.startNewGameCallback ', room.startNewGameCallback);
+        utils.invokeCallback(room.startNewGameCallback, table);
+      });
+    }
+    else {
       room.playerReadyTimeout = setTimeout(exp.onPlayerReadyTimeout.bind(room), 10 * 1000);
     }
-  }
+  });
+
+
+  //
+  //if (readyPlayers.length < 3 && readyPlayers.length>0) {
+  //  if (this.robotService.idelRobotsCount() >= 3 - readyPlayers.length) {
+  //    var players = readyPlayers.splice(0, 3);
+  //    utils.arrayRemove(room.readyPlayers, players);
+  //    //var robotPlayers = room.idle_robots.splice(0, 3-players.length);
+  //    var robotPlayers = this.robotService.getRobotPlayers(3-players.length);
+  //    players = players.concat(robotPlayers);
+  //    for (var robotIndex=0; robotIndex<robotPlayers.length; robotIndex++) {
+  //      robotPlayers[robotIndex].readyForStartGame = true;
+  //    }
+  //
+  //    console.log('[roomSchema.methods.onPlayerReadyTimeout] arrange robots:', players);
+  //    var table = room.arrangeTable(players);
+  //    room.tables.push(table);
+  //    room.tablesMap[table.tableId] = table;
+  //
+  //    console.log('this.startNewGameCallback ', room.startNewGameCallback);
+  //    utils.invokeCallback(room.startNewGameCallback, table);
+  //  } else {
+  //    room.playerReadyTimeout = setTimeout(exp.onPlayerReadyTimeout.bind(room), 10 * 1000);
+  //  }
+  //}
 };
 
 
@@ -191,7 +218,8 @@ exp.releaseTable = function(room, table) {
 
       if (player.robot)
       {
-        this.robotService.releaseRobotPlayers([player]);
+        //this.robotService.releaseRobotPlayers([player]);
+        pomeloApp.rpc.robotServer.robotRemote.releaseRobotPlayers.toServer('*',[player], null);
         //room.idle_robots.push(player);
       }
 

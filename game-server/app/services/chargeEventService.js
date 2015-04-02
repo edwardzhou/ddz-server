@@ -89,7 +89,7 @@ ChargeEventService.dispatchReloadCacheEvent = function(event) {
     pomeloApp.rpc.ddz.userLevelRemote.reloadLevelConfig.toServer('*', {}, null);
     userLevelService.reloadLevelConfig();
   }else if (event.eventData.reloadTarget =='reload_robots') {
-    pomeloApp.rpc.area.robotRemote.reloadAllRobots.toServer('*', {}, null);
+    pomeloApp.rpc.robotServer.robotRemote.reloadAllRobots.toServer('*', {}, null);
   }
 
 };

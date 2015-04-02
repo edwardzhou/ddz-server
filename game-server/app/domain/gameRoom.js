@@ -205,7 +205,7 @@ roomSchema.methods.arrangeTable = function(players) {
 //      this.readyPlayers.splice(pIndex, 1);
 //    }
 //
-//    if (!!player.robot) {
+//    if (!!player.robotServer) {
 //      this.idle_robots.push(player);
 //    } else if (!!this.playersMap[player.userId] && !player.connectionLost) {
 //      this.readyPlayers.unshift(player);
@@ -232,7 +232,7 @@ roomSchema.methods.arrangeTable = function(players) {
 //        this.readyPlayers.splice(pIndex, 1);
 //      }
 //
-//      if (player.robot)
+//      if (player.robotServer)
 //        this.idle_robots.push(player);
 //    }
 //  }
