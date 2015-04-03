@@ -5,7 +5,7 @@
   "dependencies": {
     "pomelo": "1.1.5",
     "pomelo-logger": "*",
-    "mongoose": "~3.8",
+    "mongoose": "4.x",
     "mongodb": "*",
     "async": "0.2.9",
     "mess": "0.1.1",

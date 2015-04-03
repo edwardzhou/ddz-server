@@ -16,16 +16,19 @@ var roomSchemaFields = {
   state: Number,      // 状态, ref: RoomState
   ante: Number,       // 底注
   rake: Number,       // 佣金
+  startLordValue: Number,       // 起始倍数
   maxPlayers: Number, // 最大人数
   minCoinsQty: {type: Number, default: 0}, // 准入资格, 最小金币数, 0 代表无限制
   maxCoinsQty: {type: Number, default: 0}, // 准入资格, 最大金币数, 0 代表无限制
   roomType: String,   // 房间类型
   sortIndex: Number,  // 排序
-  readyTimeout: {type: Number, default: 15},
-  grabbingLordTimeout: {type: Number, default: 20},
-  playCardTimeout: {type: Number, default: 30},
-  createdAt: {type: Date, default: Date.now},
-  updatedAt: {type: Date, default: Date.now}
+  readyTimeout: {type: Number, default: 15},  // 就绪超时
+  grabbingLordTimeout: {type: Number, default: 20}, // 叫地主超时
+  playCardTimeout: {type: Number, default: 30}, // 出牌超时
+  playCardCheatRate: {type: Number, default:40}, // 机器人作弊机率
+  playCardCheatLimit: {type: Number, default:1}, // 每个牌局机器作弊次数限制
+  created_at: {type: Date, default: Date.now},
+  updated_at: {type: Date, default: Date.now}
 };
 
 // 根据字段定义创建架构，再生成房间信息模型
@@ -186,27 +189,54 @@ roomSchema.methods.arrangeTable = function(players) {
 
   return newTable;
 };
-
-roomSchema.methods.releaseTable = function(table) {
-  var index = this.tables.indexOf(table);
-  this.tables.splice(index, 1);
-  delete this.tablesMap[table.tableId];
-  table.room = null;
-
-  for (var playerIndex=0; playerIndex<table.players.length; playerIndex++) {
-    var player = table.players[playerIndex];
-    if (!!player) {
-      player.reset();
-      var pIndex = this.readyPlayers.indexOf(player);
-      if (pIndex >=0 ) {
-        this.readyPlayers.splice(pIndex, 1);
-      }
-
-      if (player.robot)
-        this.idle_robots.push(player);
-    }
-  }
-};
+//
+//roomSchema.methods.cancelTable = function(table) {
+//  var self = this;
+//  var index = this.tables.indexOf(table);
+//  this.tables.splice(index, 1);
+//  delete this.tablesMap[table.tableId];
+//  table.room = null;
+//
+//  for (var playerIndex=0; playerIndex<table.players.length; playerIndex++) {
+//    var player = table.players[playerIndex];
+//    player.reset();
+//    var pIndex = this.readyPlayers.indexOf(player);
+//    if (pIndex >=0 ) {
+//      this.readyPlayers.splice(pIndex, 1);
+//    }
+//
+//    if (!!player.robotServer) {
+//      this.idle_robots.push(player);
+//    } else if (!!this.playersMap[player.userId] && !player.connectionLost) {
+//      this.readyPlayers.unshift(player);
+//    }
+//  }
+//
+//  process.nextTick(function(){
+//    self.onPlayerReadyTimeout();
+//  });
+//};
+//
+//roomSchema.methods.releaseTable = function(table) {
+//  var index = this.tables.indexOf(table);
+//  this.tables.splice(index, 1);
+//  delete this.tablesMap[table.tableId];
+//  table.room = null;
+//
+//  for (var playerIndex=0; playerIndex<table.players.length; playerIndex++) {
+//    var player = table.players[playerIndex];
+//    if (!!player) {
+//      player.reset();
+//      var pIndex = this.readyPlayers.indexOf(player);
+//      if (pIndex >=0 ) {
+//        this.readyPlayers.splice(pIndex, 1);
+//      }
+//
+//      if (player.robotServer)
+//        this.idle_robots.push(player);
+//    }
+//  }
+//};
 
 roomSchema.methods.clearPlayerReadyTimeout = function() {
   if (!!this.playerReadyTimeout) {
@@ -215,54 +245,59 @@ roomSchema.methods.clearPlayerReadyTimeout = function() {
   this.playerReadyTimeout = null;
 };
 
-roomSchema.methods.onPlayerReadyTimeout = function() {
-  if (!!this.playerReadyTimeout) {
-    clearTimeout(this.playerReadyTimeout);
-    this.playerReadyTimeout = null;
-  }
-
-  var readyPlayers = this.readyPlayers.filter(function(p) {return !p.left;});
-
-  if (readyPlayers.length < 3 && readyPlayers.length>0) {
-    if (this.idle_robots.length >= 3 - readyPlayers.length) {
-      var players = readyPlayers.splice(0, 3);
-      utils.arrayRemove(this.readyPlayers, players);
-      players = players.concat(this.idle_robots.splice(0, 3-players.length));
-      console.log('[roomSchema.methods.onPlayerReadyTimeout] arrange robots:', players);
-      var table = this.arrangeTable(players);
-      this.tables.push(table);
-      this.tablesMap[table.tableId] = table;
-
-      console.log('this.startNewGameCallback ', this.startNewGameCallback);
-      utils.invokeCallback(this.startNewGameCallback, table);
-    } else {
-      this.playerReadyTimeout = setTimeout(this.onPlayerReadyTimeout.bind(this), 10 * 1000);
-    }
-  }
-};
-
-roomSchema.methods.playerReady = function(player, callback) {
-  // this.clearPlayerReadyTimeout();
-  var player = this.playersMap[player.userId];
-  player.state = PlayerState.READY;
-  if (this.readyPlayers.indexOf(player) < 0)
-    this.readyPlayers.push(player);
-
-  while (this.readyPlayers.length > 2) {
-    var players = this.readyPlayers.splice(0, 3);
-    var table = this.arrangeTable(players);
-    this.tables.push(table);
-    this.tablesMap[table.tableId] = table;
-
-    utils.invokeCallback(callback, table);
-  }
-
-  if (this.readyPlayers.length >0) {
-    if (!this.playerReadyTimeout) {
-      this.playerReadyTimeout = setTimeout(this.onPlayerReadyTimeout.bind(this), 10 * 1000);
-    }
-  }
-};
+//roomSchema.methods.onPlayerReadyTimeout = function() {
+//  if (!!this.playerReadyTimeout) {
+//    clearTimeout(this.playerReadyTimeout);
+//    this.playerReadyTimeout = null;
+//  }
+//
+//  var readyPlayers = this.readyPlayers.filter(function(p) {return !p.left;});
+//
+//  if (readyPlayers.length < 3 && readyPlayers.length>0) {
+//    if (this.idle_robots.length >= 3 - readyPlayers.length) {
+//      var players = readyPlayers.splice(0, 3);
+//      utils.arrayRemove(this.readyPlayers, players);
+//      var robotPlayers = this.idle_robots.splice(0, 3-players.length);
+//      players = players.concat(robotPlayers);
+//      for (var robotIndex=0; robotIndex<robotPlayers.length; robotIndex++) {
+//        robotPlayers[robotIndex].readyForStartGame = true;
+//      }
+//
+//      console.log('[roomSchema.methods.onPlayerReadyTimeout] arrange robots:', players);
+//      var table = this.arrangeTable(players);
+//      this.tables.push(table);
+//      this.tablesMap[table.tableId] = table;
+//
+//      console.log('this.startNewGameCallback ', this.startNewGameCallback);
+//      utils.invokeCallback(this.startNewGameCallback, table);
+//    } else {
+//      this.playerReadyTimeout = setTimeout(this.onPlayerReadyTimeout.bind(this), 10 * 1000);
+//    }
+//  }
+//};
+//
+//roomSchema.methods.playerReady = function(player, callback) {
+//  // this.clearPlayerReadyTimeout();
+//  var player = this.playersMap[player.userId];
+//  player.state = PlayerState.READY;
+//  if (this.readyPlayers.indexOf(player) < 0)
+//    this.readyPlayers.push(player);
+//
+//  while (this.readyPlayers.length > 2) {
+//    var players = this.readyPlayers.splice(0, 3);
+//    var table = this.arrangeTable(players);
+//    this.tables.push(table);
+//    this.tablesMap[table.tableId] = table;
+//
+//    utils.invokeCallback(callback, table);
+//  }
+//
+//  if (this.readyPlayers.length >0) {
+//    if (!this.playerReadyTimeout) {
+//      this.playerReadyTimeout = setTimeout(this.onPlayerReadyTimeout.bind(this), 10 * 1000);
+//    }
+//  }
+//};
 
 /**
  * 取指定id的桌子
@@ -336,6 +371,31 @@ roomSchema.methods.toParams = function(excludeAttrs) {
   return __toParams(this, excludeAttrs);
 };
 
+roomSchema.methods.reloadFromDb = function() {
+  var self = this;
+  GameRoom.findOneQ({roomId: this.roomId})
+    .then(function(room) {
+      self.roomName = room.roomName;
+      self.roomDesc = room.roomDesc;
+      self.state = room.state;
+      self.ante = room.ante;
+      self.rake = room.rake;
+      self.startLordValue = room.startLordValue;
+      self.maxPlayers = room.maxPlayers;
+      self.minCoinsQty = room.minCoinsQty;
+      self.maxCoinsQty = room.maxCoinsQty;
+      self.roomType = room.roomType;
+      self.sortIndex = room.sortIndex;
+      self.readyTimeout = room.readyTimeout;
+      self.grabbingLordTimeout = room.grabbingLordTimeout;
+      self.playCardTimeout = room.playCardTimeout;
+      self.playCardCheatLimit = room.playCardCheatLimit;
+      self.playCardCheatRate = room.playCardCheatRate;
+    })
+    .fail(function(err) {
+      console.error('[GameRoom.reloadFromDb] error: ', err);
+    });
+};
 
 var GameRoom = mongoose.model('GameRoom', roomSchema);
 

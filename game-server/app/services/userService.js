@@ -541,7 +541,14 @@ UserService.doBankruptProcess = function(userId,  callback) {
         utils.invokeCallback(callback, null, true);
       })
       .fail(function(error){
-        utils.invokeCallback(callback, {code: error.number, msg: error.message}, null);
+        if (error.errCode == "doBankruptProcess: Robot is not be saved."){
+          logger.info('UserService.doBankruptProcess msg:', error.errCode);
+          utils.invokeCallback(callback, null, true);
+        }
+        else {
+          logger.error('UserService.doBankruptProcess failed. error:', error);
+          utils.invokeCallback(callback, {code: error.number, msg: error.message}, null);
+        }
       });
 };
 

@@ -21,6 +21,22 @@ var PokeCard = function(opts) {
 
 module.exports = PokeCard;
 
+PokeCard.prototype.toString = function() {
+  return format("Pokecard[id: %s, pokeIndex: %d, idChar: %s, value: %d]",
+    this.id,
+    this.pokeIndex,
+    this.idChar,
+    this.value);
+};
+
+PokeCard.prototype.setBit = function(bits) {
+  if (this.pokeIndex <= 28) {
+    bits[0] |= 1 << (this.pokeIndex - 1);
+  } else {
+    bits[1] |= 1 << (this.pokeIndex - 28 - 1);
+  }
+};
+
 PokeCard.init = function() {
   if (allPokeCards.length > 0)
     return;
