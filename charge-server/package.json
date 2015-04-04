@@ -14,7 +14,7 @@
     "debug": "~1.0.4",
     "jade": "~1.5.0",
     "mongodb": "*",
-    "mongoose": "3.x",
+    "mongoose": "4.x",
     "mongoose-q": "*",
     "q": "*",
     "node-uuid": "*"

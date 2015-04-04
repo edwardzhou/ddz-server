@@ -16,7 +16,7 @@
     "debug": "~2.1.1",
     "jade": "~1.8.2",
     "mongodb": "*",
-    "mongoose": "3.x",
+    "mongoose": "4.x",
     "mongoose-q": "*",
     "q": "*",
     "bufferpack": "*",
