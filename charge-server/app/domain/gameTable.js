@@ -150,7 +150,7 @@ GameTable.prototype.getPlayerUidsMap = function() {
   for (var index=0; index<this.players.length; index++) {
     var player = this.players[index];
     if (!!player.robot || !!player.connectionLost) {
-      // skip robot and connection lost
+      // skip robotServer and connection lost
       continue;
     }
 

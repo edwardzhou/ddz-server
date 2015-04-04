@@ -73,8 +73,8 @@ var pokeGameSchema = new mongoose.Schema({
     raked_total: {type: Number, default: 0},
     players: []
   },
-  createdAt: {type: Date, default: Date.now},
-  updatedAt: {type: Date, default: Date.now}
+  created_at: {type: Date, default: Date.now},
+  updated_at: {type: Date, default: Date.now}
 }, {
   collection: 'poke_games'
 });
@@ -147,6 +147,13 @@ PokeGame.newGame = function(table) {
     state: GameState.PENDING_FOR_READY};
   var game = new PokeGame(opts);
 
+  game.playedPokeBits = [0, 0];
+
+  game.startLordValue = gameRoom.startLordValue || 1;
+  game.grabbingLordTimeout = gameRoom.grabbingLordTimeout || 20;
+  game.playCardTimeout =gameRoom.playCardTimeout || 30;
+  game.cheatRate = gameRoom.playCardCheatRate || 40;
+  game.cheatLimit = gameRoom.playCardCheatLimit || 1;
   game.msgNo = 1;
   game.players = table.players.slice(0, table.players.length);
   game.token = {nextUserId: '', currentSeqNo: 0};
@@ -162,6 +169,7 @@ PokeGame.newGame = function(table) {
 //  game.players[2].prevPlayer = game.players[1];
 //  game.players[2].nextPlayer = game.players[0];
 
+  game.cheatCount = 0;
   return game;
 };
 

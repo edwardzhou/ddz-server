@@ -32,7 +32,7 @@ remoteHandler.readyGame = function(msg, cb) {
 
   var room = roomService.getRoom(room_id);
   var player = room.getPlayer(uid);
-  room.playerReady(player, function(table) {
+  roomService.playerReady(room, player, function(table) {
     for (var index=0; index<table.players.length; index++) {
       var p = table.players[index];
 //      p.userSession.sset('roomId', table.room.roomId);

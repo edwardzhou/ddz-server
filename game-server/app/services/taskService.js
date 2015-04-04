@@ -105,7 +105,7 @@ TaskService.processGamingTasks = function(user, trigger, isWinner, coins, isSpri
   var query = UserTask.find({user_id: user.id, taskTrigger: trigger, taskActivated: true, taskFinished: false});
   query.execQ()
     .then(function(_tasks){
-      logger.info('[TaskService.processGamingTasks] _tasks: ', _tasks);
+      logger.info('[TaskService.processGamingTasks] _tasks.length: ', _tasks.length);
       for(var index=0; index<_tasks.length; index++) {
         TaskService.processTask(_tasks[index], {user: user, trigger: trigger, isWinner: isWinner,
           coins: coins, isSpring: isSpring, pokeGame: pokeGame});
@@ -121,7 +121,7 @@ TaskService.processOtherTasks = function(user, trigger, params) {
   var query = UserTask.find({user_id: user.id, taskTrigger: trigger, taskActivated: true, taskFinished: false});
   query.execQ()
       .then(function(_tasks){
-        logger.info('[TaskService.processOtherTasks] _tasks: ', _tasks);
+        logger.info('[TaskService.processOtherTasks] _tasks: ', _tasks.taskDesc);
         for(var index=0; index<_tasks.length; index++) {
           TaskService.processTask(_tasks[index], params);
         }
@@ -132,7 +132,7 @@ TaskService.processOtherTasks = function(user, trigger, params) {
 };
 
 TaskService.processTask = function(task, params) {
-  logger.info('[TaskService.processTask] task: ', task);
+  logger.info('[TaskService.processTask] task: ', task.taskDesc);
   var processor = require('./tasks/' + task.taskProcessor + 'Processor');
   processor.process(task, params);
   //if (!!task.taskData.roomId && task.taskData.roomId != params.pokeGame.roomId)

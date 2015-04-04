@@ -1,5 +1,21 @@
 ActiveAdmin.register User do
 
+collection_action :refresh_robot_cache, :method => :get do
+    # Do some CSV importing work here...
+    PubSubEvent.create({
+                           eventName: 'reload_cache',
+                           eventData: {reloadTarget: 'reload_robots'},
+                           active: 1
+                       })
+    redirect_to({:action => :index}, {:notice => "Post robot cache refresh event successfully!"})
+  end
+
+  sidebar :operation do
+    ul do
+      li link_to "Refresh robots cache in GAME SERVER", refresh_robot_cache_admin_users_path
+    end
+  end
+
   permit_params do
     permitted = []
     permitted << :nickName
