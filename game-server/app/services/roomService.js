@@ -26,6 +26,7 @@ exp.init = function(app, roomIds) {
   for (var index=0; index<roomIds.length; index++) {
     var roomId = roomIds[index];
     loadRoom(roomId, function(err, room) {
+        logger.info('roomService.init, room:', room);
       if (!!room) {
         roomsMap[room.roomId] = room;
       } else {
@@ -43,7 +44,7 @@ exp.init = function(app, roomIds) {
  * @returns {*}
  */
 exp.getRoom = function(roomId) {
-  //logger.info("roomsMap: %j", roomsMap);
+  logger.info("roomsMap: %j", roomsMap);
   return roomsMap[roomId];
 };
 
@@ -124,13 +125,6 @@ exp.leave = function(roomId, playerId, cb) {
 
 };
 
-<<<<<<< HEAD
-/**
- * 加载房间
- * @param roomId
- * @param callback
- */
-=======
 
 exp.cancelTable = function(table, room) {
   //var self = this;
@@ -270,8 +264,6 @@ exp.releaseTable = function(room, table) {
 };
 
 
-
->>>>>>> create_robots_dev_2
 var loadRoom = function(roomId, callback) {
 
   GameRoom.findOne({roomId:roomId}, function(err, room) {
@@ -282,13 +274,9 @@ var loadRoom = function(roomId, callback) {
     }
     utils.invokeCallback(callback, err, room);
   });
-<<<<<<< HEAD
-};
-=======
 //
 //  var room = new GameRoom({roomId:roomId, roomName: 'room_' + roomId});
 //  room.initRoom();
 //
 //  return room;
 };
->>>>>>> create_robots_dev_2

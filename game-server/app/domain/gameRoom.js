@@ -94,10 +94,10 @@ roomSchema.methods.initRoom = function(opts) {
   }
 
   this.startNewGameCallback = null;
-
-  if (this._onPlayerReadyTimeout == null) {
-    this._onPlayerReadyTimeout = this.onPlayerReadyTimeout.bind(this);
-  }
+  //
+  //if (this._onPlayerReadyTimeout == null) {
+  //  this._onPlayerReadyTimeout = this.onPlayerReadyTimeout.bind(this);
+  //}
 
   this.loadRobots();
 
