@@ -9,6 +9,7 @@ var DdzProfile = require('./ddzProfile');
 var Player = function(opts) {
   opts = opts || {};
   EventEmitter.call(this, opts);
+  this.id = opts.id;
   this.pokeCards = opts.pokeCards || [];
   this.initPokeCards = this.pokeCardsString();
   this.gender = opts.gender;
@@ -25,6 +26,8 @@ var Player = function(opts) {
   this.delegating = !!opts.delegating;
   this.robot = opts.robot || false;
   this.roomId = opts.roomId || null;
+  this.readyForStartGame = opts.readyForStartGame || false;
+  this.everGrabLard = opts.everGrabLard || false;
 };
 
 util.inherits(Player, EventEmitter);
@@ -152,10 +155,13 @@ Player.prototype.updateCoins = function(coins) {
 Player.prototype.reset = function() {
   this.state = PlayerState.PREPARE_READY;
   this.role = PlayerRole.NONE;
+
   this.setPokeCards([]);
   this.plays = 0;
   this.tableId = null;
   this.delegating = false;
+  this.readyForStartGame = false;
+  this.everGrabLard = false;
   if (!!this.userSession) {
     this.userSession.sset({tableId: null, gameId: null});
     //this.userSession.sset('gameId', null);

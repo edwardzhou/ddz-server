@@ -212,9 +212,9 @@ roomSchema.methods.cancelTable = function(table) {
     }
   }
 
-  process.nextTick(function(){
-    self.onPlayerReadyTimeout();
-  });
+  //process.nextTick(function(){
+  //  self.onPlayerReadyTimeout();
+  //});
 };
 
 roomSchema.methods.releaseTable = function(table) {

@@ -2,7 +2,11 @@ var logger = require('pomelo-logger').getLogger('pomelo', __filename);
 var util = require('util');
 var GameRoom = require('../domain/gameRoom');
 var utils = require('../util/utils');
+var GameTable = require('../domain/gameTable');
+var PlayerState = require('../consts/consts').PlayerState;
+var Player = require('../domain/player');
 
+var robotService = require('./robotService');
 var exp = module.exports;
 
 var roomsMap = {};
@@ -17,6 +21,8 @@ var pomeloApp = null;
 exp.init = function(app, roomIds) {
   logger.info("roomIds: ", roomIds);
   pomeloApp = app;
+  //this.robotService = app.get('robotService');
+
   for (var index=0; index<roomIds.length; index++) {
     var roomId = roomIds[index];
     loadRoom(roomId, function(err, room) {
@@ -71,7 +77,7 @@ exp.enterRoom = function(player, roomId, lastTableId, cb) {
 //  }
 
   room.enter(player, lastTableId);
-  room.playerReady(player, function(table) {
+  exp.playerReady(room, player, function(table) {
     utils.invokeCallback(cb, table);
   });
 
@@ -118,11 +124,154 @@ exp.leave = function(roomId, playerId, cb) {
 
 };
 
+<<<<<<< HEAD
 /**
  * 加载房间
  * @param roomId
  * @param callback
  */
+=======
+
+exp.cancelTable = function(table, room) {
+  //var self = this;
+  var index = room.tables.indexOf(table);
+  room.tables.splice(index, 1);
+  delete room.tablesMap[table.tableId];
+  table.room = null;
+
+  for (var playerIndex=0; playerIndex<table.players.length; playerIndex++) {
+    var player = table.players[playerIndex];
+    player.reset();
+    var pIndex = room.readyPlayers.indexOf(player);
+    if (pIndex >=0 ) {
+      room.readyPlayers.splice(pIndex, 1);
+    }
+
+    if (!!player.robot) {
+      //this.robotService.releaseRobotPlayers([player]);
+      //room.idle_robots.push(player);
+      pomeloApp.rpc.robotServer.robotRemote.releaseRobotPlayers.toServer('*',[player], null);
+    } else if (!!room.playersMap[player.userId] && !player.connectionLost) {
+      room.readyPlayers.unshift(player);
+    }
+  }
+
+  process.nextTick(function(){
+    exp.onPlayerReadyTimeout(room);
+  });
+};
+
+exp.playerReady = function(room, player, callback) {
+  // this.clearPlayerReadyTimeout();
+  var player = room.playersMap[player.userId];
+  player.state = PlayerState.READY;
+  if (room.readyPlayers.indexOf(player) < 0)
+    room.readyPlayers.push(player);
+
+  while (room.readyPlayers.length > 2) {
+    var players = room.readyPlayers.splice(0, 3);
+    var table = room.arrangeTable(players);
+    room.tables.push(table);
+    room.tablesMap[table.tableId] = table;
+
+    utils.invokeCallback(callback, table);
+  }
+
+  if (room.readyPlayers.length >0) {
+    if (!room.playerReadyTimeout) {
+      room.playerReadyTimeout = setTimeout(exp.onPlayerReadyTimeout.bind(this, room), 10 * 1000);
+    }
+  }
+};
+
+exp.onPlayerReadyTimeout = function(room) {
+  if (!!room.playerReadyTimeout) {
+    clearTimeout(room.playerReadyTimeout);
+    room.playerReadyTimeout = null;
+  }
+
+  var readyPlayers = room.readyPlayers.filter(function(p) {return !p.left;});
+  pomeloApp.rpc.robotServer.robotRemote.idelRobotsCount.toServer('*',{}, function(err, robots_count){
+    console.log('[roomService.onPlayerReadyTimeout] robots_count=', robots_count);
+    if (robots_count >= readyPlayers.length){
+      var players = readyPlayers.splice(0, 3);
+      utils.arrayRemove(room.readyPlayers, players);
+      pomeloApp.rpc.robotServer.robotRemote.getRobotPlayers.toServer('*',3-players.length, function(err, robotPlayers){
+        players = players.concat(robotPlayers);
+        for (var robotIndex=0; robotIndex<robotPlayers.length; robotIndex++) {
+          robotPlayers[robotIndex].readyForStartGame = true;
+        }
+
+        console.log('[roomService.onPlayerReadyTimeout] arrange robots:', players);
+        var table = room.arrangeTable(players);
+        room.tables.push(table);
+        room.tablesMap[table.tableId] = table;
+
+        console.log('this.startNewGameCallback ', room.startNewGameCallback);
+        utils.invokeCallback(room.startNewGameCallback, table);
+      });
+    }
+    else {
+      room.playerReadyTimeout = setTimeout(exp.onPlayerReadyTimeout.bind(room), 10 * 1000);
+    }
+  });
+
+
+  //
+  //if (readyPlayers.length < 3 && readyPlayers.length>0) {
+  //  if (this.robotService.idelRobotsCount() >= 3 - readyPlayers.length) {
+  //    var players = readyPlayers.splice(0, 3);
+  //    utils.arrayRemove(room.readyPlayers, players);
+  //    //var robotPlayers = room.idle_robots.splice(0, 3-players.length);
+  //    var robotPlayers = this.robotService.getRobotPlayers(3-players.length);
+  //    players = players.concat(robotPlayers);
+  //    for (var robotIndex=0; robotIndex<robotPlayers.length; robotIndex++) {
+  //      robotPlayers[robotIndex].readyForStartGame = true;
+  //    }
+  //
+  //    console.log('[roomSchema.methods.onPlayerReadyTimeout] arrange robots:', players);
+  //    var table = room.arrangeTable(players);
+  //    room.tables.push(table);
+  //    room.tablesMap[table.tableId] = table;
+  //
+  //    console.log('this.startNewGameCallback ', room.startNewGameCallback);
+  //    utils.invokeCallback(room.startNewGameCallback, table);
+  //  } else {
+  //    room.playerReadyTimeout = setTimeout(exp.onPlayerReadyTimeout.bind(room), 10 * 1000);
+  //  }
+  //}
+};
+
+
+exp.releaseTable = function(room, table) {
+  var index = room.tables.indexOf(table);
+  room.tables.splice(index, 1);
+  delete room.tablesMap[table.tableId];
+  table.room = null;
+
+  for (var playerIndex=0; playerIndex<table.players.length; playerIndex++) {
+    var player = table.players[playerIndex];
+    if (!!player) {
+      player.reset();
+      var pIndex = room.readyPlayers.indexOf(player);
+      if (pIndex >=0 ) {
+        room.readyPlayers.splice(pIndex, 1);
+      }
+
+      if (player.robot)
+      {
+        //this.robotService.releaseRobotPlayers([player]);
+        pomeloApp.rpc.robotServer.robotRemote.releaseRobotPlayers.toServer('*',[player], null);
+        //room.idle_robots.push(player);
+      }
+
+    }
+  }
+};
+
+
+
+>>>>>>> create_robots_dev_2
 var loadRoom = function(roomId, callback) {
 
   GameRoom.findOne({roomId:roomId}, function(err, room) {
@@ -133,4 +282,13 @@ var loadRoom = function(roomId, callback) {
     }
     utils.invokeCallback(callback, err, room);
   });
+<<<<<<< HEAD
 };
+=======
+//
+//  var room = new GameRoom({roomId:roomId, roomName: 'room_' + roomId});
+//  room.initRoom();
+//
+//  return room;
+};
+>>>>>>> create_robots_dev_2

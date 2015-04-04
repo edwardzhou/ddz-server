@@ -4,4 +4,12 @@ var Result = function(retCode, subCode, message) {
   this.message = message || '';
 };
 
+Result.genErrorResult = function(retCode, subCode, message) {
+  var result = new Result(retCode, subCode, message);
+  var error = new Error(message);
+  error.result = result;
+  error.errCode = retCode;
+  return error;
+};
+
 module.exports = Result;

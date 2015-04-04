@@ -376,6 +376,7 @@ testCreateRobot = function(u_count, cb) {
 
         var ddzProfile = new DdzProfile();
         User.copyHandset(results.user.signedUp.handset, ddzProfile.lastSignedIn.handset);
+        ddzProfile.coins = 20000;
         ddzProfile.userId = results.user.userId;
         ddzProfile.user_id = results.user.id;
         return ddzProfile.saveQ();
@@ -403,5 +404,5 @@ testCreateRobots = function() {
   }
 };
 
-//testCreateRobots();
+testCreateRobots();
 

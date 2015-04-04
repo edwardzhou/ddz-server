@@ -22,10 +22,10 @@ var genError = function(msg, code) {
 router.get('/', function(req, res) {
   var orderId = req.query.orderId;
   //res.send("ok " + orderId + "\n");
-
+    console.log('orderId:', orderId);
   PurchaseOrder.findOneQ({orderId: orderId})
     .then(function(po) {
-      console.log(po);
+      console.log('po:',po);
       var error = null;
       if (po == null) {
         throw genError(util.format('PurchaseOrder [orderId: %s] is not exists.', orderId), 0x001);
