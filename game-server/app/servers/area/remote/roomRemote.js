@@ -111,13 +111,17 @@ remoteHandler.enter = function(uid, sid, sessionId, room_id, cb) {
       roomService.enterRoom(player, room_id, -1, self._onPreStartNewGame);
 
       // 返回结果
-      cb(null, thisServerId, {});
+      utils.invokeCallback(cb, null, thisServerId, {});
 
     });
   });
 
 };
 
+/**
+ * 开始游戏前的确认处理, 剔除网络太差或前端被暂停的用户
+ * @param table
+ */
 remoteHandler.onPreStartNewGame = function(table) {
   var self = this;
 
@@ -125,6 +129,7 @@ remoteHandler.onPreStartNewGame = function(table) {
   var roomId = table.room.roomId;
   var realPlayers = [];
 
+  // 查找有效的实际用户，非机器人且链接正常的。
   for(var index=0; index<table.players.length; index++) {
     var player = table.players[index];
     if (!player.robot && !player.connectionLost) {
@@ -132,10 +137,12 @@ remoteHandler.onPreStartNewGame = function(table) {
     }
   }
 
+  // 如果缺乏有效实际用户，则取消桌子
   if (realPlayers.length == 0) {
     logger.warn("no real player for the table: %d, will cancel the table.", tableId);
     table.room.cancelTable(table);
   } else {
+    // 要求桌子的每一个有效真实用户，在 4 秒钟内，回传牌局开始的确认信息，否则，取消桌子
     messageService.pushTableMessage(table, 'onPreStartGame', {tableId: tableId, roomId: roomId}, null);
     setTimeout( function(){
       var timeoutTable = roomService.getTable(roomId, tableId);
@@ -156,6 +163,16 @@ remoteHandler.onPreStartNewGame = function(table) {
   }
 };
 
+
+/**
+ * 真实用户回传牌局开始确认信息
+ * @param uid
+ * @param sid
+ * @param sessionId
+ * @param roomId
+ * @param tableId
+ * @param cb
+ */
 remoteHandler.ackPreStartGame = function(uid, sid, sessionId, roomId, tableId, cb) {
   var self = this;
   var room = roomService.getRoom(roomId);
@@ -169,6 +186,7 @@ remoteHandler.ackPreStartGame = function(uid, sid, sessionId, roomId, tableId, c
   player.readyForStartGame = true;
   var count = table.players.filter(function(p) {return !!p.readyForStartGame;}).length;
   if (count == 3) {
+    // 所有人都就绪，开始牌局
     this.onStartNewGame(table);
   }
   utils.invokeCallback(cb, null);
@@ -177,6 +195,7 @@ remoteHandler.ackPreStartGame = function(uid, sid, sessionId, roomId, tableId, c
 remoteHandler.onStartNewGame = function(table) {
   var self = this;
 
+  // 正式分配每个人房间id和桌子id
   for (var index=0; index<table.players.length; index++) {
     var p = table.players[index];
     if (!p.robot) {
@@ -191,7 +210,7 @@ remoteHandler.onStartNewGame = function(table) {
       self.cardService.startGame(table);
     });
   });
-}
+};
 
 remoteHandler.reenter = function(uid, sid, sessionId, room_id, table_id, msgNo, cb) {
   var player = roomService.getRoom(room_id).getPlayer(uid);
