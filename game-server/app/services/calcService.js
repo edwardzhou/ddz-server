@@ -227,7 +227,7 @@ CalcService.calcGameOver = function(calcResult){
         logger.info('CalcService.calcGameOver, player is lord.');
         var real_win_total = score.raked_total;
         if (result.ddzProfiles[player.userId].coins < score.raked_total){
-            real_win_total = result.ddProfiles[player.userId].coins;
+            real_win_total = result.ddzProfiles[player.userId].coins;
         }
         pokeGame.playersResults[player.userId] = me_x * real_win_total;
         logger.info('CalcService.calcGameOver, pokeGame.playersResults=',pokeGame.playersResults);

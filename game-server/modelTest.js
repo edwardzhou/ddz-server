@@ -13,10 +13,12 @@ console.log('after connected');
 //UserId = require('./app/domain/userId');
 
 mongoose.connections[0].on('error', cb);
+var crypto = require('crypto');
 
 Q = require('q');
 DdzProfile = require('./app/domain/ddzProfile');
 User = require('./app/domain/user');
+var DataKeyId = require('./app/domain/dataKeyId');
 userDao = require('./app/dao/userDao');
 UserSession = require('./app/domain/userSession');
 GameRoom = require('./app/domain/gameRoom');
@@ -54,6 +56,10 @@ cache = HallRemote.cache;
 //    console.log(err, JSON.stringify(obj));
 //  });
 //}, 2000);
+
+var _genPasswordDigest = function (password, salt) {
+  return crypto.createHash('md5').update(password + "_" + salt).digest('hex');
+};
 
 removeAllPackages = function () {
   DdzGoodsPackage.remove({}, cb);
@@ -314,3 +320,89 @@ testGetUserTasks = function(userId) {
 };
 
 //testGetUserTasks(50471);
+
+testCreateRobot = function(u_count, cb) {
+  console.log('testCreateRobots u_count=',u_count);
+  var userInfo = {};
+  // 随机生成盐值
+  var passwordSalt = crypto.createHash('md5').update(Math.random().toString()).digest('hex');
+  // TODO: 此处设置缺省密码为了开发调试方便
+  userInfo.password = userInfo.password || 'abc123';
+  var passwordDigest = null;
+  if (!!userInfo.password) {
+    passwordDigest = _genPasswordDigest(userInfo.password, passwordSalt);
+  }
+
+  var userId = null;
+  var results = {};
+  userInfo.gender = "女";
+  if (u_count%2 == 0){ userInfo.gender = "男";}
+
+  // 生成一个新的用户ID
+  DataKeyId.nextUserIdQ()
+      .then(function(newUserId) {
+        // 获取昵称: 如果没有提供昵称，则尝试用设备模型做昵称，若还没有设备模型，则用用户ID做昵称
+        var nickName = newUserId.toString() ;
+        // 确保昵称不超过八位
+        if (nickName.length > 8) {
+          nickName = nickName.substring(0, 8);
+        }
+        // 创建用户实例
+        var user = new User({
+          userId: newUserId,
+          nickName: nickName,
+          passwordDigest: passwordDigest,
+          passwordSalt: passwordSalt,
+          appid: userInfo.appid || 1000,
+          appVersion: userInfo.appVersion,
+          resVersion: userInfo.resVersion,
+          created_at: (new Date()),
+          updated_at: (new Date())
+        });
+        // 设置登录设备信息
+        //user.setSignedInHandsetInfo(handsetInfo);
+        // 设置注册设备信息
+        //user.setSignedUpHandsetInfo(handsetInfo);
+        // 更新身份令牌
+        user.updateAuthToken();
+        user.oldAuthToken = user.authToken;
+        user.robot = true;
+        user.gender = userInfo.gender;
+        // 保存
+        return user.saveQ();
+      })
+      .then(function(user) {
+        results.user = user;
+
+        var ddzProfile = new DdzProfile();
+        User.copyHandset(results.user.signedUp.handset, ddzProfile.lastSignedIn.handset);
+        ddzProfile.coins = 20000;
+        ddzProfile.userId = results.user.userId;
+        ddzProfile.user_id = results.user.id;
+        return ddzProfile.saveQ();
+      })
+      .then(function(ddzProfile) {
+        results.ddzProfile = ddzProfile;
+        results.user.ddzProfile = ddzProfile;
+        return results.user.saveQ();
+      })
+      .fail(function(error) {
+        console.log('testCreateRobots faild. error=', error);
+      })
+      .done(function(){
+        console.log('testCreateRobots done: user=%s, gender=%s', results.user.userId, results.user.gender);
+        //process.exit(0);
+      });
+  //console.log('testCreateRobots end.');
+};
+
+
+testCreateRobots = function() {
+  for (var i = 0; i < 2000; i++) {
+    testCreateRobot(i);
+
+  }
+};
+
+testCreateRobots();
+

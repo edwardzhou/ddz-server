@@ -8,8 +8,8 @@ var Schema = mongoose.Schema;
 var dataKeyIdSchema = new mongoose.Schema({
   keyName: String,
   nextKeyId: {type: Number, default: 0},
-  createdAt: {type: Date, default: Date.now},
-  updatedAt: {type: Date, default: Date.now}
+  created_at: {type: Date, default: Date.now},
+  updated_at: {type: Date, default: Date.now}
 }, {
   collection: 'data_key_id'
 });

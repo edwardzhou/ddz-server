@@ -58,7 +58,7 @@ oneDayWinSprintTaskProcessor.process = function(task, params) {
     task.markModified('taskData');
     task.saveQ()
         .then(function(_task) {
-            logger.info('[oneDayWinSprintTaskProcessor.process] task updated: ', _task);
+            logger.info('[oneDayWinSprintTaskProcessor.process] task updated: ', _task.taskDesc);
         });
     return true;
 };

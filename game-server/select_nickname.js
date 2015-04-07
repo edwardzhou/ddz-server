@@ -20,7 +20,7 @@ mongoose.connections[0].on('error', cb);
 var nickNameList;
 var robotIndex = 1;
 
-fs.readFile('usernames2.txt', 'utf8', function (err, data) {
+fs.readFile('usernames3.txt', 'utf8', function (err, data) {
     if (err) throw err;
     nickNameList = data.split('\n');
     console.log(nickNameList.length);
@@ -44,7 +44,7 @@ selectNickName = function() {
     User.findQ({})
         .then(function(users) {
             users.forEach(getNickname);
-            process.exit(0);
+            //process.exit(0);
         });
 
 };

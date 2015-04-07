@@ -54,6 +54,7 @@ app.configure('production|development', 'userSystem|area|auth|ddz', function() {
 //  var mongoose = require('mongoose');
 //  mongoose.connect(mongodbCfg.url, mongodbCfg.options, function(err) {
 //  });
+
 });
 
 // app configuration
@@ -84,7 +85,6 @@ app.configure('production|development', 'ddz|gate', function () {
         });
        }
     });
-
   var clientIp = require('./app/filters/clientIp');
   app.before(clientIp());
   userLevelService.init(app);
@@ -125,6 +125,12 @@ app.configure('production|development', 'events', function() {
   var chargeEventService = require('./app/services/chargeEventService');
   chargeEventService.init(app, {});
   userLevelService.init(app);
+});
+
+app.configure('production|development', 'robotServer', function() {
+  var robotService = require('./app/services/robotService');
+  robotService.init(app, {});
+  //app.set('robotService', robotService);
 });
 
 app.configure('production|development', function () {
