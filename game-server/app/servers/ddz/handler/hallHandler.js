@@ -6,6 +6,7 @@ var logger = require('pomelo-logger').getLogger(__filename);
 var utils = require('../../../util/utils');
 var Result = require('../../../domain/result');
 var User = require('../../../domain/user');
+var PlayWithMeUser = require('../../../domain/playWithMeUser');
 var DdzUserAsset = require('../../../domain/ddzUserAsset');
 var DdzGoodsPackage = require('../../../domain/ddzGoodsPackage');
 
@@ -140,4 +141,26 @@ Handler.prototype.useAssetItem = function(msg, session, next) {
       utils.invokeCallback(next, null, result);
     });
 
+};
+
+
+Handler.prototype.getPlayWithMeUsers = function (msg, session, next) {
+  var userId = session.uid;
+  logger.info('HallHandler.getPlayWithMeUsers, userId: ', userId);
+  PlayWithMeUser.findQ({me_userId:userId})
+      .then(function(play_with_me_users){
+        var return_result = [];
+        logger.info('HallHandler.getPlayWithMeUsers, play_with_me_users=', play_with_me_users);
+        if (play_with_me_users != null) {
+          for (var index = 0; index < play_with_me_users.length; index++) {
+            return_result.push(play_with_me_users[i].toParams());
+          }
+        }
+        logger.info('HallHandler.getPlayWithMeUsers done.');
+        utils.invokeCallback(next, null, {result: true, users: return_result});
+      })
+      .fail(function(error){
+        logger.error('HallHandler.getPlayWithMeUsers failed.', error);
+        utils.invokeCallback(next, null, {result: false, err: error});
+      });
 };

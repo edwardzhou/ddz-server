@@ -15,6 +15,7 @@ var taskService = require('../taskService');
 var userService = require('../userService');
 var userLevelService = require('../userLevelService');
 var calcService = require('../calcService');
+var friendService = require('../friendService');
 
 var calcNormalGameOverQ = Q.nbind(calcService.calcNormalGameOver, calcService);
 var calcPlayerEscapeQ = Q.nbind(calcService.calcPlayerEscape, calcService);
@@ -52,7 +53,7 @@ GameOverAction.doGameOver = function(table, player, cb) {
     .then(function() {
         logger.info('GameOverAction.doGameOver, pokeGame=', pokeGame);
         logger.info('GameOverAction.doGameOver, pokeGame.playersResults=', pokeGame.playersResults);
-
+      friendService.updatePlayWithMeUsers(pokeGame.players, pokeGame.playersResults);
       // 2. 更新第一位玩家的金币数
       var p = pokeGame.players[0];
       taskService.processGamingTasks(p, 'game_over', (pokeGame.playersResults[p.userId] > 0),
