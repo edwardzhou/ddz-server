@@ -108,7 +108,7 @@ CalcService.calcPlayerEscape = function(table, player, cb) {
             score.rake = pokeGame.gameRake;
             score.ante = pokeGame.gameAnte;
             score.lordValue = pokeGame.lordValue;
-            score.total = score.ante * score.lordValue;
+            score.total = score.ante * score.lordValue * 2;
             if (score.rake >= 1) {
                 score.raked_total = score.total - score.rake;
             } else if (score.rake > 0) {
@@ -184,7 +184,7 @@ CalcService.calcNormalGameOver = function(table, player, cb) {
             score.rake = pokeGame.gameRake;
             score.ante = pokeGame.gameAnte;
             score.lordValue = pokeGame.lordValue;
-            score.total = score.ante * score.lordValue * Math.pow(2, Math.abs(score.spring));
+            score.total = score.ante * score.lordValue * Math.pow(2, Math.abs(score.spring)) * 2;
             if (score.rake >= 1) {
                 score.raked_total = score.total - score.rake;
             } else if (score.rake > 0) {
@@ -222,7 +222,7 @@ CalcService.calcGameOver = function(calcResult){
 
     pokeGame.playersResults = {};
 
-    logger.info('CalcService.calcGameOver, pokeGame',pokeGame);
+    //logger.info('CalcService.calcGameOver, pokeGame',pokeGame);
     if (player.isLord()) {
         logger.info('CalcService.calcGameOver, player is lord.');
         var real_win_total = score.raked_total;
@@ -306,12 +306,12 @@ CalcService.calcGameOver = function(calcResult){
         }
         logger.info('CalcService.calcGameOver, pokeGame.playersResults=',pokeGame.playersResults);
     }
-    logger.info('CalcService.calcGameOver, end, pokeGame',pokeGame);
+    //logger.info('CalcService.calcGameOver, end, pokeGame',pokeGame);
 };
 
 
 CalcService.calcGameOverFix = function(calcResult){
-  logger.info('CalcService.calcGameOver');
+  //logger.info('CalcService.calcGameOverFix');
   var result = calcResult;
   var player = result.player;
   var player1 = result.player1;
@@ -325,9 +325,10 @@ CalcService.calcGameOverFix = function(calcResult){
 
   pokeGame.playersResults = {};
 
-  logger.info('CalcService.calcGameOver, pokeGame',pokeGame);
+  //logger.info('CalcService.calcGameOverFix, calcResult',calcResult);
+  //logger.info('CalcService.calcGameOverFix, pokeGame',pokeGame);
   if (player.isLord()) {
-    logger.info('CalcService.calcGameOver, player is lord.');
+    //logger.info('CalcService.calcGameOverFix, player is lord.');
 
     // 玩家实际能赢的金币
     var real_win_total = score.total;
@@ -392,10 +393,10 @@ CalcService.calcGameOverFix = function(calcResult){
     pokeGame.playersResults[player1.userId] = -1 * player1_lose;
     pokeGame.playersResults[player2.userId] = -1 * player2_lose;
 
-    logger.info('CalcService.calcGameOver, pokeGame.playersResults=',pokeGame.playersResults);
+    //logger.info('CalcService.calcGameOverFix, pokeGame.playersResults=', pokeGame.playersResults);
 
   } else {
-    logger.info('CalcService.calcGameOver, player is not lord.');
+    logger.info('CalcService.calcGameOverFix, player is not lord.');
     var lordUser, farmerUser;
     if (player1.isLord()) {
       lordUser = player1;
@@ -475,9 +476,9 @@ CalcService.calcGameOverFix = function(calcResult){
     pokeGame.playersResults[player.userId] = farmer1_win;
     pokeGame.playersResults[farmerUser.userId] = farmer2_win;
 
-    logger.info('CalcService.calcGameOverFix, pokeGame.playersResults=',pokeGame.playersResults);
+    logger.info('CalcService.calcGameOverFix, pokeGame.playersResults=', pokeGame.playersResults);
   }
-  logger.info('CalcService.calcGameOverFix, end, pokeGame',pokeGame);
+ // logger.info('CalcService.calcGameOverFix, end, pokeGame',pokeGame);
 };
 
 
@@ -496,6 +497,7 @@ CalcService.calcGameOverEscapeFix = function(calcResult){
 
   pokeGame.playersResults = {};
 
+  logger.info('CalcService.calcGameOverEscapeFix, pokeGame',calcResult);
   logger.info('CalcService.calcGameOverEscapeFix, pokeGame',pokeGame);
   if (player.isLord()) {
     logger.info('CalcService.calcGameOverEscapeFix, player is lord.');
