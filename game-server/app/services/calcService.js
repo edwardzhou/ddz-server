@@ -208,108 +208,6 @@ CalcService.calcNormalGameOver = function(table, player, cb) {
 
 };
 
-CalcService.calcGameOver = function(calcResult){
-    logger.info('CalcService.calcGameOver');
-    var result = calcResult;
-    var player = result.player;
-    var player1 = result.player1;
-    var player2 = result.player2;
-    var pokeGame = result.pokeGame;
-    var isEscape = result.isEscape;
-    var score = pokeGame.score;
-    var me_x = 1;
-    if (isEscape) { me_x = -1; }
-
-    pokeGame.playersResults = {};
-
-    //logger.info('CalcService.calcGameOver, pokeGame',pokeGame);
-    if (player.isLord()) {
-        logger.info('CalcService.calcGameOver, player is lord.');
-        var real_win_total = score.raked_total;
-        if (result.ddzProfiles[player.userId].coins < score.raked_total){
-            real_win_total = result.ddzProfiles[player.userId].coins;
-        }
-        pokeGame.playersResults[player.userId] = me_x * real_win_total;
-        logger.info('CalcService.calcGameOver, pokeGame.playersResults=',pokeGame.playersResults);
-        var plan_farmer_lose = real_win_total / 2;
-
-        var max_farmer_userId = player1.userId;
-        var min_farmer_userId = player2.userId;
-        if (result.ddzProfiles[player1.userId].coins > result.ddzProfiles[player2.userId].coins){
-            max_farmer_userId = player2.userId;
-            min_farmer_userId = player1.userId;
-        }
-        if (result.ddzProfiles[min_farmer_userId].coins < plan_farmer_lose){
-            logger.info('CalcService.calcGameOver, coins < plan_farmer_lose.');
-            pokeGame.playersResults[min_farmer_userId] = -1 * me_x * result.ddzProfiles[min_farmer_userId].coins;
-            var max_farmer_lose = (2 * plan_farmer_lose) - result.ddzProfiles[min_farmer_userId].coins;
-            if (max_farmer_lose > (score.raked_total / 2)){
-                max_farmer_lose = score.raked_total / 2;
-            }
-            if (max_farmer_lose > result.ddzProfiles[max_farmer_userId].coins){
-                max_farmer_lose = result.ddzProfiles[max_farmer_userId].coins;
-            }
-            pokeGame.playersResults[max_farmer_userId] = -1 * me_x * max_farmer_lose;
-        }
-        else {
-            logger.info('CalcService.calcGameOver, coins > plan_farmer_lose.');
-            pokeGame.playersResults[player1.userId] = -1 * me_x * plan_farmer_lose;
-            pokeGame.playersResults[player2.userId] = -1 * me_x * plan_farmer_lose;
-        }
-        logger.info('CalcService.calcGameOver, pokeGame.playersResults=',pokeGame.playersResults);
-
-    } else {
-        logger.info('CalcService.calcGameOver, player is not lord.');
-        var lordUser, farmerUser;
-        if (player1.isLord()) {
-            lordUser = player1;
-            farmerUser = player2;
-        } else {
-            lordUser = player2;
-            farmerUser = player1;
-        }
-        var winScore = Math.round(score.raked_total / 2)
-
-        pokeGame.playersResults[lordUser.userId] = -1 * score.total;
-        pokeGame.playersResults[player.userId] = winScore;
-        pokeGame.playersResults[farmerUser.userId] = winScore;
-
-        var real_lord_lose = score.total;
-        if (result.ddzProfiles[lordUser.userId].coins < real_lord_lose){
-            real_lord_lose = result.ddzProfiles[lordUser.userId].coins;
-        }
-        pokeGame.playersResults[lordUser.userId] = -1 * me_x * real_lord_lose;
-
-        var max_farmer_userId = player.userId;
-        var min_farmer_userId = farmerUser.userId;
-        if (result.ddzProfiles[farmerUser.userId].coins > result.ddzProfiles[player.userId].coins){
-            max_farmer_userId = farmerUser.userId;
-            min_farmer_userId = player.userId;
-        }
-        var plan_farmer_win = real_lord_lose / 2;
-        if (result.ddzProfiles[min_farmer_userId].coins < plan_farmer_win){
-            logger.info('CalcService.calcGameOver, coins < plan_farmer_win');
-            pokeGame.playersResults[min_farmer_userId] =  me_x * result.ddzProfiles[min_farmer_userId].coins;
-            var max_farmer_win = 2 * plan_farmer_win - result.ddzProfiles[min_farmer_userId].coins;
-            if (max_farmer_win > winScore){
-                max_farmer_win = winScore;
-            }
-            if (max_farmer_win > result.ddzProfiles[max_farmer_userId].coins){
-                max_farmer_win = result.ddzProfiles[max_farmer_userId].coins;
-            }
-            pokeGame.playersResults[min_farmer_userId] =  me_x * max_farmer_win;
-        }
-        else {
-            logger.info('CalcService.calcGameOver, coins > plan_farmer_win');
-            pokeGame.playersResults[player.userId] =  me_x * plan_farmer_win;
-            pokeGame.playersResults[farmerUser.userId] =  me_x * plan_farmer_win;
-        }
-        logger.info('CalcService.calcGameOver, pokeGame.playersResults=',pokeGame.playersResults);
-    }
-    //logger.info('CalcService.calcGameOver, end, pokeGame',pokeGame);
-};
-
-
 CalcService.calcGameOverFix = function(calcResult){
   //logger.info('CalcService.calcGameOverFix');
   var result = calcResult;
@@ -329,6 +227,7 @@ CalcService.calcGameOverFix = function(calcResult){
   //logger.info('CalcService.calcGameOverFix, pokeGame',pokeGame);
   if (player.isLord()) {
     //logger.info('CalcService.calcGameOverFix, player is lord.');
+    // 地主胜利
 
     // 玩家实际能赢的金币
     var real_win_total = score.total;
@@ -396,7 +295,8 @@ CalcService.calcGameOverFix = function(calcResult){
     //logger.info('CalcService.calcGameOverFix, pokeGame.playersResults=', pokeGame.playersResults);
 
   } else {
-    logger.info('CalcService.calcGameOverFix, player is not lord.');
+    //logger.info('CalcService.calcGameOverFix, player is not lord.');
+    // 农民胜利
     var lordUser, farmerUser;
     if (player1.isLord()) {
       lordUser = player1;
@@ -476,7 +376,7 @@ CalcService.calcGameOverFix = function(calcResult){
     pokeGame.playersResults[player.userId] = farmer1_win;
     pokeGame.playersResults[farmerUser.userId] = farmer2_win;
 
-    logger.info('CalcService.calcGameOverFix, pokeGame.playersResults=', pokeGame.playersResults);
+    //logger.info('CalcService.calcGameOverFix, pokeGame.playersResults=', pokeGame.playersResults);
   }
  // logger.info('CalcService.calcGameOverFix, end, pokeGame',pokeGame);
 };
@@ -616,8 +516,8 @@ CalcService.calcGameOverEscapeFix = function(calcResult){
     pokeGame.playersResults[player.userId] = -1 * real_lose_total;
     pokeGame.playersResults[farmerUser.userId] = 0;
 
-    logger.info('CalcService.calcGameOverEscapeFix, pokeGame.playersResults=',pokeGame.playersResults);
+    //logger.info('CalcService.calcGameOverEscapeFix, pokeGame.playersResults=',pokeGame.playersResults);
   }
-  logger.info('CalcService.calcGameOverEscapeFix, pokeGame.playersResults=', pokeGame.playersResults);
+  //logger.info('CalcService.calcGameOverEscapeFix, pokeGame.playersResults=', pokeGame.playersResults);
   //logger.info('CalcService.calcGameOverEscapeFix, end, pokeGame',pokeGame);
 };
