@@ -582,6 +582,7 @@ CalcService.calcGameOverEscapeFix = function(calcResult){
 
   } else {
     //logger.info('CalcService.calcGameOverEscapeFix, player is not lord.');
+    // 农民逃跑
     var lordUser, farmerUser;
     if (player1.isLord()) {
       lordUser = player1;

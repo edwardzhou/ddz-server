@@ -359,6 +359,241 @@ testCalcGameOverEscapeFix.case_8 = function () {
   console.assert(pokeGame.playersResults[player2.userId] == farmer2_lose, 'farmer2 expected win %j, in fact: %j', farmer2_lose, pokeGame.playersResults[player2.userId]);
 };
 
+
+/**
+ * 测试用例 9
+ * ~> 游戏地主逃跑
+ * ~> 地主 金币不足
+ * ~> 农民1 金币不足, 远低于平分线
+ * ~> 农民2 金币不足, 但超过平分线
+ *
+ */
+testCalcGameOverEscapeFix.case_9 = function () {
+  var __ret = createTestCase();
+  var pokeGame = __ret.pokeGame;
+  var player = __ret.player;
+  var player1 = __ret.player1;
+  var player2 = __ret.player2;
+  var result = __ret.result;
+
+
+  player.ddzProfile.coins =  30000;
+  player1.ddzProfile.coins = 5000;
+  player2.ddzProfile.coins = 40000;
+
+  CalcService.calcGameOverEscapeFix(result);
+
+  var win_total = -30000;
+  var farmer1_lose = 5000 - 250;
+  var farmer2_lose = 25000 - 250;
+  console.assert(pokeGame.playersResults[player.userId] == win_total, 'lord expected lose %j, in fact: %j', win_total, pokeGame.playersResults[player.userId]);
+  console.assert(pokeGame.playersResults[player1.userId] == farmer1_lose, 'farmer1 expected win %j, in fact: %j', farmer1_lose, pokeGame.playersResults[player1.userId]);
+  console.assert(pokeGame.playersResults[player2.userId] == farmer2_lose, 'farmer2 expected win %j, in fact: %j', farmer2_lose, pokeGame.playersResults[player2.userId]);
+};
+
+
+/**
+ * 测试用例 10
+ * ~> 农民1 逃跑
+ * ~> 地主 金币充足
+ * ~> 农民1 金币充足
+ * ~> 农民2 金币充足
+ *
+ */
+testCalcGameOverEscapeFix.case_10 = function () {
+  var __ret = createTestCase();
+  var pokeGame = __ret.pokeGame;
+  var player = __ret.player;
+  var player1 = __ret.player1;
+  var player2 = __ret.player2;
+  var result = __ret.result;
+
+  result.player = player1;
+  result.player1 = player;
+
+  player.ddzProfile.coins =  320000;
+  player1.ddzProfile.coins = 205000;
+  player2.ddzProfile.coins = 205000;
+
+  CalcService.calcGameOverEscapeFix(result);
+
+  var win_total = 60000 - 500;
+  var farmer1_lose = -60000;
+  var farmer2_lose = 0;
+  console.assert(pokeGame.playersResults[player.userId] == win_total, 'lord expected win %j, in fact: %j', win_total, pokeGame.playersResults[player.userId]);
+  console.assert(pokeGame.playersResults[player1.userId] == farmer1_lose, 'farmer1 expected lose %j, in fact: %j', farmer1_lose, pokeGame.playersResults[player1.userId]);
+  console.assert(pokeGame.playersResults[player2.userId] == farmer2_lose, 'farmer2 expected lose %j, in fact: %j', farmer2_lose, pokeGame.playersResults[player2.userId]);
+};
+
+
+/**
+ * 测试用例 11
+ * ~> 农民1 逃跑
+ * ~> 地主 金币充足
+ * ~> 农民1 金币充足
+ * ~> 农民2 金币不足
+ *
+ */
+testCalcGameOverEscapeFix.case_11 = function () {
+  var __ret = createTestCase();
+  var pokeGame = __ret.pokeGame;
+  var player = __ret.player;
+  var player1 = __ret.player1;
+  var player2 = __ret.player2;
+  var result = __ret.result;
+
+  result.player = player1;
+  result.player1 = player;
+
+  player.ddzProfile.coins =  320000;
+  player1.ddzProfile.coins = 205000;
+  player2.ddzProfile.coins = 5000;
+
+  CalcService.calcGameOverEscapeFix(result);
+
+  var win_total = 60000 - 500;
+  var farmer1_lose = -60000;
+  var farmer2_lose = 0;
+  console.assert(pokeGame.playersResults[player.userId] == win_total, 'lord expected win %j, in fact: %j', win_total, pokeGame.playersResults[player.userId]);
+  console.assert(pokeGame.playersResults[player1.userId] == farmer1_lose, 'farmer1 expected lose %j, in fact: %j', farmer1_lose, pokeGame.playersResults[player1.userId]);
+  console.assert(pokeGame.playersResults[player2.userId] == farmer2_lose, 'farmer2 expected lose %j, in fact: %j', farmer2_lose, pokeGame.playersResults[player2.userId]);
+};
+
+
+/**
+ * 测试用例 12
+ * ~> 农民1 逃跑
+ * ~> 地主 金币充足
+ * ~> 农民1 金币不足
+ * ~> 农民2 金币充足
+ *
+ */
+testCalcGameOverEscapeFix.case_12 = function () {
+  var __ret = createTestCase();
+  var pokeGame = __ret.pokeGame;
+  var player = __ret.player;
+  var player1 = __ret.player1;
+  var player2 = __ret.player2;
+  var result = __ret.result;
+
+  result.player = player1;
+  result.player1 = player;
+
+  player.ddzProfile.coins =  320000;
+  player1.ddzProfile.coins = 50000;
+  player2.ddzProfile.coins = 100000;
+
+  CalcService.calcGameOverEscapeFix(result);
+
+  var win_total = 50000 - 500;
+  var farmer1_lose = -50000;
+  var farmer2_lose = 0;
+  console.assert(pokeGame.playersResults[player.userId] == win_total, 'lord expected win %j, in fact: %j', win_total, pokeGame.playersResults[player.userId]);
+  console.assert(pokeGame.playersResults[player1.userId] == farmer1_lose, 'farmer1 expected lose %j, in fact: %j', farmer1_lose, pokeGame.playersResults[player1.userId]);
+  console.assert(pokeGame.playersResults[player2.userId] == farmer2_lose, 'farmer2 expected lose %j, in fact: %j', farmer2_lose, pokeGame.playersResults[player2.userId]);
+};
+
+/**
+ * 测试用例 13
+ * ~> 农民1 逃跑
+ * ~> 地主 金币不足
+ * ~> 农民1 金币充足
+ * ~> 农民2 金币充足
+ *
+ */
+testCalcGameOverEscapeFix.case_13 = function () {
+  var __ret = createTestCase();
+  var pokeGame = __ret.pokeGame;
+  var player = __ret.player;
+  var player1 = __ret.player1;
+  var player2 = __ret.player2;
+  var result = __ret.result;
+
+  result.player = player1;
+  result.player1 = player;
+
+  player.ddzProfile.coins =  40000;
+  player1.ddzProfile.coins = 100000;
+  player2.ddzProfile.coins = 100000;
+
+  CalcService.calcGameOverEscapeFix(result);
+
+  var win_total = 40000 - 500;
+  var farmer1_lose = -40000;
+  var farmer2_lose = 0;
+  console.assert(pokeGame.playersResults[player.userId] == win_total, 'lord expected win %j, in fact: %j', win_total, pokeGame.playersResults[player.userId]);
+  console.assert(pokeGame.playersResults[player1.userId] == farmer1_lose, 'farmer1 expected lose %j, in fact: %j', farmer1_lose, pokeGame.playersResults[player1.userId]);
+  console.assert(pokeGame.playersResults[player2.userId] == farmer2_lose, 'farmer2 expected lose %j, in fact: %j', farmer2_lose, pokeGame.playersResults[player2.userId]);
+};
+
+
+/**
+ * 测试用例 14
+ * ~> 农民1 逃跑
+ * ~> 地主 金币不足, 且少于农民1
+ * ~> 农民1 金币不足
+ * ~> 农民2 金币充足
+ *
+ */
+testCalcGameOverEscapeFix.case_14 = function () {
+  var __ret = createTestCase();
+  var pokeGame = __ret.pokeGame;
+  var player = __ret.player;
+  var player1 = __ret.player1;
+  var player2 = __ret.player2;
+  var result = __ret.result;
+
+  result.player = player1;
+  result.player1 = player;
+
+  player.ddzProfile.coins =  40000;
+  player1.ddzProfile.coins = 50000;
+  player2.ddzProfile.coins = 100000;
+
+  CalcService.calcGameOverEscapeFix(result);
+
+  var win_total = 40000 - 500;
+  var farmer1_lose = -40000;
+  var farmer2_lose = 0;
+  console.assert(pokeGame.playersResults[player.userId] == win_total, 'lord expected win %j, in fact: %j', win_total, pokeGame.playersResults[player.userId]);
+  console.assert(pokeGame.playersResults[player1.userId] == farmer1_lose, 'farmer1 expected lose %j, in fact: %j', farmer1_lose, pokeGame.playersResults[player1.userId]);
+  console.assert(pokeGame.playersResults[player2.userId] == farmer2_lose, 'farmer2 expected lose %j, in fact: %j', farmer2_lose, pokeGame.playersResults[player2.userId]);
+};
+
+/**
+ * 测试用例 15
+ * ~> 农民1 逃跑
+ * ~> 地主 金币不足, 且少于农民1
+ * ~> 农民1 金币不足
+ * ~> 农民2 金币充足
+ *
+ */
+testCalcGameOverEscapeFix.case_15 = function () {
+  var __ret = createTestCase();
+  var pokeGame = __ret.pokeGame;
+  var player = __ret.player;
+  var player1 = __ret.player1;
+  var player2 = __ret.player2;
+  var result = __ret.result;
+
+  result.player = player1;
+  result.player1 = player;
+
+  player.ddzProfile.coins =  55000;
+  player1.ddzProfile.coins = 50000;
+  player2.ddzProfile.coins = 100000;
+
+  CalcService.calcGameOverEscapeFix(result);
+
+  var win_total = 50000 - 500;
+  var farmer1_lose = -50000;
+  var farmer2_lose = 0;
+  console.assert(pokeGame.playersResults[player.userId] == win_total, 'lord expected win %j, in fact: %j', win_total, pokeGame.playersResults[player.userId]);
+  console.assert(pokeGame.playersResults[player1.userId] == farmer1_lose, 'farmer1 expected lose %j, in fact: %j', farmer1_lose, pokeGame.playersResults[player1.userId]);
+  console.assert(pokeGame.playersResults[player2.userId] == farmer2_lose, 'farmer2 expected lose %j, in fact: %j', farmer2_lose, pokeGame.playersResults[player2.userId]);
+};
+
+
 function runTestCases() {
   for (var key in testCalcGameOverEscapeFix) {
     console.log('run testCalcGameOverEscapeFix.%s ', key);
