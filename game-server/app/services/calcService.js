@@ -285,7 +285,7 @@ CalcService.calcGameOverFix = function(calcResult){
     if (score.rake >= 1) {
       raked_total = real_win_total - score.rake;
     } else if (score.rake > 0) {
-      raked_total = real_win_total - score.total * score.rake;
+      raked_total = real_win_total - real_win_total * score.rake;
     }
 
     pokeGame.playersResults[player.userId] = raked_total;
@@ -358,7 +358,7 @@ CalcService.calcGameOverFix = function(calcResult){
     if (score.rake > 1) {
       rake = score.rake / 2;
     } else if (score.rake > 0) {
-      rake = Math.floor( score.total * score.rake / 2 );
+      rake = Math.floor( real_win_total * score.rake / 2 );
     }
 
     // 扣除农民1的佣金
@@ -462,7 +462,7 @@ CalcService.calcGameOverEscapeFix = function(calcResult){
     if (score.rake >= 1) {
       rake = score.rake / 2;
     } else if (score.rake > 0) {
-      rake = score.total * score.rake / 2;
+      rake = real_lose_total * score.rake / 2;
     }
 
     player1_win = player1_win - rake;
@@ -506,7 +506,7 @@ CalcService.calcGameOverEscapeFix = function(calcResult){
     if (score.rake > 1) {
       raked_lose_total = real_lose_total - score.rake;
     } else if (score.rake > 0) {
-      raked_lose_total = real_lose_total - (score.total * score.rake);
+      raked_lose_total = real_lose_total - (real_lose_total * score.rake);
     }
     if (raked_lose_total < 0) {
       raked_lose_total = 0;
