@@ -60,7 +60,7 @@ CalcService.calcPlayerEscape = function(table, player, cb) {
                 if (!!pokeGame.grabbingLord.lordValue && pokeGame.grabbingLord.lordValue > 0) {
                     pokeGame.lordValue = pokeGame.grabbingLord.lordValue;
                 } else {
-                    pokeGame.lordValue = 1;
+                    pokeGame.lordValue = pokeGame.startLordValue;
                 }
             }
 
@@ -108,7 +108,7 @@ CalcService.calcPlayerEscape = function(table, player, cb) {
             score.rake = pokeGame.gameRake;
             score.ante = pokeGame.gameAnte;
             score.lordValue = pokeGame.lordValue;
-            score.total = score.ante * score.lordValue * 2;
+            score.total = score.ante * score.lordValue * Math.pow(2, Math.abs(score.spring)) * 2;
             if (score.rake >= 1) {
                 score.raked_total = score.total - score.rake;
             } else if (score.rake > 0) {
@@ -483,7 +483,7 @@ CalcService.calcGameOverFix = function(calcResult){
 
 
 CalcService.calcGameOverEscapeFix = function(calcResult){
-  logger.info('CalcService.calcGameOver');
+  //logger.info('CalcService.calcGameOver');
   var result = calcResult;
   var player = result.player;
   var player1 = result.player1;
@@ -497,14 +497,14 @@ CalcService.calcGameOverEscapeFix = function(calcResult){
 
   pokeGame.playersResults = {};
 
-  logger.info('CalcService.calcGameOverEscapeFix, pokeGame',calcResult);
-  logger.info('CalcService.calcGameOverEscapeFix, pokeGame',pokeGame);
+  //logger.info('CalcService.calcGameOverEscapeFix, pokeGame',calcResult);
+  //logger.info('CalcService.calcGameOverEscapeFix, pokeGame',pokeGame);
   if (player.isLord()) {
-    logger.info('CalcService.calcGameOverEscapeFix, player is lord.');
+    //logger.info('CalcService.calcGameOverEscapeFix, player is lord.');
 
     // 玩家实际能输的金币
     var real_lose_total = score.total;
-    if (result.ddzProfiles[player.userId].coins < score.real_lose_total){
+    if (result.ddzProfiles[player.userId].coins < real_lose_total){
       real_lose_total = result.ddzProfiles[player.userId].coins;
     }
 
@@ -574,14 +574,14 @@ CalcService.calcGameOverEscapeFix = function(calcResult){
       player2_win = 0;
     }
 
-    pokeGame.playersResults[player.userId] = real_lose_total;
-    pokeGame.playersResults[player1.userId] = -1 * player1_win;
-    pokeGame.playersResults[player2.userId] = -1 * player2_win;
+    pokeGame.playersResults[player.userId] = -1 * real_lose_total;
+    pokeGame.playersResults[player1.userId] = player1_win;
+    pokeGame.playersResults[player2.userId] = player2_win;
 
-    logger.info('CalcService.calcGameOverEscapeFix, pokeGame.playersResults=',pokeGame.playersResults);
+    //logger.info('CalcService.calcGameOverEscapeFix, pokeGame.playersResults=',pokeGame.playersResults);
 
   } else {
-    logger.info('CalcService.calcGameOverEscapeFix, player is not lord.');
+    //logger.info('CalcService.calcGameOverEscapeFix, player is not lord.');
     var lordUser, farmerUser;
     if (player1.isLord()) {
       lordUser = player1;
@@ -617,5 +617,6 @@ CalcService.calcGameOverEscapeFix = function(calcResult){
 
     logger.info('CalcService.calcGameOverEscapeFix, pokeGame.playersResults=',pokeGame.playersResults);
   }
-  logger.info('CalcService.calcGameOverEscapeFix, end, pokeGame',pokeGame);
+  logger.info('CalcService.calcGameOverEscapeFix, pokeGame.playersResults=', pokeGame.playersResults);
+  //logger.info('CalcService.calcGameOverEscapeFix, end, pokeGame',pokeGame);
 };
