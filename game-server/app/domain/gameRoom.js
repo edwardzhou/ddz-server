@@ -99,7 +99,8 @@ roomSchema.methods.initRoom = function(opts) {
   //  this._onPlayerReadyTimeout = this.onPlayerReadyTimeout.bind(this);
   //}
 
-  this.loadRobots();
+  if (!opts.noLoadRobots)
+    this.loadRobots();
 
 };
 
