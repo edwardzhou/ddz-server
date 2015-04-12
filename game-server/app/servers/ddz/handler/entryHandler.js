@@ -2,6 +2,9 @@ var format = require('util').format;
 var utils = require('../../../util/utils');
 var logger = require('pomelo-logger').getLogger(__filename);
 var GameTable = require('../../../domain/gameTable');
+var GameRoom = require('../../../domain/gameRoom');
+var User = require('../../../domain/user');
+var DdzProfile = require('../../../domain/ddzProfile');
 var Result = require('../../../domain/result');
 var ErrorCode = require('../../../consts/errorCode');
 var Q = require('q');
@@ -54,24 +57,71 @@ Handler.prototype.tryEnterRoom = function(msg, session, next) {
   var self = this;
   var room_id = msg.room_id;
   var uid = session.uid;
+  var results = {};
 
+  DdzProfile.findOneQ({userId: uid})
+    .then(function(u) {
+      results.ddzProfile = u;
+      return GameRoom.getActiveRoomsQ(room_id);
+    })
+    .then(function(rooms) {
+      if (!!rooms || rooms.length == 0) {
+        return GameRoom.getActiveRoomsQ();
+      }
 
-  session.set("room_id", room_id);
-  session.pushAll( function(err) {
-    if (err) {
-      console.error('set room_id for session service failed! error is : %j', err.stack);
-    }
-  });
+      return rooms;
+    })
+    .then(function(rooms){
+      results.rooms = rooms;
 
-  this.app.rpc.area.roomRemote.tryEnter(session, uid, this.app.get('serverId'), session.id, room_id, function(err, room_server_id, result) {
-    logger.info('enter result: ', err, room_server_id, result);
-    if (!!err) {
+      var ddzProfile = results.ddzProfile;
+
+      for (var index=0; index<results.rooms.length; index++) {
+        var room = results.rooms[index];
+        if (room.minCoinsQty <= ddzProfile.coins && room.maxCoinsQty > ddzProfile.coins) {
+          results.room = room;
+          break;
+        }
+      }
+    })
+    .then(function(){
+      if (!results.room) {
+        // 没有可进入的房间
+      }
+    })
+    .then(function(){
+      if (!!results.room) {
+        room_id = results.room.roomId;
+        session.set("room_id", room_id);
+        session.pushAll( function(err) {
+          if (err) {
+            console.error('set room_id for session service failed! error is : %j', err.stack);
+          }
+
+        });
+
+        self.app.rpc.area.roomRemote.tryEnter(session, uid, self.app.get('serverId'), session.id, room_id, function(err, room_server_id, result) {
+          logger.info('enter result: ', err, room_server_id, result);
+          if (!!err) {
+            var errResp = new Result(ErrorCode.SYSTEM_ERROR, 0, err.toString());
+            errResp.error = err;
+            next(null, errResp);
+            return;
+          }
+
+          result.room = results.room.toParams();
+
+          next(null, result);
+        });
+
+      } else {
+        next(null, new Result(ErrorCode.SYSTEM_ERROR, 0, '金币不足!'));
+      }
+    })
+    .fail(function(err) {
       next(null, {err: err});
-      return;
-    }
+    });
 
-    next(null, result);
-  });
 };
 
 
@@ -82,7 +132,7 @@ Handler.prototype.enterRoom = function(msg, session, next) {
   var uid = session.uid;
   var username = msg.username;
 
-  logger.info('session ' , session.__proto__);
+  //logger.info('session ' , session.__proto__);
 
   var user = getUser(uid);
 
