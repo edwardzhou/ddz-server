@@ -34,11 +34,11 @@ remoteHandler.reloadAllRobots = function(msg, cb) {
 
 remoteHandler.idelRobotsCount = function(msg, cb) {
     logger.info('remoteHandler.idelRobotsCount');
-    logger.info('remoteHandler.idelRobotsCount, cb=', cb);
+    //logger.info('remoteHandler.idelRobotsCount, cb=', cb);
     var idle_count = robotService.idelRobotsCount();
     logger.info('remoteHandler.idelRobotsCount. idle_count=', idle_count);
     utils.invokeCallback(cb, null, idle_count);
-}
+};
 
 remoteHandler.getRobotPlayers = function(robots_count, cb) {
     logger.info("[remoteHandler.getRobotPlayers]");

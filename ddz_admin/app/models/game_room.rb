@@ -12,6 +12,7 @@ class GameRoom
   field :maxCoinsQty, type: Integer
   field :minCoinsQty, type: Integer
   field :sortIndex, type: Integer
+  field :recruitPackageId, type: String
   field :readyTimeout, type: Integer, default: 10
   field :grabbingLordTimeout, type: Integer, default: 20
   field :playCardTimeout, type: Integer, default: 30
