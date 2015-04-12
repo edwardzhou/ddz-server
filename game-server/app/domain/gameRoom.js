@@ -22,6 +22,7 @@ var roomSchemaFields = {
   maxCoinsQty: {type: Number, default: 0}, // 准入资格, 最大金币数, 0 代表无限制
   roomType: String,   // 房间类型
   sortIndex: Number,  // 排序
+  recruitPackageId: String, // 金币不足时, 充值的道具包id
   readyTimeout: {type: Number, default: 15},  // 就绪超时
   grabbingLordTimeout: {type: Number, default: 20}, // 叫地主超时
   playCardTimeout: {type: Number, default: 30}, // 出牌超时
@@ -299,6 +300,25 @@ roomSchema.methods.reloadFromDb = function() {
     .fail(function(err) {
       console.error('[GameRoom.reloadFromDb] error: ', err);
     });
+};
+
+roomSchema.methods.getReadyPlayerIndexByUserId = function(userId) {
+  for (var index=0; index<this.readyPlayers.length; index++) {
+    if (this.readyPlayers[index].userId == userId) {
+      return index;
+    }
+  }
+  return -1;
+};
+
+roomSchema.statics.getActiveRoomsQ = function(roomId) {
+  var condition = {};
+  if (!!roomId) {
+    condition = {roomId: roomId};
+  }
+  return this.find(condition)
+    .sort('minCoinsQty')
+    .execQ();
 };
 
 var GameRoom = mongoose.model('GameRoom', roomSchema);

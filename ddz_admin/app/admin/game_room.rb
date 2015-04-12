@@ -14,6 +14,7 @@ ActiveAdmin.register GameRoom do
     permitted << :maxCoinsQty
     permitted << :sortIndex
     permitted << :readyTimeout
+    permitted << :recruitPackageId
     permitted << :grabbingLordTimeout
     permitted << :playCardTimeout
     permitted << :playCardCheatRate
@@ -34,6 +35,7 @@ ActiveAdmin.register GameRoom do
     column :startLordValue
     column :minCoinsQty
     column :maxCoinsQty
+    column :recruitPackageId
     column :sortIndex
     column :readyTimeout
     column :grabbingLordTimeout
@@ -62,6 +64,7 @@ ActiveAdmin.register GameRoom do
       f.input :startLordValue
       f.input :maxCoinsQty
       f.input :minCoinsQty
+      f.input :recruitPackageId
       f.input :sortIndex
       f.input :readyTimeout
       f.input :grabbingLordTimeout
