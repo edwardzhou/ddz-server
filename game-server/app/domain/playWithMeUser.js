@@ -13,7 +13,7 @@ var PlayWithMeUserSchema = mongoose.Schema({
         won: {type: Number, default: 0},
         lose: {type: Number, default: 0}
     },
-    last_play_with_me_date: {type: Date, default: Date.now},
+    last_play_time: {type: Date, default: Date.now},
     created_at: {type: Date, default: Date.now},
     updated_at: {type: Date, default: Date.now}
 }, {
@@ -26,7 +26,7 @@ var __toParams = function(model, excludeAttrs) {
         nickName: model.nickName,
         userId: model.userId,
         play_count: model.play_count,
-        last_play_with_me_date: model.last_play_with_me_date,
+        last_play_time: model.last_play_time,
         gameStat: model.gameStat
     };
 

@@ -147,7 +147,9 @@ Handler.prototype.useAssetItem = function(msg, session, next) {
 Handler.prototype.getPlayWithMeUsers = function (msg, session, next) {
   var userId = session.uid;
   logger.info('HallHandler.getPlayWithMeUsers, userId: ', userId);
-  PlayWithMeUser.findQ({me_userId:userId})
+  PlayWithMeUser.find({me_userId:userId})
+      .sort(utils.sortDescBy('last_play_time'))
+      .execQ()
       .then(function(play_with_me_users){
         var return_result = [];
         logger.info('HallHandler.getPlayWithMeUsers, play_with_me_users=', play_with_me_users);

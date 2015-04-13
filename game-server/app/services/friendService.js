@@ -48,7 +48,7 @@ FriendService.doUpdatePlayWithMePlayer = function(me_player, friend_player){
                 new_play_whith_player.user_id = friend_player.id;
                 new_play_whith_player.nickName = friend_player.nickName;
                 new_play_whith_player.play_count = 1;
-                new_play_whith_player.last_play_with_me_date = Date.now();
+                new_play_whith_player.last_play_time = Date.now();
                 new_play_whith_player.save();
                 logger.info("[FriendService.doUpdatePlayWithMePlayer], new_play_whith_player:", new_play_whith_player);
             }
