@@ -49,6 +49,10 @@ var ErrorCode = {
   // 牌型打不过上手牌（1. 牌型不配， 2. 没有大过对方）
   INVALID_PLAY_CARD: 3002,
 
+  // 无法进入房间,金币不足
+  COINS_NOT_ENOUGH: 5000,
+
+
 
   SYSTEM_ERROR: 100000,
 

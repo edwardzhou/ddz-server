@@ -12,6 +12,8 @@ var ErrorCode = require('../consts/errorCode');
 var Result = require('../domain/result');
 var CardInfo = require('../AI/CardInfo');
 var CardAnalyzer = require('../AI/CardAnalyzer');
+var tableService = require('./tableService');
+
 var AIEngine = require('../AI/AIEngine');
 //var roomService = require('./roomService');
 
@@ -739,7 +741,7 @@ exp.gameOver = function(table, player, cb) {
       }
 
       // 释放桌子
-      table.release();
+      tableService.release(table);
     }
   });
 

@@ -288,6 +288,7 @@ UserService.signUp = function(signUpParams, cb) {
         passwordDigest: passwordDigest,
         passwordSalt: passwordSalt,
         appid: userInfo.appid || 1000,
+        headIcon: Math.ceil(Math.random()*10000) % 8 + 1,
         appVersion: userInfo.appVersion,
         resVersion: userInfo.resVersion,
         created_at: (new Date()),
@@ -482,7 +483,7 @@ UserService.doBankruptProcess = function(userId,  callback) {
           result.ddzBankruptSave = new DdzBankruptSave();
           result.ddzBankruptSave.userId = result.user.userId;
           result.ddzBankruptSave.user_id = result.user.id;
-          result.ddzBankruptSave.last_login_date = today.getTime();
+          result.ddzBankruptSave.autoRemoveAt = today;
           result.ddzBankruptSave.count = saveTemplate.count;
           result.ddzBankruptSave.threshold = saveTemplate.threshold;
           result.ddzBankruptSave.save_detail = saveTemplate.save_detail;
