@@ -1,6 +1,7 @@
 var GameTable = require('../domain/gameTable');
 var TableState = require('../consts/consts');
 var utils = require('../util/utils');
+var roomService = require('./roomService');
 
 var _tables = [];
 var _tableId = 1;
@@ -74,4 +75,21 @@ exp.getTable = function(table_id) {
   }
 
   return null;
+};
+
+exp.release = function(table) {
+  for (var index=0; index < table.players.length; index++) {
+    var player = table.players[index];
+    if (!!player) {
+      player.reset();
+    }
+  }
+
+  this.pokeGame = null;
+
+  if(!!table.room) {
+    roomService.releaseTable(table.room, table);
+  }
+
+  table.players.splice(0, table.players.length);
 };

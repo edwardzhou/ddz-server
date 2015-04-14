@@ -14,6 +14,7 @@ var utils = require('../util/utils');
 var crypto = require('crypto');
 var messageService = require('./messageService');
 var taskService = require('./taskService');
+var userService = require('./userService');
 
 var Q = require('q');
 
@@ -71,11 +72,13 @@ UserLevelService.onUserCoinsChanged = function(userId, coinsUp, callback) {
         .execQ()
         .then(function(user){
             result.user = user;
+            logger.info('UserLevelService.onUserCoinsChanged, result.user.userId=',user.userId);
             logger.info('UserLevelService.onUserCoinsChanged, user.ddzProfile.levelName=',user.ddzProfile.levelName);
             for(var i=0;i<levelConfigCache.levels.length;i++){
                 var u_level = levelConfigCache.levels[i];
                 //logger.info('UserService.getUserLevelName, u_level=',u_level);
-                if (user.ddzProfile.coins >= u_level.min_coins && (user.ddzProfile.coins < u_level.max_coins || u_level.max_coins == 0)) {
+                var user_coins = user.ddzProfile.coins;
+                if (user_coins >= u_level.min_coins && (user_coins < u_level.max_coins || u_level.max_coins == 0)) {
                     logger.info('UserLevelService.onUserCoinsChanged, level_name=',u_level.level_name);
                     if (user.ddzProfile.levelName != u_level.level_name) {
                         result.levelChanged = true;
@@ -83,6 +86,7 @@ UserLevelService.onUserCoinsChanged = function(userId, coinsUp, callback) {
                     }
                 }
             }
+            logger.info('UserLevelService.onUserCoinsChanged, user.ddzProfile.coins=',user.ddzProfile.coins);
             return user.ddzProfile.saveQ();
         })
         .then(function(ddzProfile){
@@ -115,4 +119,5 @@ UserLevelService.onUserCoinsChanged = function(userId, coinsUp, callback) {
         });
 
 };
+
 

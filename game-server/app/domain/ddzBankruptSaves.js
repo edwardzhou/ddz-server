@@ -17,7 +17,6 @@ var DdzBankruptSaveSchema = new mongoose.Schema({
     count: Number,    // 奖励周期
     threshold: Number,    // 奖励周期
     saved_times: {type: Number, default: 0},    // 奖励周期
-    total_login_days: Number, // 已经连续登录天数
     autoRemoveAt: {type: Date, expires: 0},
     save_detail: {type: Schema.Types.Mixed, default: {_placeholder:0}},       // 奖励定义 (自定义配置)
     created_at: {type: Date, default: Date.now},
