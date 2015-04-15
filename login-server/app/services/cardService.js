@@ -13,6 +13,7 @@ var Result = require('../domain/result');
 var CardInfo = require('../AI/CardInfo');
 var CardAnalyzer = require('../AI/CardAnalyzer');
 var tableService = require('./tableService');
+var userService = require('./userService');
 
 var AIEngine = require('../AI/AIEngine');
 //var roomService = require('./roomService');
@@ -676,6 +677,7 @@ exp.gameOver = function(table, player, cb) {
   var params = {table: table, player: player, seqNo: -1};
   var actionResult = null;
   var pokeGame = table.pokeGame;
+  var gameRoom = table.room;
   // 获取动作拦截器
   var actionFilter = this.getActionFilters(GameAction.GAME_OVER);
   // 清除牌局定时器
@@ -713,15 +715,15 @@ exp.gameOver = function(table, player, cb) {
 
       actionResult.timing = 15;
 
+      // 保存牌局信息，供后续分析用
+      pokeGame.save();
+
       // 通知结算结果
       var eventName = GameEvent.gameOver;
       self.messageService.pushTableMessage(table,
         eventName,
         actionResult,
         null );
-
-      // 保存牌局信息，供后续分析用
-      pokeGame.save();
 
       // 循环通知每一个真实玩家的金币变化
       for (var pIndex=0; pIndex< pokeGame.players.length; pIndex++) {
@@ -737,6 +739,41 @@ exp.gameOver = function(table, player, cb) {
           }
           // 清楚玩家的牌局信息
           p.userSession.sset({pokeGameId: null, tableId: null});
+
+          userService.doUserCoinsQtyCheckingQ(p, gameRoom)
+            .then(function(returnValues) {
+              if (returnValues == null) {
+                return;
+              }
+
+              var roomAttrs = {only:['roomId', 'roomName', 'minCoinsQty', 'maxCoinsQty']};
+              var msg = {
+                userId: returnValues.player.userId,
+                room: returnValues.room.toParams(roomAttrs),
+                roomUpgrade: returnValues.roomGrade
+              };
+
+              if (msg.room.roomId != gameRoom.roomId) {
+                msg.curRoom = gameRoom.toParams(roomAttrs);
+              }
+
+              if (!!returnValues.needRecharge) {
+                msg.ddzGoodsPackage = returnValues.ddzGoodsPackage.toParams({
+                  only: ['packageId', 'packageName', 'packageIcon', 'packageDesc', 'price']
+                });
+              }
+
+              var uidSid = returnValues.player.getUidSid();
+
+              setTimeout(function() {
+                 self.messageService.pushMessage('onRoomUpgrade', msg, [uidSid]);
+              }, 500);
+
+            })
+            .fail(function(err) {
+              logger.error('[CardService.gameOver] error: ', err);
+            })
+            .done();
         }
       }
 

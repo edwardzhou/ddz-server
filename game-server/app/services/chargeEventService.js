@@ -132,7 +132,7 @@ ChargeEventService.dispatchChargeEvent = function(event) {
         var msgBody = {
           success: true,
           purchaseOrderId: purchaseOrder.orderId,
-          user: user.toParams(['authToken', 'lastSignedInTime'])
+          user: user.toParams({exclude:['authToken', 'lastSignedInTime']})
         };
 
         return pushMessageQ('onChargeResult',

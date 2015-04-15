@@ -5,6 +5,7 @@ var GameTable = require('./gameTable');
 var PlayerState = require('../consts/consts').PlayerState;
 var Player = require('./player');
 var User = require("./user");
+var DomainUtils = require("./domainUtils");
 
 /**
  * 房间Mongodb架构的字段定义
@@ -247,8 +248,9 @@ roomSchema.methods.gameOver = function(playerId) {
   player.reset();
 };
 
-var __toParams = function(model, excludeAttrs) {
-  var transObj = {
+var __toParams = function(model, opts) {
+
+  transObj = {
     roomId: model.roomId,
     roomName: model.roomName,
     roomDesc: model.roomDesc,
@@ -261,19 +263,15 @@ var __toParams = function(model, excludeAttrs) {
     roomType: model.roomType
   };
 
-  if (!!excludeAttrs) {
-    for (var index=0; index<excludeAttrs.length; index++) {
-      delete transObj[excludeAttrs[index]];
-    }
-  }
+  transObj = DomainUtils.adjustAttributes(transObj, opts);
 
   return transObj;
 };
 
 roomSchema.statics.toParams = __toParams;
 
-roomSchema.methods.toParams = function(excludeAttrs) {
-  return __toParams(this, excludeAttrs);
+roomSchema.methods.toParams = function(opts) {
+  return __toParams(this, opts);
 };
 
 roomSchema.methods.reloadFromDb = function() {

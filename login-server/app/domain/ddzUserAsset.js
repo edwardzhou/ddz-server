@@ -7,6 +7,7 @@ var mongoose = require('mongoose-q')();
 var Schema = mongoose.Schema;
 var crypto = require('crypto');
 var uuid = require('node-uuid');
+var DomainUtils = require("./domainUtils");
 
 /**
  * 道具
@@ -33,7 +34,7 @@ var ddzUserAssetSchema = new mongoose.Schema({
 ddzUserAssetSchema.index({userId: 1});
 
 
-var __toParams = function(model, excludeAttrs) {
+var __toParams = function(model, opts) {
   var transObj = {
     _id: model.id,
     goodsId: model.goodsId,
@@ -49,19 +50,15 @@ var __toParams = function(model, excludeAttrs) {
     sortIndex: model.sortIndex
   };
 
-  if (!!excludeAttrs) {
-    for (var index=0; index<excludeAttrs.length; index++) {
-      delete transObj[excludeAttrs[index]];
-    }
-  }
+  transObj = DomainUtils.adjustAttributes(transObj, opts);
 
   return transObj;
 };
 
 ddzUserAssetSchema.statics.toParams = __toParams;
 
-ddzUserAssetSchema.methods.toParams = function(excludeAttrs) {
-  return __toParams(this, excludeAttrs);
+ddzUserAssetSchema.methods.toParams = function(opts) {
+  return __toParams(this, opts);
 };
 
 

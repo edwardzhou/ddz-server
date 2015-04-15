@@ -7,6 +7,7 @@ var Schema = mongoose.Schema;
 var uuid = require('node-uuid');
 var utils = require('../util/utils');
 var User = require('./user');
+var DomainUtils = require("./domainUtils");
 
 /**
  * 任务定义
@@ -41,7 +42,7 @@ var userTaskSchema = new mongoose.Schema({
 });
 
 
-var __toParams = function(model, excludeAttrs) {
+var __toParams = function(model, opts) {
   var transObj = {
     userId: 0,
     taskId: model.taskId,
@@ -58,22 +59,18 @@ var __toParams = function(model, excludeAttrs) {
   };
 
   if (!!model.user_id || !!model.user_id.userId) {
-    transObj.userId = model.user_id.user_id;
+    transObj.userId = model.user_id.userId;
   }
 
-  if (!!excludeAttrs) {
-    for (var index=0; index<excludeAttrs.length; index++) {
-      delete transObj[excludeAttrs[index]];
-    }
-  }
+  transObj = DomainUtils.adjustAttributes(transObj, opts);
 
   return transObj;
 };
 
 userTaskSchema.statics.toParams = __toParams;
 
-userTaskSchema.methods.toParams = function(excludeAttrs) {
-  return __toParams(this, excludeAttrs);
+userTaskSchema.methods.toParams = function(opts) {
+  return __toParams(this, opts);
 };
 
 userTaskSchema.statics.findByUserIdQ = function(userId, onlyActivated) {
