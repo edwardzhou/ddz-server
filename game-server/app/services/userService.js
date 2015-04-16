@@ -19,6 +19,7 @@ var utils = require('../util/utils');
 var crypto = require('crypto');
 var messageService = require('./messageService');
 var userLevelService = require('./userLevelService');
+var roomService = require('./roomService');
 
 var Q = require('q');
 var removeUserSessionQ = Q.nbind(UserSession.removeAllByUserId, UserSession);
@@ -567,7 +568,7 @@ UserService.findMatchingGameRoom = function(user, room_id, callback) {
   GameRoom.getActiveRoomsQ(room_id)
     .then(function(rooms) {
       // 如果要进入的房间不存在
-      if (!!rooms || rooms.length == 0) {
+      if (!!rooms && rooms.length == 0) {
         // 则选出所有房间, 尝试为用户匹配合适的房间
         return GameRoom.getActiveRoomsQ();
       }
@@ -604,8 +605,8 @@ UserService.findMatchingGameRoom = function(user, room_id, callback) {
     })
     .then(function(){
       if (!!results.room) {
-        returnValues.room = room;
-        returnValues.room_id = room_d = results.room.roomId;
+        returnValues.room = results.room;
+        returnValues.room_id = results.room.roomId;
         returnValues.needRecharge = 0;
       } else {
         returnValues.ddzGoodsPackage = results.ddzGoodsPackage;
@@ -639,11 +640,26 @@ UserService.doUserCoinsQtyChecking = function(player, gameRoom, callback) {
 
   var ddzGoodsPkg = null;
 
-  DdzGoodsPackage.findOneQ({packageId: gameRoom.recruitPackageId})
+  //roomService.leave(gameRoom.roomId, player.userId);
+
+  var curRoomDdzPkg = null;
+  var room_id = null;
+  if (roomGrade <= 0) {
+    //room_id = gameRoom.roomId;
+  }
+
+  Q.fcall(function() {
+    if (roomGrade <= 0) {
+      return DdzGoodsPackage.findOneQ({packageId: gameRoom.recruitPackageId});
+    }
+
+    return null;
+  })
     .then(function(ddzPkg) {
-      logger.debug('ddzPkg: ', ddzPkg);
-      ddzGoodsPkg = ddzPkg;
-      return UserService.findMatchingGameRoomQ(player, gameRoom.roomId);
+      if (!!ddzPkg) {
+        curRoomDdzPkg = ddzPkg;
+      }
+      return UserService.findMatchingGameRoomQ(player, room_id);
     })
     .then(function(returnValues) {
       logger.debug('returnValues: ', returnValues);
@@ -651,8 +667,10 @@ UserService.doUserCoinsQtyChecking = function(player, gameRoom, callback) {
         roomGrade = 0; // no change
       }
 
+      returnValues.curRoomDdzPkg = curRoomDdzPkg;
       returnValues.roomGrade = roomGrade;
       returnValues.player = player;
+      returnValues.curRoom = gameRoom;
       //returnValues.originRoomGoodsPkg = ddzGoodsPkg;
       logger.debug('return returnValues: ', returnValues);
       utils.invokeCallback(callback, null, returnValues);

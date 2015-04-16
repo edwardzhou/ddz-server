@@ -108,10 +108,10 @@ remoteHandler.enter = function(uid, sid, sessionId, room_id, cb) {
 //        messageService.pushTableMessage(table, "onPlayerJoin", msg, null);
 //      });
 
-      roomService.enterRoom(player, room_id, -1, self._onPreStartNewGame);
+      var room = roomService.enterRoom(player, room_id, -1, self._onPreStartNewGame);
 
       // 返回结果
-      utils.invokeCallback(cb, null, thisServerId, {});
+      utils.invokeCallback(cb, null, thisServerId, room.toParams());
 
     });
   });

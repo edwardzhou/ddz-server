@@ -108,7 +108,7 @@ var doLoginPost = function(req, res) {
     .then(function() {
       var resp = {};
       resp.errCode = 0; // SUCCESS
-      resp.user = results.user.toParams(['ddzLoginRewards']);
+      resp.user = results.user.toParams({exclude:['ddzLoginRewards']});
       resp.sessionToken = results.userSession.sessionToken;
       resp.sk = results.userSession.sessionKK;
       var len = results.serverInfo.gameServers.length;

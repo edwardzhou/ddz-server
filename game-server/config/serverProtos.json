@@ -51,6 +51,15 @@
     "optional uInt32 lordUserId": 9,
     "optional GrabbingLord grabbingLord": 10
   },
+  "message GameRoom": {
+    "required uInt32 roomId": 1,
+    "optional string roomName": 2,
+    "optional string roomDesc": 3,
+    "optional uInt32 minCoinsQty": 4,
+    "optional uInt32 maxCoinsQty": 5,
+    "optional uInt32 ante": 6,
+    "optional float rake": 7
+  },
   "onPlayerJoin": {
     "required uInt32 tableId": 1,
     "repeated Player players": 2
@@ -136,15 +145,11 @@
     "repeated GameRoom rooms": 1
   },
   "ddz.entryHandler.enterRoom": {
-    "message Table": {
-      "required uInt32 tableId": 1,
-      "repeated Player players": 2
-    },
-    "optional string room_server_id": 1,
-    "optional string server_id": 2,
-    "optional uInt32 timing": 3,
-    "required Table table": 4,
-    "required Result result": 5
+    "required Result result": 1,
+    "optional string room_server_id": 2,
+    "optional string server_id": 3,
+    "optional uInt32 timing": 4,
+    "optional GameRoom room": 5
   },
   "ddz.gameHandler.playCard": {
     "required Result result": 1

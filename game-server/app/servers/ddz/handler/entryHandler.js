@@ -176,8 +176,8 @@ Handler.prototype.enterRoom = function(msg, session, next) {
     session.push('closed_bound');
   }
 
-  this.app.rpc.area.roomRemote.enter(session, uid, this.app.get('serverId'), session.id, room_id, function(err, room_server_id, table) {
-    logger.info('enter result: ', err, room_server_id, table);
+  this.app.rpc.area.roomRemote.enter(session, uid, this.app.get('serverId'), session.id, room_id, function(err, room_server_id, room) {
+    logger.info('enter result: ', err, room_server_id, room);
     if (!!err) {
       next(null, {err: err});
       return;
@@ -197,6 +197,7 @@ Handler.prototype.enterRoom = function(msg, session, next) {
 //    };
     var resp = {};
     resp.result = new Result(ErrorCode.SUCCESS);
+    resp.room = room;
 
 
     logger.info("[enterRoom] area.roomRemote.enter return resp: %j", resp);
