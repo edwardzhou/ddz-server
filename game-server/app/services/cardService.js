@@ -746,27 +746,50 @@ exp.gameOver = function(table, player, cb) {
                 return;
               }
 
-              var roomAttrs = {only:['roomId', 'roomName', 'minCoinsQty', 'maxCoinsQty']};
-              var msg = {
+              var roomAttrs = {
+                only:['roomId', 'roomName', 'minCoinsQty', 'maxCoinsQty', 'ante', 'rake']
+              };
+              var pkgAttrs = {
+                only: ['packageId', 'packageName', 'packageIcon', 'packageDesc', 'price']
+              };
+              var msgBack = {
                 userId: returnValues.player.userId,
                 room: returnValues.room.toParams(roomAttrs),
-                roomUpgrade: returnValues.roomGrade
+                roomUpgrade: returnValues.roomGrade,
+                message: ''
               };
 
-              if (msg.room.roomId != gameRoom.roomId) {
-                msg.curRoom = gameRoom.toParams(roomAttrs);
+              if (returnValues.roomGrade > 0) {
+                msgBack.msg = util.format('真是高手啊, 牌打得不错, 恭喜您进升级到 %s.\n请再接再厉, 发挥更高水平 :) ~',
+                  returnValues.room.roomName);
+              } else if (returnValues.roomGrade < 0) {
+                msgBack.msg = util.format('额哦~ 马有失蹄, 人有失手, 您将降级到 %s.\n 购买 [%s] 避免降级? \n%s\n￥ %s 元.',
+                  returnValues.room.roomName,
+                  returnValues.curRoomDdzPkg.packageName,
+                  returnValues.curRoomDdzPkg.packageDesc,
+                  returnValues.curRoomDdzPkg.price / 10);
+                msgBack.curRoomDdzPkg = returnValues.curRoomDdzPkg.toParams(pkgAttrs);
+              } else {
+                msgBack.msg = util.format('您的金币 %d 已低于本场最低要求 %d. \n 请购买 [%s] 补充金币. \n%s\n￥ %s 元.',
+                  returnValues.player.ddzProfile.coins,
+                  returnValues.curRoom.minCoinsQty,
+                  returnValues.ddzGoodsPackage.packageName,
+                  returnValues.ddzGoodsPackage.packageDesc,
+                  returnValues.ddzGoodsPackage.price / 10);
+              }
+
+              if (msgBack.room.roomId != gameRoom.roomId) {
+                msgBack.curRoom = gameRoom.toParams(roomAttrs);
               }
 
               if (!!returnValues.needRecharge) {
-                msg.ddzGoodsPackage = returnValues.ddzGoodsPackage.toParams({
-                  only: ['packageId', 'packageName', 'packageIcon', 'packageDesc', 'price']
-                });
+                msgBack.ddzGoodsPackage = returnValues.ddzGoodsPackage.toParams(pkgAttrs);
               }
 
               var uidSid = returnValues.player.getUidSid();
 
               setTimeout(function() {
-                 self.messageService.pushMessage('onRoomUpgrade', msg, [uidSid]);
+                 self.messageService.pushMessage('onRoomUpgrade', msgBack, [uidSid]);
               }, 500);
 
             })
