@@ -139,7 +139,7 @@ Handler.prototype.signUp = function(msg, session, next) {
     })
     .then(function() {
       var resp = {
-        user : results.user.toParams(['ddzLoginRewards']),
+        user : results.user.toParams({exclude:['ddzLoginRewards']}),
         sessionToken : results.userSession.sessionToken
       };
 

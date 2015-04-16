@@ -5,6 +5,8 @@ var PlayerState = require('../consts/consts').PlayerState;
 var PlayerRole = require('../consts/consts').PlayerRole;
 var cardUtil = require('../util/cardUtil');
 var DdzProfile = require('./ddzProfile');
+var DomainUtils = require("./domainUtils");
+var DomainUtils = require("./domainUtils");
 
 var Player = function(opts) {
   opts = opts || {};
@@ -34,7 +36,7 @@ util.inherits(Player, EventEmitter);
 
 module.exports = Player;
 
-var __toParams = function(model, excludeAttrs) {
+var __toParams = function(model, opts) {
   var transObj = {
     userId: model.userId,
     nickName: model.nickName,
@@ -45,27 +47,16 @@ var __toParams = function(model, excludeAttrs) {
     role: model.role
   };
 
-  if (!!model.ddzProfile) {
-    if (!!model.ddzProfile.toParams) {
-      transObj.ddzProfile = model.ddzProfile.toParams();
-    } else {
-      transObj.ddzProfile = model.ddzProfile;
-    }
-  }
-
-  if (!!excludeAttrs) {
-    for (var index=0; index<excludeAttrs.length; index++) {
-      delete transObj[excludeAttrs[index]];
-    }
-  }
+  transObj = DomainUtils.adjustAttributes(transObj, opts);
+  DomainUtils.transAttr(transObj, model, opts, 'ddzProfile');
 
   return transObj;
 };
 
 Player.toParams = __toParams;
 
-Player.prototype.toParams = function(excludeAttrs) {
-  return __toParams(this, excludeAttrs);
+Player.prototype.toParams = function(opts) {
+  return __toParams(this, opts);
 };
 
 

@@ -4,6 +4,7 @@ var EventEmitter = require('events').EventEmitter;
 var mongoose = require('mongoose');
 var uuid = require('node-uuid');
 var utils = require('../util/utils');
+var DomainUtils = require("./domainUtils");
 
 /**
  * 牌局里玩家信息结构
@@ -80,7 +81,7 @@ var pokeGameSchema = new mongoose.Schema({
 });
 
 
-var __toParams = function(model, excludeAttrs) {
+var __toParams = function(model, opts) {
   var transObj = {
     gameId: model.gameId,
     roomId: model.roomId,
@@ -97,11 +98,7 @@ var __toParams = function(model, excludeAttrs) {
     transObj.players.push( model.players[index].toParams() );
   }
 
-  if (!!excludeAttrs) {
-    for (var index=0; index<excludeAttrs.length; index++) {
-      delete transObj[excludeAttrs[index]];
-    }
-  }
+  transObj = DomainUtils.adjustAttributes(transObj, opts);
 
   return transObj;
 };

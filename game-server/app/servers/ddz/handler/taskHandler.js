@@ -140,7 +140,7 @@ Handler.prototype.takeTaskBonus = function (msg, session, next) {
         today.setSeconds(59);
         today.setMilliseconds(0);
 
-        var userParams = user.toParams(['authToken', 'lastSignedInTime']);
+        var userParams = user.toParams({exclude:['authToken', 'lastSignedInTime']});
         messageService.pushMessage('onUserInfoUpdate', {user: userParams}, [{uid: userId, sid: session.frontendId}]);
         userTask.bonusDelivered = true;
         userTask.autoRemoveAt = today.getTime();

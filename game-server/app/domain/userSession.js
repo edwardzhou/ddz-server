@@ -9,6 +9,7 @@ var uuid = require('node-uuid');
 var utils = require('../util/utils');
 var xxtea = require('../util/xxtea');
 var Result = require('./result');
+var DomainUtils = require("./domainUtils");
 
 /**
  * 用户会话数据

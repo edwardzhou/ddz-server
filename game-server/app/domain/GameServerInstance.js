@@ -1,4 +1,5 @@
 var mongoose = require('mongoose-q')();
+var DomainUtils = require("./domainUtils");
 
 var GameServerInstanceSchema = mongoose.Schema({
   serverId: String,

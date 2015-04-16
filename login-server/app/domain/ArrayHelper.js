@@ -30,6 +30,14 @@ Array.prototype.exclude = function(otherArray) {
   return this;
 };
 
+Array.indexOf = function(theArray, item) {
+  if (!!theArray) {
+    return Array.prototype.indexOf.call(theArray, item);
+  }
+
+  return -1;
+};
+
 Array.prototype.toParams = function(excludeAttrs) {
   var result = [];
   var obj;

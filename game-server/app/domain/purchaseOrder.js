@@ -4,6 +4,7 @@
 var mongoose = require('mongoose-q')();
 
 var uuid = require('node-uuid');
+var DomainUtils = require("./domainUtils");
 
 
 /**
@@ -56,7 +57,7 @@ PurchaseOrderSchema.statics.createOrderQ = function(userId, goodsPackage, payMet
 };
 
 
-var __toParams = function(model, excludeAttrs) {
+var __toParams = function(model, opts) {
   var transObj = {
     orderId: model.orderId,
     userId: model.userId,
@@ -68,23 +69,16 @@ var __toParams = function(model, excludeAttrs) {
     status: model.status
   };
 
-  if (!!model.payment) {
-    transObj.payment = model.payment;
-  }
-
-  if (!!excludeAttrs) {
-    for (var index=0; index<excludeAttrs.length; index++) {
-      delete transObj[excludeAttrs[index]];
-    }
-  }
+  transObj = DomainUtils.adjustAttributes(transObj, opts);
+  DomainUtils.transAttr(transObj, model, opts, 'payment');
 
   return transObj;
 };
 
 PurchaseOrderSchema.statics.toParams = __toParams;
 
-PurchaseOrderSchema.methods.toParams = function(excludeAttrs) {
-  return __toParams(this, excludeAttrs);
+PurchaseOrderSchema.methods.toParams = function(opts) {
+  return __toParams(this, opts);
 };
 
 

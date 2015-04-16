@@ -133,9 +133,10 @@ Handler.prototype.tryEnterRoom = function(msg, session, next) {
 
       } else {
         var resp = new Result(ErrorCode.COINS_NOT_ENOUGH, 0, '金币不足!');
-        resp.recruitMsg = format('您要进入的[%s]要求金币数至少在%d以上, 是否充值进入?\n%s ￥%s元',
+        resp.recruitMsg = format('您要进入的[%s]要求金币数至少在%d以上, 是否充值进入?\n%s ￥%s元\n%s',
           results.rooms[0].roomName, results.rooms[0].minCoinsQty, results.ddzGoodsPackage.packageName,
-          results.ddzGoodsPackage.price / 100);
+          results.ddzGoodsPackage.price / 100,
+          results.ddzGoodsPackage.packageDesc);
         resp.pkg = results.ddzGoodsPackage.toParams();
         resp.room = results.rooms[0].toParams();
         next(null, resp);

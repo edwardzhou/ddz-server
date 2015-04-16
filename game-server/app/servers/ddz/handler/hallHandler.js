@@ -78,7 +78,7 @@ Handler.prototype.getAssetItems = function(msg, session, next) {
         reducedAssets.push(assetsMap[key]);
       }
 
-      utils.invokeCallback(next, null, {assets: reducedAssets.toParams(['goodsAction'])});
+      utils.invokeCallback(next, null, {assets: reducedAssets.toParams({exclude:['goodsAction']})});
     })
     .fail(function(err){
       logger.error('[HallHandler.getAssetItems] Error: ', err);

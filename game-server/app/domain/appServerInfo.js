@@ -2,6 +2,7 @@
  * Created by edwardzhou on 15/3/3.
  */
 
+var DomainUtils = require("./domainUtils");
 var mongoose = require('mongoose-q')();
 
 /**
@@ -15,7 +16,7 @@ var HostItemSchema = new mongoose.Schema({
   memo: String
 });
 
-__HostItemToParams = function(model, excludeAttrs) {
+__HostItemToParams = function(model, opts) {
   var transObj = {
     host: model.host,
     port: model.port,
@@ -23,20 +24,15 @@ __HostItemToParams = function(model, excludeAttrs) {
     enabled: model.enabled
   };
 
-  if (!!excludeAttrs) {
-    for (var index=0; index<excludeAttrs.length; index++) {
-      delete transObj[excludeAttrs[index]];
-    }
-  }
+  DomainUtils.adjustAttributes(transObj, opts);
 
   return transObj;
 };
 
 HostItemSchema.statics.toParams = __HostItemToParams;
-HostItemSchema.methods.toParams = function(excludeAttrs) {
-  return __HostItemToParams(this, excludeAttrs);
+HostItemSchema.methods.toParams = function(opts) {
+  return __HostItemToParams(this, opts);
 };
-
 
 
 /**
@@ -64,7 +60,7 @@ var itemsToParams = function(items) {
   return result;
 };
 
-var __toParams = function(model, excludeAttrs) {
+var __toParams = function(model, opts) {
   var transObj = {
     appPkgName: model.appPkgName,
     appName: model.appName,
@@ -75,19 +71,15 @@ var __toParams = function(model, excludeAttrs) {
     enabled: model.enabled
   };
 
-  if (!!excludeAttrs) {
-    for (var index=0; index<excludeAttrs.length; index++) {
-      delete transObj[excludeAttrs[index]];
-    }
-  }
+  transObj = DomainUtils.adjustAttributes(transObj, opts);
 
   return transObj;
 };
 
 appServerInfoSchema.statics.toParams = __toParams;
 
-appServerInfoSchema.methods.toParams = function(excludeAttrs) {
-  return __toParams(this, excludeAttrs);
+appServerInfoSchema.methods.toParams = function(opts) {
+  return __toParams(this, opts);
 };
 
 appServerInfoSchema.methods.addGameServer = function(server) {

@@ -112,7 +112,7 @@ GrabLordAction.doGrabLord = function(gameTable, player, lordAction, cb) {
   }
 
   var msgBack = {};
-  var excludedPlayerAttrs = ['nickName', 'headIcon'];
+  var paramsAttrs = {exclude:['nickName', 'headIcon']};
   if (isGiveUp) {
     // 流局
     msgBack = {
@@ -124,9 +124,9 @@ GrabLordAction.doGrabLord = function(gameTable, player, lordAction, cb) {
       grabState: grabState,
       abandoned: true,
       players: [
-        pokeGame.players[0].toParams(excludedPlayerAttrs),
-        pokeGame.players[1].toParams(excludedPlayerAttrs),
-        pokeGame.players[2].toParams(excludedPlayerAttrs)
+        pokeGame.players[0].toParams(paramsAttrs),
+        pokeGame.players[1].toParams(paramsAttrs),
+        pokeGame.players[2].toParams(paramsAttrs)
       ]
     }
   } else if (isGrabLordFinish) {
@@ -140,9 +140,9 @@ GrabLordAction.doGrabLord = function(gameTable, player, lordAction, cb) {
       userId: player.userId,
       lordPokeCards: CardUtil.pokeCardsToString(table.lordPokeCards),
       players: [
-        pokeGame.players[0].toParams(excludedPlayerAttrs),
-        pokeGame.players[1].toParams(excludedPlayerAttrs),
-        pokeGame.players[2].toParams(excludedPlayerAttrs)
+        pokeGame.players[0].toParams(paramsAttrs),
+        pokeGame.players[1].toParams(paramsAttrs),
+        pokeGame.players[2].toParams(paramsAttrs)
       ]
     };
   } else {
@@ -159,9 +159,9 @@ GrabLordAction.doGrabLord = function(gameTable, player, lordAction, cb) {
       userId: player.userId,
       nextUserId: nextPlayer.userId,
       players: [
-        pokeGame.players[0].toParams(excludedPlayerAttrs),
-        pokeGame.players[1].toParams(excludedPlayerAttrs),
-        pokeGame.players[2].toParams(excludedPlayerAttrs)
+        pokeGame.players[0].toParams(paramsAttrs),
+        pokeGame.players[1].toParams(paramsAttrs),
+        pokeGame.players[2].toParams(paramsAttrs)
       ]
     }
   }

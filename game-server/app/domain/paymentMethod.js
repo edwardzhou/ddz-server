@@ -3,6 +3,7 @@
  */
 
 var mongoose = require('mongoose-q')();
+var DomainUtils = require("./domainUtils");
 
 
 /**
@@ -45,7 +46,7 @@ paymentMethodSchema.methods.getPackagePaymentsQ = function(populate, onlyEnabled
 };
 
 
-var __toParams = function(model, excludeAttrs) {
+var __toParams = function(model, opts) {
   var transObj = {
     methodId: model.methodId,
     methodName: model.methodName,
@@ -54,19 +55,15 @@ var __toParams = function(model, excludeAttrs) {
     enabled: model.enabled
   };
 
-  if (!!excludeAttrs) {
-    for (var index=0; index<excludeAttrs.length; index++) {
-      delete transObj[excludeAttrs[index]];
-    }
-  }
+  transObj = DomainUtils.adjustAttributes(transObj, opts);
 
   return transObj;
 };
 
 paymentMethodSchema.statics.toParams = __toParams;
 
-paymentMethodSchema.methods.toParams = function(excludeAttrs) {
-  return __toParams(this, excludeAttrs);
+paymentMethodSchema.methods.toParams = function(opts) {
+  return __toParams(this, opts);
 };
 
 

@@ -7,6 +7,7 @@ var mongoose = require('mongoose-q')();
 var Schema = mongoose.Schema;
 var uuid = require('node-uuid');
 var utils = require('../util/utils');
+var DomainUtils = require("./domainUtils");
 
 /**
  * 任务定义
@@ -33,7 +34,7 @@ var taskDefSchema = new mongoose.Schema({
 });
 
 
-var __toParams = function(model, excludeAttrs) {
+var __toParams = function(model, opts) {
   var transObj = {
     userId: 0,
     taskId: model.taskId,
@@ -46,19 +47,15 @@ var __toParams = function(model, excludeAttrs) {
     progressDesc: model.progressDesc
   };
 
-  if (!!excludeAttrs) {
-    for (var index=0; index<excludeAttrs.length; index++) {
-      delete transObj[excludeAttrs[index]];
-    }
-  }
+  transObj = DomainUtils.adjustAttributes(transObj, opts);
 
   return transObj;
 };
 
 taskDefSchema.statics.toParams = __toParams;
 
-taskDefSchema.methods.toParams = function(excludeAttrs) {
-  return __toParams(this, excludeAttrs);
+taskDefSchema.methods.toParams = function(opts) {
+  return __toParams(this, opts);
 };
 
 
