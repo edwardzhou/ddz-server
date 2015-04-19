@@ -17,6 +17,7 @@ var ddzLoginRewardsSchema = new mongoose.Schema({
     login_days: Number,    // 奖励周期
     total_login_days: Number, // 已经连续登录天数
     last_login_date: {type: Date, default: Date.now}, // 最后一次登录日期
+    auto_delete: {type: Date, expires: 0}, // 自动删除
     reward_detail: {type: Schema.Types.Mixed, default: {_placeholder:0}},       // 奖励定义 (自定义配置)
     created_at: {type: Date, default: Date.now},
     updated_at: {type: Date, default: Date.now}

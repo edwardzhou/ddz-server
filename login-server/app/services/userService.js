@@ -19,6 +19,7 @@ var utils = require('../util/utils');
 var crypto = require('crypto');
 var messageService = require('./messageService');
 var userLevelService = require('./userLevelService');
+var roomService = require('./roomService');
 
 var Q = require('q');
 var removeUserSessionQ = Q.nbind(UserSession.removeAllByUserId, UserSession);
@@ -26,6 +27,9 @@ var createUserSessionQ = Q.nbind(UserSession.createSession, UserSession);
 
 var pomeloApp = null;
 var UserService = module.exports;
+
+var MILLSECONDS_A_DAY = 3600 * 24 * 1000;
+
 
 var _genPasswordDigest = function (password, salt) {
   return crypto.createHash('md5').update(password + "_" + salt).digest('hex');
@@ -216,7 +220,6 @@ UserService.handleLoginReward = function (cur_user, ddzLoginReward, loginRewardT
   today.setMinutes(0);
   today.setSeconds(0);
   today.setMilliseconds(0);
-  var oneDayMillSeconds = 3600 * 24 * 1000;
 
   if (ddzLoginReward == null) {
     logger.info('LoginRewardTemplate.findOneQ() then ddzLoginReward == null');
@@ -228,11 +231,12 @@ UserService.handleLoginReward = function (cur_user, ddzLoginReward, loginRewardT
     ddzLoginReward.total_login_days = 1;
     ddzLoginReward.reward_detail = loginRewardTemplate.reward_detail;
     ddzLoginReward.reward_detail["day_1"]["status"] = 1;
+    ddzLoginReward.auto_delete = today.getTime() + 2 * MILLSECONDS_A_DAY - 1000; // 第二天的23:59:59 后自动删除
   }
   else {
     logger.info('LoginRewardTemplate.findOneQ() then ddzLoginReward == null else');
     var diff_login_time = today.getTime() - ddzLoginReward.last_login_date;
-    if (diff_login_time > oneDayMillSeconds) {
+    if (diff_login_time > MILLSECONDS_A_DAY) {
       logger.info('LoginRewardTemplate.findOneQ() then ddzLoginReward == null else last_login_date_in_day_date.getDate() != today.getDate()');
       ddzLoginReward.last_login_date = today.getTime();
       ddzLoginReward.total_login_days = 1;
@@ -240,12 +244,22 @@ UserService.handleLoginReward = function (cur_user, ddzLoginReward, loginRewardT
       ddzLoginReward.reward_detail = loginRewardTemplate.reward_detail;
       ddzLoginReward.reward_detail["day_1"]["status"] = 1;
     }
-    else if (diff_login_time == oneDayMillSeconds) {
+    else if (diff_login_time == MILLSECONDS_A_DAY) {
       logger.info('LoginRewardTemplate.findOneQ() then ddzLoginReward == null else last_login_date_in_day_date.getDate() != today.getDate() else');
       ddzLoginReward.last_login_date = today.getTime();
-      ddzLoginReward.total_login_days = ddzLoginReward.total_login_days + 1;
-      var v_day = 'day_' + ddzLoginReward.total_login_days;
-      ddzLoginReward.reward_detail[v_day]["status"] = 1;
+      if (ddzLoginReward.total_login_days < ddzLoginReward.login_days) {
+        ddzLoginReward.total_login_days = ddzLoginReward.total_login_days + 1;
+        var v_day = 'day_' + ddzLoginReward.total_login_days;
+        ddzLoginReward.reward_detail[v_day]["status"] = 1;
+
+        if (ddzLoginReward.total_login_days < ddzLoginReward.login_days) {
+          // 如果连续登录天数未达到周期天数, 则在第二天的23:59:59 后自动删除
+          ddzLoginReward.auto_delete = today.getTime() + 2 * MILLSECONDS_A_DAY - 1000;
+        } else {
+          // 连续天数已经达到周期天数, 在 当天 23:59:59 后自动删除, 以开始新的奖励周期
+          ddzLoginReward.auto_delete = today.getTime() + MILLSECONDS_A_DAY - 1000;
+        }
+      }
       ddzLoginReward.markModified('reward_detail');
     }
   }
@@ -567,7 +581,7 @@ UserService.findMatchingGameRoom = function(user, room_id, callback) {
   GameRoom.getActiveRoomsQ(room_id)
     .then(function(rooms) {
       // 如果要进入的房间不存在
-      if (!!rooms || rooms.length == 0) {
+      if (!!rooms && rooms.length == 0) {
         // 则选出所有房间, 尝试为用户匹配合适的房间
         return GameRoom.getActiveRoomsQ();
       }
@@ -604,8 +618,8 @@ UserService.findMatchingGameRoom = function(user, room_id, callback) {
     })
     .then(function(){
       if (!!results.room) {
-        returnValues.room = room;
-        returnValues.room_id = room_d = results.room.roomId;
+        returnValues.room = results.room;
+        returnValues.room_id = results.room.roomId;
         returnValues.needRecharge = 0;
       } else {
         returnValues.ddzGoodsPackage = results.ddzGoodsPackage;
@@ -639,11 +653,26 @@ UserService.doUserCoinsQtyChecking = function(player, gameRoom, callback) {
 
   var ddzGoodsPkg = null;
 
-  DdzGoodsPackage.findOneQ({packageId: gameRoom.recruitPackageId})
+  //roomService.leave(gameRoom.roomId, player.userId);
+
+  var curRoomDdzPkg = null;
+  var room_id = null;
+  if (roomGrade <= 0) {
+    //room_id = gameRoom.roomId;
+  }
+
+  Q.fcall(function() {
+    if (roomGrade <= 0) {
+      return DdzGoodsPackage.findOneQ({packageId: gameRoom.recruitPackageId});
+    }
+
+    return null;
+  })
     .then(function(ddzPkg) {
-      logger.debug('ddzPkg: ', ddzPkg);
-      ddzGoodsPkg = ddzPkg;
-      return UserService.findMatchingGameRoomQ(player, gameRoom.roomId);
+      if (!!ddzPkg) {
+        curRoomDdzPkg = ddzPkg;
+      }
+      return UserService.findMatchingGameRoomQ(player, room_id);
     })
     .then(function(returnValues) {
       logger.debug('returnValues: ', returnValues);
@@ -651,8 +680,10 @@ UserService.doUserCoinsQtyChecking = function(player, gameRoom, callback) {
         roomGrade = 0; // no change
       }
 
+      returnValues.curRoomDdzPkg = curRoomDdzPkg;
       returnValues.roomGrade = roomGrade;
       returnValues.player = player;
+      returnValues.curRoom = gameRoom;
       //returnValues.originRoomGoodsPkg = ddzGoodsPkg;
       logger.debug('return returnValues: ', returnValues);
       utils.invokeCallback(callback, null, returnValues);

@@ -13,7 +13,7 @@ var DdzProfileSchema = mongoose.Schema({
   userId: Number,   // 用户Id
   user_id: {type: mongoose.Schema.Types.ObjectId},
   robot: {type: Boolean, default: false},
-  coins: {type:Number, default: 10000}, // 金币数
+  coins: {type:Number, default: 6000}, // 金币数
   levelName: {type:String, default: '商人'},
   gameStat: {     // 输赢统计
     won: {type: Number, default: 0},
