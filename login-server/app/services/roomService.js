@@ -82,6 +82,8 @@ exp.enterRoom = function(player, roomId, lastTableId, cb) {
     utils.invokeCallback(cb, table);
   });
 
+  return room;
+
   //var table = room.enter(player, lastTableId);
 
   // table.setupEvents(engine);

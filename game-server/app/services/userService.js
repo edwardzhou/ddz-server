@@ -28,6 +28,9 @@ var createUserSessionQ = Q.nbind(UserSession.createSession, UserSession);
 var pomeloApp = null;
 var UserService = module.exports;
 
+var MILLSECONDS_A_DAY = 3600 * 24 * 1000;
+
+
 var _genPasswordDigest = function (password, salt) {
   return crypto.createHash('md5').update(password + "_" + salt).digest('hex');
 };
@@ -217,7 +220,6 @@ UserService.handleLoginReward = function (cur_user, ddzLoginReward, loginRewardT
   today.setMinutes(0);
   today.setSeconds(0);
   today.setMilliseconds(0);
-  var oneDayMillSeconds = 3600 * 24 * 1000;
 
   if (ddzLoginReward == null) {
     logger.info('LoginRewardTemplate.findOneQ() then ddzLoginReward == null');
@@ -229,11 +231,12 @@ UserService.handleLoginReward = function (cur_user, ddzLoginReward, loginRewardT
     ddzLoginReward.total_login_days = 1;
     ddzLoginReward.reward_detail = loginRewardTemplate.reward_detail;
     ddzLoginReward.reward_detail["day_1"]["status"] = 1;
+    ddzLoginReward.auto_delete = today.getTime() + 2 * MILLSECONDS_A_DAY - 1000; // 第二天的23:59:59 后自动删除
   }
   else {
     logger.info('LoginRewardTemplate.findOneQ() then ddzLoginReward == null else');
     var diff_login_time = today.getTime() - ddzLoginReward.last_login_date;
-    if (diff_login_time > oneDayMillSeconds) {
+    if (diff_login_time > MILLSECONDS_A_DAY) {
       logger.info('LoginRewardTemplate.findOneQ() then ddzLoginReward == null else last_login_date_in_day_date.getDate() != today.getDate()');
       ddzLoginReward.last_login_date = today.getTime();
       ddzLoginReward.total_login_days = 1;
@@ -241,12 +244,22 @@ UserService.handleLoginReward = function (cur_user, ddzLoginReward, loginRewardT
       ddzLoginReward.reward_detail = loginRewardTemplate.reward_detail;
       ddzLoginReward.reward_detail["day_1"]["status"] = 1;
     }
-    else if (diff_login_time == oneDayMillSeconds) {
+    else if (diff_login_time == MILLSECONDS_A_DAY) {
       logger.info('LoginRewardTemplate.findOneQ() then ddzLoginReward == null else last_login_date_in_day_date.getDate() != today.getDate() else');
       ddzLoginReward.last_login_date = today.getTime();
-      ddzLoginReward.total_login_days = ddzLoginReward.total_login_days + 1;
-      var v_day = 'day_' + ddzLoginReward.total_login_days;
-      ddzLoginReward.reward_detail[v_day]["status"] = 1;
+      if (ddzLoginReward.total_login_days < ddzLoginReward.login_days) {
+        ddzLoginReward.total_login_days = ddzLoginReward.total_login_days + 1;
+        var v_day = 'day_' + ddzLoginReward.total_login_days;
+        ddzLoginReward.reward_detail[v_day]["status"] = 1;
+
+        if (ddzLoginReward.total_login_days < ddzLoginReward.login_days) {
+          // 如果连续登录天数未达到周期天数, 则在第二天的23:59:59 后自动删除
+          ddzLoginReward.auto_delete = today.getTime() + 2 * MILLSECONDS_A_DAY - 1000;
+        } else {
+          // 连续天数已经达到周期天数, 在 当天 23:59:59 后自动删除, 以开始新的奖励周期
+          ddzLoginReward.auto_delete = today.getTime() + MILLSECONDS_A_DAY - 1000;
+        }
+      }
       ddzLoginReward.markModified('reward_detail');
     }
   }
@@ -313,6 +326,7 @@ UserService.signUp = function (signUpParams, cb) {
       User.copyHandset(results.user.signedUp.handset, ddzProfile.lastSignedIn.handset);
       ddzProfile.userId = results.user.userId;
       ddzProfile.user_id = results.user.id;
+      ddzProfile.coins = 6000;
       return ddzProfile.saveQ();
     })
     .then(function (ddzProfile) {
