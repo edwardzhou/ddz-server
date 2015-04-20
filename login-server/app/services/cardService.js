@@ -12,6 +12,9 @@ var ErrorCode = require('../consts/errorCode');
 var Result = require('../domain/result');
 var CardInfo = require('../AI/CardInfo');
 var CardAnalyzer = require('../AI/CardAnalyzer');
+var tableService = require('./tableService');
+var userService = require('./userService');
+
 var AIEngine = require('../AI/AIEngine');
 //var roomService = require('./roomService');
 
@@ -674,6 +677,7 @@ exp.gameOver = function(table, player, cb) {
   var params = {table: table, player: player, seqNo: -1};
   var actionResult = null;
   var pokeGame = table.pokeGame;
+  var gameRoom = table.room;
   // 获取动作拦截器
   var actionFilter = this.getActionFilters(GameAction.GAME_OVER);
   // 清除牌局定时器
@@ -711,15 +715,15 @@ exp.gameOver = function(table, player, cb) {
 
       actionResult.timing = 15;
 
+      // 保存牌局信息，供后续分析用
+      pokeGame.save();
+
       // 通知结算结果
       var eventName = GameEvent.gameOver;
       self.messageService.pushTableMessage(table,
         eventName,
         actionResult,
         null );
-
-      // 保存牌局信息，供后续分析用
-      pokeGame.save();
 
       // 循环通知每一个真实玩家的金币变化
       for (var pIndex=0; pIndex< pokeGame.players.length; pIndex++) {
@@ -735,11 +739,69 @@ exp.gameOver = function(table, player, cb) {
           }
           // 清楚玩家的牌局信息
           p.userSession.sset({pokeGameId: null, tableId: null});
+
+          userService.doUserCoinsQtyCheckingQ(p, gameRoom)
+            .then(function(returnValues) {
+              if (returnValues == null) {
+                return;
+              }
+
+              var roomAttrs = {
+                only:['roomId', 'roomName', 'minCoinsQty', 'maxCoinsQty', 'ante', 'rake']
+              };
+              var pkgAttrs = {
+                only: ['packageId', 'packageName', 'packageIcon', 'packageDesc', 'price']
+              };
+              var msgBack = {
+                userId: returnValues.player.userId,
+                room: returnValues.room.toParams(roomAttrs),
+                roomUpgrade: returnValues.roomGrade,
+                message: ''
+              };
+
+              if (returnValues.roomGrade > 0) {
+                msgBack.msg = util.format('真是高手啊, 牌打得不错, 恭喜您进升级到 %s.\n请再接再厉, 发挥更高水平 :) ~',
+                  returnValues.room.roomName);
+              } else if (returnValues.roomGrade < 0) {
+                msgBack.msg = util.format('额哦~ 马有失蹄, 人有失手, 您将降级到 %s.\n 购买 [%s] 避免降级? \n%s\n￥ %s 元.',
+                  returnValues.room.roomName,
+                  returnValues.curRoomDdzPkg.packageName,
+                  returnValues.curRoomDdzPkg.packageDesc,
+                  returnValues.curRoomDdzPkg.price / 10);
+                msgBack.curRoomDdzPkg = returnValues.curRoomDdzPkg.toParams(pkgAttrs);
+              } else {
+                msgBack.msg = util.format('您的金币 %d 已低于本场最低要求 %d. \n 请购买 [%s] 补充金币. \n%s\n￥ %s 元.',
+                  returnValues.player.ddzProfile.coins,
+                  returnValues.curRoom.minCoinsQty,
+                  returnValues.ddzGoodsPackage.packageName,
+                  returnValues.ddzGoodsPackage.packageDesc,
+                  returnValues.ddzGoodsPackage.price / 10);
+              }
+
+              if (msgBack.room.roomId != gameRoom.roomId) {
+                msgBack.curRoom = gameRoom.toParams(roomAttrs);
+              }
+
+              if (!!returnValues.needRecharge) {
+                msgBack.ddzGoodsPackage = returnValues.ddzGoodsPackage.toParams(pkgAttrs);
+              }
+
+              var uidSid = returnValues.player.getUidSid();
+
+              setTimeout(function() {
+                 self.messageService.pushMessage('onRoomUpgrade', msgBack, [uidSid]);
+              }, 500);
+
+            })
+            .fail(function(err) {
+              logger.error('[CardService.gameOver] error: ', err);
+            })
+            .done();
         }
       }
 
       // 释放桌子
-      table.release();
+      tableService.release(table);
     }
   });
 

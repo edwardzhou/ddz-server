@@ -5,6 +5,7 @@ var mongoose = require('mongoose-q')();
 var Schema = mongoose.Schema;
 var crypto = require('crypto');
 var uuid = require('node-uuid');
+var DomainUtils = require("./domainUtils");
 
 /**
  * 道具包的细项
@@ -16,29 +17,22 @@ var GoodsItemSchema = new mongoose.Schema({
   sortIndex: {type: Number, defualt: 255}
 });
 
-__GoodsItemToParams = function(model, excludeAttrs) {
+__GoodsItemToParams = function(model, opts) {
   var transObj = {
     goodsId: model.goodsId,
     goodsCount: model.goodsCount,
     sortIndex: model.sortIndex
   };
 
-  if (!!model.goods) {
-    transObj.goods = model.goods.toParams();
-  }
-
-  if (!!excludeAttrs) {
-    for (var index=0; index<excludeAttrs.length; index++) {
-      delete transObj[excludeAttrs[index]];
-    }
-  }
+  transObj = DomainUtils.adjustAttributes(transObj, opts);
+  DomainUtils.transAttr(transObj, model, opts, 'goods');
 
   return transObj;
 };
 
 GoodsItemSchema.statics.toParams = __GoodsItemToParams;
-GoodsItemSchema.methods.toParams = function(excludeAttrs) {
-  return __GoodsItemToParams(this, excludeAttrs);
+GoodsItemSchema.methods.toParams = function(opts) {
+  return __GoodsItemToParams(this, opts);
 };
 
 
@@ -76,7 +70,7 @@ var itemsToParams = function(items) {
   return result;
 };
 
-var __toParams = function(model, excludeAttrs) {
+var __toParams = function(model, opts) {
   var transObj = {
     packageId: model.packageId,
     packageName: model.packageName,
@@ -91,13 +85,9 @@ var __toParams = function(model, excludeAttrs) {
     transObj.packageCoins = model.packageCoins;
   }
 
-  if (!!excludeAttrs) {
-    for (var index=0; index<excludeAttrs.length; index++) {
-      delete transObj[excludeAttrs[index]];
-    }
-  }
+  transObj = DomainUtils.adjustAttributes(transObj, opts);
 
-  if (!excludeAttrs || excludeAttrs.indexOf('items')<0 && !!model.items) {
+  if (DomainUtils.hasAttr(model, opts, 'items')) {
     transObj.items = itemsToParams(model.items);
   }
 
@@ -106,8 +96,8 @@ var __toParams = function(model, excludeAttrs) {
 
 ddzGoodsPackageSchema.statics.toParams = __toParams;
 
-ddzGoodsPackageSchema.methods.toParams = function(excludeAttrs) {
-  return __toParams(this, excludeAttrs);
+ddzGoodsPackageSchema.methods.toParams = function(opts) {
+  return __toParams(this, opts);
 };
 
 

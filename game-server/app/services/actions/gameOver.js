@@ -38,6 +38,7 @@ module.exports = GameOverAction;
  */
 GameOverAction.doGameOver = function(table, player, cb) {
   var pokeGame = table.pokeGame;
+  var gameRoom = table.room;
   var pre_p_win_coins = 0;
 
   Q.fcall(function() {
@@ -128,9 +129,10 @@ GameOverAction.doGameOver = function(table, player, cb) {
             initPokeCards: player.initPokeCards,
             pokeCards: CardUtil.pokeCardsToString(player.pokeCards)
           });
+
         }
 
-        var result = pokeGame.toParams(['players', 'grabbingLord']);
+        var result = pokeGame.toParams({exclude:['players', 'grabbingLord']});
         result.lordWon = pokeGame.lordWon;
         result.score = {};
         result.score.lordWon = pokeGame.lordWon? 1 : 0; // 地主赢还是输

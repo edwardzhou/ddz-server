@@ -5,6 +5,7 @@ var mongoose = require('mongoose-q')();
 var Schema = mongoose.Schema;
 var crypto = require('crypto');
 var uuid = require('node-uuid');
+var DomainUtils = require("./domainUtils");
 
 /**
  * 无家登录奖励状况
@@ -16,6 +17,7 @@ var ddzLoginRewardsSchema = new mongoose.Schema({
     login_days: Number,    // 奖励周期
     total_login_days: Number, // 已经连续登录天数
     last_login_date: {type: Date, default: Date.now}, // 最后一次登录日期
+    auto_delete: {type: Date, expires: 0}, // 自动删除
     reward_detail: {type: Schema.Types.Mixed, default: {_placeholder:0}},       // 奖励定义 (自定义配置)
     created_at: {type: Date, default: Date.now},
     updated_at: {type: Date, default: Date.now}
@@ -23,7 +25,7 @@ var ddzLoginRewardsSchema = new mongoose.Schema({
     collection: 'ddz_login_rewards'
 });
 
-var __toParams = function(model, excludeAttrs) {
+var __toParams = function(model, opts) {
 
     var transObj = {
         totalDayCount: model.login_days,
@@ -36,19 +38,15 @@ var __toParams = function(model, excludeAttrs) {
         transObj.dayRewards.push(v_day_reward);
     }
 
-    if (!!excludeAttrs) {
-        for (var index=0; index<excludeAttrs.length; index++) {
-            delete transObj[excludeAttrs[index]];
-        }
-    }
+    transObj = DomainUtils.adjustAttributes(transObj, opts);
 
     return transObj;
 };
 
 ddzLoginRewardsSchema.statics.toParams = __toParams;
 
-ddzLoginRewardsSchema.methods.toParams = function(excludeAttrs) {
-    return __toParams(this, excludeAttrs);
+ddzLoginRewardsSchema.methods.toParams = function(opts) {
+    return __toParams(this, opts);
 };
 
 

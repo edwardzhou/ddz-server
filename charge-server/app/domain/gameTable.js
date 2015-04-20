@@ -6,6 +6,7 @@ var utils = require('../util/utils');
 var TableState = require('../consts/consts').TableState;
 var GameState = require('../consts/consts').GameState;
 var PlayerState = require('../consts/consts').PlayerState;
+var DomainUtils = require("./domainUtils");
 
 /**
  * 游戏桌子

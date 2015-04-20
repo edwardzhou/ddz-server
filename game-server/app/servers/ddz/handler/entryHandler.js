@@ -2,6 +2,10 @@ var format = require('util').format;
 var utils = require('../../../util/utils');
 var logger = require('pomelo-logger').getLogger(__filename);
 var GameTable = require('../../../domain/gameTable');
+var GameRoom = require('../../../domain/gameRoom');
+var User = require('../../../domain/user');
+var DdzProfile = require('../../../domain/ddzProfile');
+var DdzGoodsPackage = require('../../../domain/ddzGoodsPackage');
 var Result = require('../../../domain/result');
 var ErrorCode = require('../../../consts/errorCode');
 var Q = require('q');
@@ -43,7 +47,10 @@ Handler.prototype.queryRooms = function(msg, session, next) {
 };
 
 /**
- * New client entry chat server.
+ * 尝试进入合适/指定的房间.
+ * 需要满足测试条件:
+ *  玩家的金币, 必须在房间的金币上下限范围内.
+ *  如果, 金币过少, 返回合适的道具包, 提示玩家充值
  *
  * @param  {Object}   msg     request message
  * @param  {Object}   session current session object
@@ -52,26 +59,93 @@ Handler.prototype.queryRooms = function(msg, session, next) {
  */
 Handler.prototype.tryEnterRoom = function(msg, session, next) {
   var self = this;
+  // room_id 为 null 或 <=0 , 则代表自动为玩家匹配合适的房间
+  // room_id > 0, 则表示玩家想进入该房间
   var room_id = msg.room_id;
   var uid = session.uid;
+  var results = {};
 
+  DdzProfile.findOneQ({userId: uid})
+    .then(function(u) {
+      results.ddzProfile = u;
+      return GameRoom.getActiveRoomsQ(room_id);
+    })
+    .then(function(rooms) {
+      // 如果要进入的房间不存在
+      if (!!rooms || rooms.length == 0) {
+        // 则选出所有房间, 尝试为用户匹配合适的房间
+        return GameRoom.getActiveRoomsQ();
+      }
 
-  session.set("room_id", room_id);
-  session.pushAll( function(err) {
-    if (err) {
-      console.error('set room_id for session service failed! error is : %j', err.stack);
-    }
-  });
+      return rooms;
+    })
+    .then(function(rooms){
+      results.rooms = rooms;
 
-  this.app.rpc.area.roomRemote.tryEnter(session, uid, this.app.get('serverId'), session.id, room_id, function(err, room_server_id, result) {
-    logger.info('enter result: ', err, room_server_id, result);
-    if (!!err) {
+      var ddzProfile = results.ddzProfile;
+
+      for (var index=0; index<results.rooms.length; index++) {
+        var room = results.rooms[index];
+        if (room.minCoinsQty <= ddzProfile.coins && room.maxCoinsQty > ddzProfile.coins) {
+          results.room = room;
+          break;
+        }
+      }
+    })
+    .then(function(){
+      if (!results.room) {
+        // 没有可进入的房间
+        // 返回 充值 道具包
+        return DdzGoodsPackage.findOneQ({packageId: results.rooms[0].recruitPackageId});
+      }
+
+      return null;
+    })
+    .then(function(ddzPkg) {
+      if (!!ddzPkg) {
+        results.ddzGoodsPackage = ddzPkg;
+      }
+    })
+    .then(function(){
+      if (!!results.room) {
+        room_id = results.room.roomId;
+        session.set("room_id", room_id);
+        session.pushAll( function(err) {
+          if (err) {
+            console.error('set room_id for session service failed! error is : %j', err.stack);
+          }
+
+        });
+
+        self.app.rpc.area.roomRemote.tryEnter(session, uid, self.app.get('serverId'), session.id, room_id, function(err, room_server_id, result) {
+          logger.info('enter result: ', err, room_server_id, result);
+          if (!!err) {
+            var errResp = new Result(ErrorCode.SYSTEM_ERROR, 0, err.toString());
+            errResp.error = err;
+            next(null, errResp);
+            return;
+          }
+
+          result.room = results.room.toParams();
+
+          next(null, result);
+        });
+
+      } else {
+        var resp = new Result(ErrorCode.COINS_NOT_ENOUGH, 0, '金币不足!');
+        resp.recruitMsg = format('您要进入的[%s]要求金币数至少在%d以上, 是否充值进入?\n%s ￥%s元\n%s',
+          results.rooms[0].roomName, results.rooms[0].minCoinsQty, results.ddzGoodsPackage.packageName,
+          results.ddzGoodsPackage.price / 100,
+          results.ddzGoodsPackage.packageDesc);
+        resp.pkg = results.ddzGoodsPackage.toParams();
+        resp.room = results.rooms[0].toParams();
+        next(null, resp);
+      }
+    })
+    .fail(function(err) {
       next(null, {err: err});
-      return;
-    }
+    });
 
-    next(null, result);
-  });
 };
 
 
@@ -82,7 +156,7 @@ Handler.prototype.enterRoom = function(msg, session, next) {
   var uid = session.uid;
   var username = msg.username;
 
-  logger.info('session ' , session.__proto__);
+  //logger.info('session ' , session.__proto__);
 
   var user = getUser(uid);
 
@@ -102,8 +176,8 @@ Handler.prototype.enterRoom = function(msg, session, next) {
     session.push('closed_bound');
   }
 
-  this.app.rpc.area.roomRemote.enter(session, uid, this.app.get('serverId'), session.id, room_id, function(err, room_server_id, table) {
-    logger.info('enter result: ', err, room_server_id, table);
+  this.app.rpc.area.roomRemote.enter(session, uid, this.app.get('serverId'), session.id, room_id, function(err, room_server_id, room) {
+    logger.info('enter result: ', err, room_server_id, room);
     if (!!err) {
       next(null, {err: err});
       return;
@@ -123,6 +197,7 @@ Handler.prototype.enterRoom = function(msg, session, next) {
 //    };
     var resp = {};
     resp.result = new Result(ErrorCode.SUCCESS);
+    resp.room = room;
 
 
     logger.info("[enterRoom] area.roomRemote.enter return resp: %j", resp);

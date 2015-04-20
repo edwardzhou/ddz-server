@@ -4,6 +4,7 @@
 
 var mongoose = require('mongoose-q')();
 var PaymentMethod = require('./paymentMethod');
+var DomainUtils = require("./domainUtils");
 
 /**
  * 渠道
@@ -41,7 +42,7 @@ channelSchema.virtual('paymentMethod')
 
 
 
-var __toParams = function(model, excludeAttrs) {
+var __toParams = function(model, opts) {
   var transObj = {
     channelId: model.channelId,
     channelName: model.channelName,
@@ -50,23 +51,16 @@ var __toParams = function(model, excludeAttrs) {
     enabled: model.enabled
   };
 
-  if (!!excludeAttrs) {
-    for (var index=0; index<excludeAttrs.length; index++) {
-      delete transObj[excludeAttrs[index]];
-    }
-  }
-
-  if (!!transObj.paymentMethod && !!transObj.paymentMethod.toParams) {
-    transObj.paymentMethod = transObj.paymentMethod.toParams();
-  }
+  transObj = DomainUtils.adjustAttributes(transObj, opts);
+  DomainUtils.transAttr(transObj, model, opts, 'paymentMethod');
 
   return transObj;
 };
 
 channelSchema.statics.toParams = __toParams;
 
-channelSchema.methods.toParams = function(excludeAttrs) {
-  return __toParams(this, excludeAttrs);
+channelSchema.methods.toParams = function(opts) {
+  return __toParams(this, opts);
 };
 
 

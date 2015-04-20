@@ -2,6 +2,7 @@
  * Created by edwardzhou on 15/1/5.
  */
 
+var DomainUtils = require("./domainUtils");
 
 var mongoose = require('mongoose-q')();
 
@@ -24,7 +25,7 @@ var appSignature = new mongoose.Schema({
 
 
 
-var __toParams = function(model, excludeAttrs) {
+var __toParams = function(model, opts) {
   var transObj = {
     appId: model.appId,
     appName: model.appName,
@@ -35,19 +36,15 @@ var __toParams = function(model, excludeAttrs) {
     enabled: model.enabled
   };
 
-  if (!!excludeAttrs) {
-    for (var index=0; index<excludeAttrs.length; index++) {
-      delete transObj[excludeAttrs[index]];
-    }
-  }
+  transObj = DomainUtils.adjustAttributes(transObj, opts);
 
   return transObj;
 };
 
 appSignature.statics.toParams = __toParams;
 
-appSignature.methods.toParams = function(excludeAttrs) {
-  return __toParams(this, excludeAttrs);
+appSignature.methods.toParams = function(opts) {
+  return __toParams(this, opts);
 };
 
 

@@ -5,6 +5,7 @@ var GameTable = require('./gameTable');
 var PlayerState = require('../consts/consts').PlayerState;
 var Player = require('./player');
 var User = require("./user");
+var DomainUtils = require("./domainUtils");
 
 /**
  * 房间Mongodb架构的字段定义
@@ -22,6 +23,7 @@ var roomSchemaFields = {
   maxCoinsQty: {type: Number, default: 0}, // 准入资格, 最大金币数, 0 代表无限制
   roomType: String,   // 房间类型
   sortIndex: Number,  // 排序
+  recruitPackageId: String, // 金币不足时, 充值的道具包id
   readyTimeout: {type: Number, default: 15},  // 就绪超时
   grabbingLordTimeout: {type: Number, default: 20}, // 叫地主超时
   playCardTimeout: {type: Number, default: 30}, // 出牌超时
@@ -94,12 +96,13 @@ roomSchema.methods.initRoom = function(opts) {
   }
 
   this.startNewGameCallback = null;
+  //
+  //if (this._onPlayerReadyTimeout == null) {
+  //  this._onPlayerReadyTimeout = this.onPlayerReadyTimeout.bind(this);
+  //}
 
-  if (this._onPlayerReadyTimeout == null) {
-    this._onPlayerReadyTimeout = this.onPlayerReadyTimeout.bind(this);
-  }
-
-  this.loadRobots();
+  if (!opts.noLoadRobots)
+    this.loadRobots();
 
 };
 
@@ -245,8 +248,9 @@ roomSchema.methods.gameOver = function(playerId) {
   player.reset();
 };
 
-var __toParams = function(model, excludeAttrs) {
-  var transObj = {
+var __toParams = function(model, opts) {
+
+  transObj = {
     roomId: model.roomId,
     roomName: model.roomName,
     roomDesc: model.roomDesc,
@@ -259,19 +263,15 @@ var __toParams = function(model, excludeAttrs) {
     roomType: model.roomType
   };
 
-  if (!!excludeAttrs) {
-    for (var index=0; index<excludeAttrs.length; index++) {
-      delete transObj[excludeAttrs[index]];
-    }
-  }
+  transObj = DomainUtils.adjustAttributes(transObj, opts);
 
   return transObj;
 };
 
 roomSchema.statics.toParams = __toParams;
 
-roomSchema.methods.toParams = function(excludeAttrs) {
-  return __toParams(this, excludeAttrs);
+roomSchema.methods.toParams = function(opts) {
+  return __toParams(this, opts);
 };
 
 roomSchema.methods.reloadFromDb = function() {
@@ -298,6 +298,25 @@ roomSchema.methods.reloadFromDb = function() {
     .fail(function(err) {
       console.error('[GameRoom.reloadFromDb] error: ', err);
     });
+};
+
+roomSchema.methods.getReadyPlayerIndexByUserId = function(userId) {
+  for (var index=0; index<this.readyPlayers.length; index++) {
+    if (this.readyPlayers[index].userId == userId) {
+      return index;
+    }
+  }
+  return -1;
+};
+
+roomSchema.statics.getActiveRoomsQ = function(roomId) {
+  var condition = {};
+  if (!!roomId) {
+    condition = {roomId: roomId};
+  }
+  return this.find(condition)
+    .sort('minCoinsQty')
+    .execQ();
 };
 
 var GameRoom = mongoose.model('GameRoom', roomSchema);

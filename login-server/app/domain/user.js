@@ -4,6 +4,8 @@ var mongoose = require('mongoose-q')();
 var crypto = require('crypto');
 var DomainBase = require('./domainBase');
 var DdzLoginRewards = require('../domain/ddzLoginRewards');
+var DdzBankruptSave = require('../domain/ddzBankruptSaves');
+var DomainUtils = require("./domainUtils");
 //var DdzProfile = require('./ddzProfile');
 
 //var signUpSchema = mongoose
@@ -74,6 +76,7 @@ var userSchema = new mongoose.Schema({
   },
   ddzProfile: {type: mongoose.Schema.Types.ObjectId, ref: 'DdzProfile'}, // 个人资料
   ddzLoginRewards: {type: mongoose.Schema.Types.ObjectId, ref: 'DdzLoginRewards'}, // 连续登录奖励信息
+  ddzBankruptSave: {type: mongoose.Schema.Types.ObjectId, ref: 'DdzBankruptSave'}, // 破产补助信息
   created_at: {type: Date, default: Date.now},
   updated_at: {type: Date, default: Date.now}
 });
@@ -206,7 +209,7 @@ userSchema.methods.verifyToken = function(authToken, mac) {
   return (authToken == this.oldAuthToken);
 };
 
-var __toParams = function(model, excludeAttrs) {
+var __toParams = function(model, opts) {
   var transObj = {
     userId: model.userId,
     nickName: model.nickName,
@@ -215,29 +218,19 @@ var __toParams = function(model, excludeAttrs) {
     headIcon: model.headIcon,
     lastSignedInTime: model.lastSignedIn.signedTime
   };
-  //ddzProfile: model.ddzProfile.toParams(),
 
-  if (!!model.ddzProfile && !!model.ddzProfile.toParams) {
-    transObj.ddzProfile = model.ddzProfile.toParams();
-  }
-
-  if (!!model.ddzLoginRewards && !!model.ddzLoginRewards.toParams) {
-    transObj.ddzLoginRewards = model.ddzLoginRewards.toParams();
-  }
-
-  if (!!excludeAttrs) {
-    for (var index=0; index<excludeAttrs.length; index++) {
-      delete transObj[excludeAttrs[index]];
-    }
-  }
+  transObj = DomainUtils.adjustAttributes(transObj, opts);
+  DomainUtils.transAttr(transObj, model, opts, 'ddzProfile');
+  DomainUtils.transAttr(transObj, model, opts, 'ddzLoginRewards');
+  DomainUtils.transAttr(transObj, model, opts, 'ddzBankruptSave');
 
   return transObj;
 };
 
 userSchema.statics.toParams = __toParams;
 
-userSchema.methods.toParams = function(excludeAttrs) {
-  return __toParams(this, excludeAttrs);
+userSchema.methods.toParams = function(opts) {
+  return __toParams(this, opts);
 };
 
 

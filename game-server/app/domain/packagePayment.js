@@ -5,6 +5,7 @@
 var mongoose = require('mongoose-q')();
 var DdzGoodsPackage = require('./ddzGoodsPackage');
 var PaymentMethod = require('./paymentMethod');
+var DomainUtils = require("./domainUtils");
 
 
 /**
@@ -26,7 +27,7 @@ var packagePaymentSchema = mongoose.Schema({
   collection: 'package_payments'
 });
 
-var __toParams = function(model, excludeAttrs) {
+var __toParams = function(model, opts) {
   var transObj = {
     package: model.package,
     paymentMethod: model.paymentMethod,
@@ -39,27 +40,17 @@ var __toParams = function(model, excludeAttrs) {
     enabled: model.enabled
   };
 
-  if (!!excludeAttrs) {
-    for (var index=0; index<excludeAttrs.length; index++) {
-      delete transObj[excludeAttrs[index]];
-    }
-  }
-
-  if (!!transObj.paymentMethod && !!transObj.paymentMethod.toParams) {
-    transObj.paymentMethod = transObj.paymentMethod.toParams();
-  }
-
-  if (!!transObj.package && !!transObj.package.toParams) {
-    transObj.package = transObj.package.toParams();
-  }
+  transObj = DomainUtils.adjustAttributes(transObj, opts);
+  DomainUtils.transAttr(transObj, model, opts, 'paymentMethod');
+  DomainUtils.transAttr(transObj, model, opts, 'package');
 
   return transObj;
 };
 
 packagePaymentSchema.statics.toParams = __toParams;
 
-packagePaymentSchema.methods.toParams = function(excludeAttrs) {
-  return __toParams(this, excludeAttrs);
+packagePaymentSchema.methods.toParams = function(opts) {
+  return __toParams(this, opts);
 };
 
 packagePaymentSchema.virtual('package')

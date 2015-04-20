@@ -135,7 +135,7 @@ remoteHandler.refreshGoodsPackages = function(cb) {
         goodsPackage.packageCoins = pkgCoins;
         cache.goodsPackagesMap[goodsPackage.packageId] = goodsPackage;
         cache.packagesIdMap[goodsPackage.id] = goodsPackage;
-        cache.goodsPackages.push(goodsPackage.toParams(['items']));
+        cache.goodsPackages.push(goodsPackage.toParams({exclude:['items']}));
       }
 
       // 加载 渠道

@@ -404,5 +404,22 @@ testCreateRobots = function() {
   }
 };
 
+rechargeRobots = function() {
+  User.find({robot: true})
+    .populate('ddzProfile')
+    .execQ()
+    .then(function(users){
+      var user;
+      for (var index=0; index<users.length; index++) {
+        user = users[index];
+        if (user.ddzProfile.coins < 20000) {
+          user.ddzProfile.coins += 20000;
+          console.log('recharge user: %s, to %d', user.userId, user.ddzProfile.coins);
+          user.ddzProfile.saveQ().done();
+        }
+      }
+    })
+};
+
 //testCreateRobots();
 

@@ -3,6 +3,7 @@
  */
 
 var mongoose = require('mongoose-q')();
+var DomainUtils = require("./domainUtils");
 
 
 /**
@@ -11,6 +12,7 @@ var mongoose = require('mongoose-q')();
 var DdzProfileSchema = mongoose.Schema({
   userId: Number,   // 用户Id
   user_id: {type: mongoose.Schema.Types.ObjectId},
+  robot: {type: Boolean, default: false},
   coins: {type:Number, default: 10000}, // 金币数
   levelName: {type:String, default: '商人'},
   gameStat: {     // 输赢统计
@@ -49,26 +51,22 @@ var DdzProfileSchema = mongoose.Schema({
 });
 
 
-var __toParams = function(model, excludeAttrs) {
+var __toParams = function(model, opts) {
   var transObj = {
     coins: model.coins,
     levelName: model.levelName,
     gameStat: model.gameStat
   };
 
-  if (!!excludeAttrs) {
-    for (var index=0; index<excludeAttrs.length; index++) {
-      delete transObj[excludeAttrs[index]];
-    }
-  }
+  transObj = DomainUtils.adjustAttributes(transObj, opts);
 
   return transObj;
 };
 
 DdzProfileSchema.statics.toParams = __toParams;
 
-DdzProfileSchema.methods.toParams = function(excludeAttrs) {
-  return __toParams(this, excludeAttrs);
+DdzProfileSchema.methods.toParams = function(opts) {
+  return __toParams(this, opts);
 };
 
 DdzProfileSchema.statics.updateCoinsByUserIdQ = function(userId, coins) {
