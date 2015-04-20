@@ -148,14 +148,14 @@ Handler.prototype.getPlayWithMeUsers = function (msg, session, next) {
   var userId = session.uid;
   logger.info('HallHandler.getPlayWithMeUsers, userId: ', userId);
   PlayWithMeUser.find({me_userId:userId})
-      .sort(utils.sortDescBy('last_play_time'))
+      .sort({last_play_time: -1})
       .execQ()
       .then(function(play_with_me_users){
         var return_result = [];
         logger.info('HallHandler.getPlayWithMeUsers, play_with_me_users=', play_with_me_users);
         if (play_with_me_users != null) {
           for (var index = 0; index < play_with_me_users.length; index++) {
-            return_result.push(play_with_me_users[i].toParams());
+            return_result.push(play_with_me_users[index].toParams());
           }
         }
         logger.info('HallHandler.getPlayWithMeUsers done.');
