@@ -1,0 +1,38 @@
+/**
+ * Created by jeffcao on 15/4/21.
+ */
+/**
+ * 与我打过牌的玩家
+ */
+var mongoose = require('mongoose-q')();
+var DomainUtils = require("./domainUtils");
+
+var MyPlayedSchema = mongoose.Schema({
+    userId: Number,   // 用户Id
+    playedUsers: {type: mongoose.Schema.Types.Mixed},
+    created_at: {type: Date, default: Date.now},
+    updated_at: {type: Date, default: Date.now}
+}, {
+    collection: 'my_playeds'
+});
+
+
+var __toParams = function(model, opts) {
+    var transObj = model.playedUsers;
+
+    transObj = DomainUtils.adjustAttributes(transObj, opts);
+
+    return transObj;
+};
+
+MyPlayedSchema.statics.toParams = __toParams;
+
+MyPlayedSchema.methods.toParams = function(opts) {
+    return __toParams(this, opts);
+};
+
+
+var MyPlayed = mongoose.model('MyPlayed', MyPlayedSchema);
+
+
+module.exports = MyPlayed;
