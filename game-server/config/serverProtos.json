@@ -22,7 +22,10 @@
     "optional string gender": 3,
     "optional string headIcon": 4,
     "optional string authToken": 5,
-    "optional DdzProfile ddzProfile": 6
+    "optional DdzProfile ddzProfile": 6,
+    "optional uInt32 isFriend": 7,
+    "optional uInt32 online": 8,
+    "optional string lastPlayed": 9
   },
   "message Player": {
     "required uInt32 userId": 1,
@@ -31,7 +34,10 @@
     "optional uInt32 role": 4,
     "optional string headIcon": 5,
     "optional uInt32 pokeCount": 6,
-    "optional string gender": 7
+    "optional string gender": 7,
+    "optional uInt32 isFriend": 8,
+    "optional uInt32 online": 9,
+    "optional string lastPlayed": 10
   },
   "message GrabbingLord": {
     "optional uInt32 userId": 1,
