@@ -44,11 +44,13 @@ FriendService.doUpdatePlayWithMePlayer = function(me_player, friend_players){
         .then(function (played_user) {
             if (played_user == null) {
                 var new_played_user = new MyPlayed();
+                new_played_user.user_id = me_player.id;
                 new_played_user.userId = me_player.userId;
                 new_played_user.playedUsers = [];
                 for(var j=0;j<friend_players.length;j++) {
                     new_played_user.playedUsers.push({userId: friend_players[j].userId, nickName: friend_players[j].nickName,
-                        headIcon: friend_players[j].headIcon, gender: friend_players.gender, lastPlayed: Date.now()});
+                        headIcon: friend_players[j].headIcon, gender: friend_players.gender, lastPlayed: Date.now(),
+                        gameStat: {won:0, lose: 0 }});
                 }
 
                 new_played_user.save();
@@ -70,7 +72,6 @@ FriendService.doUpdatePlayWithMePlayer = function(me_player, friend_players){
                             headIcon: friend_player.headIcon, gender: friend_player.gender, lastPlayed: Date.now()});
                     }
                 }
-
                 played_user.markModified('playedUsers');
                 played_user.save();
                 logger.info("[FriendService.doUpdatePlayWithMePlayer], play_whith_player:", played_user);
