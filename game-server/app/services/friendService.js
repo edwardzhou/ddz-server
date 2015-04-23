@@ -7,6 +7,9 @@ var util = require('util');
 var Users = require('../domain/user');
 var Player = require('../domain/player');
 var MyPlayed = require('../domain/myPlayed');
+var MyFriend = require('../domain/myFriend');
+var MyMessabeBox = require('../domain/myMessageBox');
+
 var utils = require('../util/utils');
 
 var FriendService = module.exports;
@@ -85,4 +88,26 @@ FriendService.doUpdatePlayWithMePlayer = function(me_player, friend_players){
 
         });
 };
+
+FriendService.addFriend = function (userId, friend_userId, friend_msg, cb){
+    logger.info("[FriendService.addFriend], userId=", userId);
+    logger.info("[FriendService.addFriend], friend_msg=", friend_msg);
+    logger.info("[FriendService.addFriend], friend_userId=", friend_userId);
+    var result;
+    Users.findOneQ({userId: userId})
+        .then(function(user){
+            result.user = user;
+            return MyMessabeBox.findOneQ({userId: userId});
+        })
+        .then(function(msg_box){
+            if (msg_box == null){
+                msg_box = new MyMessabeBox();
+                msg_box.user_id = result.user.id;
+                msg_box.userId = result.user.userId;
+                msg_box.addFriendMsgs = [];
+            }
+            msg_box.addFriendMsgs.push({userId: friend_userId, msg: friend_msg, date: Date.now()});
+        });
+};
+
 

@@ -7,6 +7,8 @@ var utils = require('../../../util/utils');
 var Result = require('../../../domain/result');
 var User = require('../../../domain/user');
 var MyPlayed = require('../../../domain/myPlayed');
+var MyFriend = require('../../../domain/myFriend');
+var MyMessageBox = require('../../../domain/myMessageBox');
 var DdzUserAsset = require('../../../domain/ddzUserAsset');
 var DdzGoodsPackage = require('../../../domain/ddzGoodsPackage');
 
@@ -187,3 +189,21 @@ Handler.prototype.getFriends = function (msg, session, next) {
     });
 };
 
+
+Handler.prototype.addFriend = function (msg, session, next) {
+  var userId = session.uid;
+  var friend_userId = msg.friend_userId;
+  var friend_msg = msg.friend_msg;
+
+};
+
+Hander.prototype.replyAddFriendMsg = function(msg, session, next) {
+  var userId = session.uid;
+  var friend_userId = msg.friend_userId;
+
+};
+
+Handler.prototype.getMyMessageBoxes = function(msg, session, next){
+  var userId = session.uid;
+
+};
