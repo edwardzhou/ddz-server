@@ -169,7 +169,7 @@ Handler.prototype.getPlayWithMeUsers = function (msg, session, next) {
 Handler.prototype.getFriends = function (msg, session, next) {
   var userId = session.uid;
   logger.info('HallHandler.getFriends, userId: ', userId);
-  MyPlayed.find({me_userId:userId})
+  MyPlayed.find({userId:userId})
     .sort({'playedUsers.lastPlayed': -1})
     .execQ()
     .then(function(my_friend){

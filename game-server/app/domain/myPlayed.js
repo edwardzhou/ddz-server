@@ -8,7 +8,6 @@
 var mongoose = require('mongoose-q')();
 var DomainUtils = require("./domainUtils");
 
-
 var MyPlayedSchema = mongoose.Schema({
   user_id: {type: mongoose.Schema.Types.ObjectId},
   userId: Number,   // 用户Id
