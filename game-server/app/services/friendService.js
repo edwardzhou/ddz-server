@@ -18,6 +18,12 @@ FriendService.init = function(app) {
 
 };
 
+/**
+ * 更新或增加打过牌的玩家信息
+ * @param players
+ * @param play_results
+ */
+
 FriendService.updatePlayWithMeUsers = function(players, play_results) {
     logger.info("[FriendService.updatePlayWithMeUsers]");
     logger.info("[FriendService.updatePlayWithMeUsers], players.length=", players.length);
@@ -79,3 +85,4 @@ FriendService.doUpdatePlayWithMePlayer = function(me_player, friend_players){
 
         });
 };
+
