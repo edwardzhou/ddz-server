@@ -6,6 +6,7 @@
  * 与我打过牌的玩家
  */
 var mongoose = require('mongoose-q')();
+var DomainUtils = require("./domainUtils");
 
 var MyPlayedSchema = mongoose.Schema({
   user_id: {type: mongoose.Schema.Types.ObjectId},
