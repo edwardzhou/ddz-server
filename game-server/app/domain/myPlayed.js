@@ -1,30 +1,21 @@
 /**
- * Created by edwardzhou on 15/4/21.
+<<<<<<< HEAD
+ * Created by jeffcao on 15/4/21.
  */
-
-
+/**
+ * 与我打过牌的玩家
+ */
 var mongoose = require('mongoose-q')();
-var User = require('./user');
+var DomainUtils = require("./domainUtils");
 
 var MyPlayedSchema = mongoose.Schema({
   user_id: {type: mongoose.Schema.Types.ObjectId},
   userId: Number,   // 用户Id
-  playedUsers: [{
-    //user_id: {type: mongoose.Schema.Types.ObjectId},
-    userId: Number,
-    nickName: String,
-    gender: String,
-    headIcon: Number,
-    lastPlayed: {type: Date, default: Date.now},
-    gameStat: {     // 输赢统计
-      won: {type: Number, default: 0},
-      lose: {type: Number, default: 0}
-    }
-  }],
+  playedUsers: {type: mongoose.Schema.Types.Mixed},
   created_at: {type: Date, default: Date.now},
   updated_at: {type: Date, default: Date.now}
 }, {
-  collection: 'my_played'
+  collection: 'my_playeds'
 });
 
 var __toParams = function(model, opts) {
@@ -42,7 +33,7 @@ var __toParams = function(model, opts) {
 MyPlayedSchema.statics.toParams = __toParams;
 
 MyPlayedSchema.methods.toParams = function(opts) {
-  return __toParams(this, opts);
+    return __toParams(this, opts);
 };
 
 var MyPlayed = mongoose.model('MyPlayed', MyPlayedSchema);

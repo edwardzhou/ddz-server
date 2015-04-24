@@ -6,7 +6,7 @@ var logger = require('pomelo-logger').getLogger(__filename);
 var utils = require('../../../util/utils');
 var Result = require('../../../domain/result');
 var User = require('../../../domain/user');
-var PlayWithMeUser = require('../../../domain/playWithMeUser');
+var MyPlayed = require('../../../domain/myPlayed');
 var DdzUserAsset = require('../../../domain/ddzUserAsset');
 var DdzGoodsPackage = require('../../../domain/ddzGoodsPackage');
 
@@ -147,18 +147,17 @@ Handler.prototype.useAssetItem = function(msg, session, next) {
 Handler.prototype.getPlayWithMeUsers = function (msg, session, next) {
   var userId = session.uid;
   logger.info('HallHandler.getPlayWithMeUsers, userId: ', userId);
-  PlayWithMeUser.find({me_userId:userId})
-    .sort({last_play_time: -1})
+  MyPlayed.find({userId:userId})
+    .sort({'playedUsers.lastPlayed': 1})
     .execQ()
-    .then(function(play_with_me_users){
+    .then(function(my_played){
       var return_result = [];
-      logger.info('HallHandler.getPlayWithMeUsers, play_with_me_users=', play_with_me_users);
-      if (play_with_me_users != null) {
-        for (var index = 0; index < play_with_me_users.length; index++) {
-          return_result.push(play_with_me_users[index].toParams());
-        }
+      logger.info('HallHandler.getPlayWithMeUsers, play_with_me_users=', my_played);
+      if (my_played != null) {
+        return_result =  my_played.toParams();
       }
       logger.info('HallHandler.getPlayWithMeUsers done.');
+        logger.info('HallHandler.getPlayWithMeUsers done. return_result:',return_result);
       utils.invokeCallback(next, null, {result: true, users: return_result});
     })
     .fail(function(error){
@@ -170,16 +169,14 @@ Handler.prototype.getPlayWithMeUsers = function (msg, session, next) {
 Handler.prototype.getFriends = function (msg, session, next) {
   var userId = session.uid;
   logger.info('HallHandler.getFriends, userId: ', userId);
-  PlayWithMeUser.find({me_userId:userId})
-    .sort({last_play_time: -1})
+  MyPlayed.find({userId:userId})
+    .sort({'playedUsers.lastPlayed': -1})
     .execQ()
-    .then(function(friends){
+    .then(function(my_friend){
       var return_result = [];
-      logger.info('HallHandler.getFriends, friends=', friends);
-      if (friends != null) {
-        for (var index = 0; index < friends.length; index++) {
-          return_result.push(friends[index].toParams());
-        }
+      logger.info('HallHandler.getFriends, friends=', my_friend);
+      if (my_friend != null) {
+        return_result = my_friend.toParams();
       }
       logger.info('HallHandler.getFriends done.');
       utils.invokeCallback(next, null, {result: true, users: return_result});
