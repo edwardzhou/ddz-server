@@ -94,6 +94,28 @@ Handler.prototype.cancelDelegate = function(msg, session, next) {
 
 };
 
+Handler.prototype.setDelegate = function(msg, session, next) {
+  var room_id = session.get('room_id');
+  var uid = session.uid;
+  var sid = session.frontendId;
+  var table_id = session.get('table_id');
+
+  var params = {
+    uid: uid,
+    serverId: sid,
+    room_id: room_id,
+    table_id: table_id
+  };
+
+  logger.debug('[setDelegate] msg => %j， params => %j', msg, params);
+
+  this.app.rpc.area.gameRemote.setDelegate(session, params, function(err, data) {
+    logger.debug('[setDelegate] gameRemote.setDelegate returns %j', data);
+    utils.invokeCallback(next, err, data);
+  });
+
+};
+
 Handler.prototype.restoreGame = function(msg, session, next) {
   logger.debug('[GameHandler.restoreGame] session: ' , session);
   var room_id = session.get('room_id');

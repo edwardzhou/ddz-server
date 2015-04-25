@@ -843,3 +843,35 @@ exp.cancelDelegating = function(table, player, next) {
   // 回调通知
   utils.invokeCallback(next);
 };
+
+/**
+ * 设置托管
+ *
+ * 如果玩家不是当前令牌玩家，则简单取消托管标志；
+ * 如果玩家是当前令牌玩家，则需要先取消托管的定时器，然后重新计算超时时间，设置定时器。
+ * @param table
+ * @param player
+ * @param next
+ */
+exp.setDelegating = function(table, player, next) {
+  if (!!table && !!table.pokeGame) {
+    var pokeGame = table.pokeGame;
+    // 取消托管标记
+    player.delegating = true;
+    if (player.userId == pokeGame.token.nextUserId) {
+      // 当前玩家是令牌玩家
+      var lastTimeout = pokeGame.lastTimeout;
+      //// 获取正常动作的超时时间
+      //var timing = this.getPlayerTiming(player, table, 'playCard');
+      //// 减去已流失的时间
+      //timing -= Math.floor( (Date.now() - lastTimeout.timestamp) / 1000);
+      //// 加多5秒用于放宽对网络速度的依赖。
+      //timing += 5;
+      // 重新设置定时器
+      setupNextPlayerTimeout(table, lastTimeout.timeoutCallback, 0.5);
+    }
+  }
+
+  // 回调通知
+  utils.invokeCallback(next);
+};
