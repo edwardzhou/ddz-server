@@ -109,3 +109,22 @@ remoteHandler.cancelDelegate = function(msg, cb) {
 
 
 };
+
+
+remoteHandler.setDelegate = function(msg, cb) {
+  var uid = msg.uid;
+  var sid = msg.serverId;
+  var room_id = msg.room_id;
+  var table_id = msg.table_id;
+
+  var room = roomService.getRoom(room_id);
+  var player = room.getPlayer(uid);
+  var table = room.getGameTable(player.tableId)
+
+  this.cardService.setDelegating(table, player, function(){
+    utils.invokeCallback(cb, null, {result: new Result(0)});
+  });
+  //player.delegating = false;
+
+
+};

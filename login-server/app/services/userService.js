@@ -326,6 +326,7 @@ UserService.signUp = function (signUpParams, cb) {
       User.copyHandset(results.user.signedUp.handset, ddzProfile.lastSignedIn.handset);
       ddzProfile.userId = results.user.userId;
       ddzProfile.user_id = results.user.id;
+      ddzProfile.coins = 6000;
       return ddzProfile.saveQ();
     })
     .then(function (ddzProfile) {
