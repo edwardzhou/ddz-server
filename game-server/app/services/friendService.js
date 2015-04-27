@@ -143,13 +143,15 @@ FirendService.replyAddFriendMsg = function (userId, friend_userId, is_yes){
     var result;
     Users.findOneQ({userId: friend_userId})
         .then(function(user){
+            // result.user 为加好友请求发起者
             result.user = user;
-            return MyMessabeBox.findOneQ({userId: friend_userId});
+            return MyMessabeBox.findOneQ({userId: user_id});
         })
         .then(function(msg_box){
+            // 删除被请求者的加好友消息
             var del_msg = msg_box.addFriendMsgs[0];
             msg_box.addFriendMsgs.forEach(function(msg){
-                if (msg.userId == userId) {del_msg = msg;}
+                if (msg.userId == friend_userId) {del_msg = msg;}
             });
             msg_box.addFriendMsgs.splice(msg_box.addFriendMsgs.indexOf(del_msg));
             msg_box.markModified('addFriendMsgs');
@@ -164,6 +166,7 @@ FirendService.replyAddFriendMsg = function (userId, friend_userId, is_yes){
         })
         .then(function(friend_user){
             if (is_yes){
+                // result.friend_user 是被请求为好友的玩家
                 result.friend_user = friend_user;
                 return MyFriend.findOneQ({userId: friend_userId});
             }
@@ -172,6 +175,7 @@ FirendService.replyAddFriendMsg = function (userId, friend_userId, is_yes){
         })
         .then(function(my_friend){
             if (is_yes){
+                // result.my_friend 为加好友请求发起者的好友列表对象
                 result.my_friend = my_friend;
                 return MyFriend.findOneQ({userId: userId});
             }
@@ -179,13 +183,15 @@ FirendService.replyAddFriendMsg = function (userId, friend_userId, is_yes){
         })
         .then(function(my_friend){
             if (is_yes){
+                // result.friend_user_friend 为被请求者的好友列表对象
                 result.friend_user_friend = my_friend;
 
+                // 将被请求者加入请求者的好友列表
                 result.my_friend.friends.push({userId: result.friend_user.userId, nickName: result.friend_user.nickName,
                     headIcon: result.friend_user.headIcon, gender: result.friend_user.gender, addDate: Date.now()});
                 result.my_friend.markModified('friends');
                 result.my_friend.save();
-
+                // 将请求者加入被请求者的好友列表
                 result.friend_user_friend.friends.push({userId: result.user.userId, nickName: result.user.nickName,
                     headIcon: result.user.headIcon, gender: result.user.gender, addDate: Date.now()});
                 result.friend_user_friend.markModified('friends');
@@ -198,7 +204,7 @@ FirendService.replyAddFriendMsg = function (userId, friend_userId, is_yes){
 
             var msgData = {userId: result.friend_user.userId, nickName: result.friend_user.nickName, is_yes: is_yes};
             var target = [{uid: result.user.userId, sid: userSession.frontendId}];
-
+            // 向加好友请求者发送加友是否被同意消息
             process.nextTick(function() {
                 logger.info('[FriendService.replyAddFriendMsg] replyFirendReqest.msgData: ', msgData);
                 logger.info('[FriendService.replyAddFriendMsg] replyFirendReqest.target: ', target);
