@@ -12,6 +12,13 @@ var MyMessageBox = require('../../../domain/myMessageBox');
 var DdzUserAsset = require('../../../domain/ddzUserAsset');
 var DdzGoodsPackage = require('../../../domain/ddzGoodsPackage');
 
+var ErrorCode = require('../../../consts/errorCode');
+var Q = require('q');
+
+var friendService = require('../../../services/friendService');
+var addFriendQ = Q.nbind(friendService.addFriend, friendService);
+var replyAddFriendMsgQ = Q.nbind(friendService.replyAddFriendMsg, friendService);
+
 
 module.exports = function(app) {
   return new Handler(app);
@@ -194,12 +201,27 @@ Handler.prototype.addFriend = function (msg, session, next) {
   var userId = session.uid;
   var friend_userId = msg.friend_userId;
   var friend_msg = msg.friend_msg;
+  addFriendQ(userId, friend_userId, friend_msg)
+      .then(function(){
+        utils.invokeCallback(callback, null, {result: true});
+      })
+      .fail(function(error){
+        utils.invokeCallback(callback, null, {result: false, err: error});
+      });
 
 };
 
-Hander.prototype.replyAddFriendMsg = function(msg, session, next) {
+Handler.prototype.replyAddFriendMsg = function(msg, session, next) {
   var userId = session.uid;
   var friend_userId = msg.friend_userId;
+  var is_yes = msg.is_yes;
+  replyAddFriendMsgQ(userId, friend_userId, is_yes)
+      .then(function(){
+        utils.invokeCallback(callback, null, {result: true});
+      })
+      .fail(function(error){
+        utils.invokeCallback(callback, null, {result: false, err: error});
+      });
 
 };
 

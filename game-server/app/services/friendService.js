@@ -9,6 +9,8 @@ var Player = require('../domain/player');
 var MyPlayed = require('../domain/myPlayed');
 var MyFriend = require('../domain/myFriend');
 var MyMessabeBox = require('../domain/myMessageBox');
+var messageService = require('./messageService');
+var UserSession = require('../domain/userSession');
 
 var utils = require('../util/utils');
 
@@ -89,7 +91,7 @@ FriendService.doUpdatePlayWithMePlayer = function(me_player, friend_players){
         });
 };
 
-FriendService.addFriend = function (userId, friend_userId, friend_msg, cb){
+FriendService.addFriend = function (userId, friend_userId, friend_msg, callback){
     logger.info("[FriendService.addFriend], userId=", userId);
     logger.info("[FriendService.addFriend], friend_msg=", friend_msg);
     logger.info("[FriendService.addFriend], friend_userId=", friend_userId);
@@ -101,12 +103,114 @@ FriendService.addFriend = function (userId, friend_userId, friend_msg, cb){
         })
         .then(function(msg_box){
             if (msg_box == null){
+                logger.info("FriendService.addFriend. new MyMessageBox");
                 msg_box = new MyMessabeBox();
                 msg_box.user_id = result.user.id;
                 msg_box.userId = result.user.userId;
                 msg_box.addFriendMsgs = [];
             }
             msg_box.addFriendMsgs.push({userId: friend_userId, msg: friend_msg, date: Date.now()});
+            logger.info("FriendService.addFriend. msg_box.addFriendMsg:", msg_box.addFriendMsg);
+            msg_box.markModified('addFriendMsgs');
+            msg_box.save();
+
+            return UserSession.findOneQ({userId: userId});
+        })
+        .then(function(userSession){
+            logger.info("FriendService.addFriend. push message to client");
+            var msgData = {userId: result.user.userId, nickName: result.user.nickName, msg: friend_msg};
+            var target = [{uid: result.user.userId, sid: userSession.frontendId}];
+
+            process.nextTick(function() {
+                logger.info('[FriendService.addFriend] addFirendReqest.msgData: ', msgData);
+                logger.info('[FriendService.addFriend] addFirendReqest.target: ', target);
+              messageService.pushMessage('addFirendReqest',msgData ,target);
+            });
+        })
+        .fail(function(error){
+            var errCode = error.errCode || ErrorCode.SYSTEM_ERROR;
+            utils.invokeCallback(callback, {err: errCode}, null);
+        })
+        .done(function(){
+            utils.invokeCallback(callback, null, true);
+        });
+};
+
+FirendService.replyAddFriendMsg = function (userId, friend_userId, is_yes){
+    logger.info("[FriendService.replyAddFriendMsg], userId=", userId);
+    logger.info("[FriendService.replyAddFriendMsg], friend_msg=", friend_msg);
+    logger.info("[FriendService.replyAddFriendMsg], is_yes=", is_yes);
+    var result;
+    Users.findOneQ({userId: friend_userId})
+        .then(function(user){
+            result.user = user;
+            return MyMessabeBox.findOneQ({userId: friend_userId});
+        })
+        .then(function(msg_box){
+            var del_msg = msg_box.addFriendMsgs[0];
+            msg_box.addFriendMsgs.forEach(function(msg){
+                if (msg.userId == userId) {del_msg = msg;}
+            });
+            msg_box.addFriendMsgs.splice(msg_box.addFriendMsgs.indexOf(del_msg));
+            msg_box.markModified('addFriendMsgs');
+            logger.info("FriendService.replyAddFriendMsg. msg_box.addFriendMsg:", msg_box.addFriendMsg);
+            msg_box.save();
+
+            if (is_yes) {
+                return Users.findOneQ({userId: userId})
+            }
+            else {return null;}
+
+        })
+        .then(function(friend_user){
+            if (is_yes){
+                result.friend_user = friend_user;
+                return MyFriend.findOneQ({userId: friend_userId});
+            }
+            else {return null;}
+
+        })
+        .then(function(my_friend){
+            if (is_yes){
+                result.my_friend = my_friend;
+                return MyFriend.findOneQ({userId: userId});
+            }
+            else {return null;}
+        })
+        .then(function(my_friend){
+            if (is_yes){
+                result.friend_user_friend = my_friend;
+
+                result.my_friend.friends.push({userId: result.friend_user.userId, nickName: result.friend_user.nickName,
+                    headIcon: result.friend_user.headIcon, gender: result.friend_user.gender, addDate: Date.now()});
+                result.my_friend.markModified('friends');
+                result.my_friend.save();
+
+                result.friend_user_friend.friends.push({userId: result.user.userId, nickName: result.user.nickName,
+                    headIcon: result.user.headIcon, gender: result.user.gender, addDate: Date.now()});
+                result.friend_user_friend.markModified('friends');
+                result.friend_user_friend.save();
+            }
+            return UserSession.findOneQ({userId: friend_userId});
+        })
+        .then(function(userSession){
+            logger.info("FriendService.replyAddFriendMsg. push message to client");
+
+            var msgData = {userId: result.friend_user.userId, nickName: result.friend_user.nickName, is_yes: is_yes};
+            var target = [{uid: result.user.userId, sid: userSession.frontendId}];
+
+            process.nextTick(function() {
+                logger.info('[FriendService.replyAddFriendMsg] replyFirendReqest.msgData: ', msgData);
+                logger.info('[FriendService.replyAddFriendMsg] replyFirendReqest.target: ', target);
+                messageService.pushMessage('replyFirendReqest',msgData ,target);
+            });
+        })
+        .fail(function(error){
+            var errCode = error.errCode || ErrorCode.SYSTEM_ERROR;
+            utils.invokeCallback(callback, {err: errCode}, null);
+        })
+        .done(function(){
+            utils.invokeCallback(callback, null, true);
         });
 };
 
