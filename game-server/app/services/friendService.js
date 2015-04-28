@@ -109,7 +109,7 @@ FriendService.addFriend = function (userId, friend_userId, friend_msg, callback)
                 msg_box.userId = result.user.userId;
                 msg_box.addFriendMsgs = [];
             }
-            msg_box.addFriendMsgs.push({userId: friend_userId, msg: friend_msg, date: Date.now()});
+            msg_box.addFriendMsgs.push({userId: friend_userId, msg: friend_msg, status: 0, date: Date.now()});
             logger.info("FriendService.addFriend. msg_box.addFriendMsg:", msg_box.addFriendMsg);
             msg_box.markModified('addFriendMsgs');
             msg_box.save();
@@ -148,12 +148,12 @@ FirendService.replyAddFriendMsg = function (userId, friend_userId, is_yes){
             return MyMessabeBox.findOneQ({userId: user_id});
         })
         .then(function(msg_box){
-            // 删除被请求者的加好友消息
-            var del_msg = msg_box.addFriendMsgs[0];
+            // 修改被请求者的加好友消息状态
+            var cur_msg = msg_box.addFriendMsgs[0];
             msg_box.addFriendMsgs.forEach(function(msg){
-                if (msg.userId == friend_userId) {del_msg = msg;}
+                if (msg.userId == friend_userId) {cur_msg = msg;}
             });
-            msg_box.addFriendMsgs.splice(msg_box.addFriendMsgs.indexOf(del_msg));
+            cur_msg.status = is_yes? 2:3;
             msg_box.markModified('addFriendMsgs');
             logger.info("FriendService.replyAddFriendMsg. msg_box.addFriendMsg:", msg_box.addFriendMsg);
             msg_box.save();

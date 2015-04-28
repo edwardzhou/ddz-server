@@ -227,5 +227,24 @@ Handler.prototype.replyAddFriendMsg = function(msg, session, next) {
 
 Handler.prototype.getMyMessageBoxes = function(msg, session, next){
   var userId = session.uid;
+  var return_msg_box = {addFriendMsgs: []};
+  MyMessabeBox.findOneQ({userId: userId})
+      .then(function(msg_box){
+        return_msg_box.addFriendMsgs = [];
+        msg_box.addFriendMsgs.forEach(function(msg){
+          if (msg.status == 0){
+            return_msg_box.addFriendMsgs.push(JSON.parse(JSON.stringify(msg)));
+            msg.status = 1;
+          }
+        });
+        msg_box.markModified('addFriendMsgs');
+        return msg_box.saveQ();
 
+      })
+      .then(function(){
+        utils.invokeCallback(next, null, {result: true, myMsgBox: return_msg_box});
+      })
+      .fail(function(error){
+        utils.invokeCallback(next, null, {err: errCode, result: false});
+      })
 };
