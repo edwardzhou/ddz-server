@@ -11,11 +11,17 @@ var MyFriend = require('../domain/myFriend');
 var MyMessabeBox = require('../domain/myMessageBox');
 var messageService = require('./messageService');
 var UserSession = require('../domain/userSession');
+var ErrorCode = require('../consts/errorCode');
 
 var utils = require('../util/utils');
 
 var FriendService = module.exports;
 
+var genError = function (errCode) {
+    var error = new Error();
+    error.errCode = errCode;
+    return error;
+};
 
 FriendService.init = function(app) {
     logger.info("FriendService init.");
@@ -95,57 +101,83 @@ FriendService.addFriend = function (userId, friend_userId, friend_msg, callback)
     logger.info("[FriendService.addFriend], userId=", userId);
     logger.info("[FriendService.addFriend], friend_msg=", friend_msg);
     logger.info("[FriendService.addFriend], friend_userId=", friend_userId);
-    var result;
+    var result = {};
     Users.findOneQ({userId: userId})
         .then(function(user){
             result.user = user;
-            return MyMessabeBox.findOneQ({userId: userId});
+           return MyFriend.findOneQ({userId: userId});
+        })
+        .then(function(my_friend){
+            if (my_friend != null && my_friend.friends != null){
+                my_friend.friends.forEach(function(friend){
+                   if (friend.userId == friend_userId) {
+                       throw genError("alread is friend");
+                   }
+                });
+            }
+            return Users.findOneQ({userId: friend_userId});
+        })
+        .then(function(friend_user){
+            result.friend_user = friend_user;
+            return MyMessabeBox.findOneQ({userId: friend_userId});
         })
         .then(function(msg_box){
             if (msg_box == null){
                 logger.info("FriendService.addFriend. new MyMessageBox");
                 msg_box = new MyMessabeBox();
-                msg_box.user_id = result.user.id;
-                msg_box.userId = result.user.userId;
+                msg_box.user_id = result.friend_user.id;
+                msg_box.userId = result.friend_user.userId;
                 msg_box.addFriendMsgs = [];
             }
-            msg_box.addFriendMsgs.push({userId: friend_userId, msg: friend_msg, status: 0, date: Date.now()});
+            msg_box.addFriendMsgs.push({userId: userId, msg: friend_msg, status: 0, date: Date.now()});
             logger.info("FriendService.addFriend. msg_box.addFriendMsg:", msg_box.addFriendMsg);
             msg_box.markModified('addFriendMsgs');
             msg_box.save();
 
-            return UserSession.findOneQ({userId: userId});
+            return UserSession.findOneQ({userId: friend_userId});
         })
         .then(function(userSession){
             logger.info("FriendService.addFriend. push message to client");
-            var msgData = {userId: result.user.userId, nickName: result.user.nickName, msg: friend_msg};
-            var target = [{uid: result.user.userId, sid: userSession.frontendId}];
+            if (userSession != null) {
+                var msgData = {
+                    userId: result.friend_user.userId,
+                    nickName: result.friend_user.nickName,
+                    msg: friend_msg
+                };
+                var target = [{uid: result.friend_user.userId, sid: userSession.frontendId}];
 
-            process.nextTick(function() {
-                logger.info('[FriendService.addFriend] addFirendReqest.msgData: ', msgData);
-                logger.info('[FriendService.addFriend] addFirendReqest.target: ', target);
-              messageService.pushMessage('addFirendReqest',msgData ,target);
-            });
+                process.nextTick(function () {
+                    logger.info('[FriendService.addFriend] addFirendReqest.msgData: ', msgData);
+                    logger.info('[FriendService.addFriend] addFirendReqest.target: ', target);
+                    messageService.pushMessage('addFirendReqest', msgData, target);
+                });
+            }
         })
         .fail(function(error){
-            var errCode = error.errCode || ErrorCode.SYSTEM_ERROR;
-            utils.invokeCallback(callback, {err: errCode}, null);
+            logger.info('[FriendService.addFriend] faild. error:', error.errCode);
+            if (error.errCode != "alread is friend") {
+                var errCode = error.errCode || ErrorCode.SYSTEM_ERROR;
+                utils.invokeCallback(callback, null, {err: errCode});
+            }else {
+                utils.invokeCallback(callback, null, {result: false, msg: "alread is friend"});
+            }
         })
         .done(function(){
-            utils.invokeCallback(callback, null, true);
+            logger.info('[FriendService.addFriend] done.');
+            utils.invokeCallback(callback, null, {result: true});
         });
 };
 
-FirendService.replyAddFriendMsg = function (userId, friend_userId, is_yes){
+FriendService.replyAddFriendMsg = function (userId, friend_userId, is_yes, callback){
     logger.info("[FriendService.replyAddFriendMsg], userId=", userId);
-    logger.info("[FriendService.replyAddFriendMsg], friend_msg=", friend_msg);
+    logger.info("[FriendService.replyAddFriendMsg], friend_userId=", friend_userId);
     logger.info("[FriendService.replyAddFriendMsg], is_yes=", is_yes);
-    var result;
+    var result = {};
     Users.findOneQ({userId: friend_userId})
         .then(function(user){
             // result.user 为加好友请求发起者
             result.user = user;
-            return MyMessabeBox.findOneQ({userId: user_id});
+            return MyMessabeBox.findOneQ({userId: userId});
         })
         .then(function(msg_box){
             // 修改被请求者的加好友消息状态
@@ -176,6 +208,13 @@ FirendService.replyAddFriendMsg = function (userId, friend_userId, is_yes){
         .then(function(my_friend){
             if (is_yes){
                 // result.my_friend 为加好友请求发起者的好友列表对象
+                if (my_friend == null){
+                    my_friend = new MyFriend();
+                    my_friend.friends = [];
+                    my_friend.user_id = result.user.id;
+                    my_friend.userId = result.user.userId;
+
+                }
                 result.my_friend = my_friend;
                 return MyFriend.findOneQ({userId: userId});
             }
@@ -184,6 +223,12 @@ FirendService.replyAddFriendMsg = function (userId, friend_userId, is_yes){
         .then(function(my_friend){
             if (is_yes){
                 // result.friend_user_friend 为被请求者的好友列表对象
+                if (my_friend == null){
+                    my_friend = new MyFriend();
+                    my_friend.friends = [];
+                    my_friend.user_id = result.friend_user.id;
+                    my_friend.userId = result.friend_user.userId;
+                }
                 result.friend_user_friend = my_friend;
 
                 // 将被请求者加入请求者的好友列表
@@ -200,22 +245,26 @@ FirendService.replyAddFriendMsg = function (userId, friend_userId, is_yes){
             return UserSession.findOneQ({userId: friend_userId});
         })
         .then(function(userSession){
-            logger.info("FriendService.replyAddFriendMsg. push message to client");
+            logger.info("FriendService.replyAddFriendMsg. push message to client, ");
+            if (userSession != null){
+                var msgData = {userId: result.friend_user.userId, nickName: result.friend_user.nickName, is_yes: is_yes};
+                var target = [{uid: result.user.userId, sid: userSession.frontendId}];
+                // 向加好友请求者发送加友是否被同意消息
+                process.nextTick(function() {
+                    logger.info('[FriendService.replyAddFriendMsg] replyFirendReqest.msgData: ', msgData);
+                    logger.info('[FriendService.replyAddFriendMsg] replyFirendReqest.target: ', target);
+                    messageService.pushMessage('replyFirendReqest',msgData ,target);
+                });
+            }
 
-            var msgData = {userId: result.friend_user.userId, nickName: result.friend_user.nickName, is_yes: is_yes};
-            var target = [{uid: result.user.userId, sid: userSession.frontendId}];
-            // 向加好友请求者发送加友是否被同意消息
-            process.nextTick(function() {
-                logger.info('[FriendService.replyAddFriendMsg] replyFirendReqest.msgData: ', msgData);
-                logger.info('[FriendService.replyAddFriendMsg] replyFirendReqest.target: ', target);
-                messageService.pushMessage('replyFirendReqest',msgData ,target);
-            });
         })
         .fail(function(error){
             var errCode = error.errCode || ErrorCode.SYSTEM_ERROR;
+            logger.info('[FriendService.replyFirendReqest] faild. error:', error);
             utils.invokeCallback(callback, {err: errCode}, null);
         })
         .done(function(){
+            logger.info('[FriendService.replyFirendReqest] done.');
             utils.invokeCallback(callback, null, true);
         });
 };

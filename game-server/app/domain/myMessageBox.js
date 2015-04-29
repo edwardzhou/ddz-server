@@ -15,7 +15,7 @@ var MyMessageBoxSchema = mongoose.Schema({
     created_at: {type: Date, default: Date.now},
     updated_at: {type: Date, default: Date.now}
 }, {
-    collection: 'my_friends'
+    collection: 'my_message_boxes'
 });
 
 

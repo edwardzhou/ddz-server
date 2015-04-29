@@ -178,8 +178,8 @@ Handler.prototype.getPlayWithMeUsers = function (msg, session, next) {
 Handler.prototype.getFriends = function (msg, session, next) {
   var userId = session.uid;
   logger.info('HallHandler.getFriends, userId: ', userId);
-  MyPlayed.find({userId:userId})
-    .sort({'playedUsers.lastPlayed': -1})
+    MyFriend.find({userId:userId})
+    .sort({'friends.addDate': -1})
     .execQ()
     .then(function(my_friend){
       var return_result = [];
@@ -202,8 +202,8 @@ Handler.prototype.addFriend = function (msg, session, next) {
   var friend_userId = msg.friend_userId;
   var friend_msg = msg.friend_msg;
   addFriendQ(userId, friend_userId, friend_msg)
-      .then(function(){
-        utils.invokeCallback(callback, null, {result: true});
+      .then(function(result){
+        utils.invokeCallback(callback, null, result);
       })
       .fail(function(error){
         utils.invokeCallback(callback, null, {result: false, err: error});
@@ -228,7 +228,7 @@ Handler.prototype.replyAddFriendMsg = function(msg, session, next) {
 Handler.prototype.getMyMessageBoxes = function(msg, session, next){
   var userId = session.uid;
   var return_msg_box = {addFriendMsgs: []};
-  MyMessabeBox.findOneQ({userId: userId})
+  MyMessageBox.findOneQ({userId: userId})
       .then(function(msg_box){
         return_msg_box.addFriendMsgs = [];
         msg_box.addFriendMsgs.forEach(function(msg){
