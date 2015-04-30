@@ -28,7 +28,16 @@ var __toParams = function(model, opts) {
         friends: model.friends,
         updated_at: model.updated_at
     };
+    transObj.friends.sort(function (x, y){
+       if (x.addDate > y.addDate){
+           return -1;
+       }
+        if (x.addDate < y.addDate){
+            return 1;
+        }
+        return 0;
 
+    });
     transObj = DomainUtils.adjustAttributes(transObj, opts);
 
     return transObj;

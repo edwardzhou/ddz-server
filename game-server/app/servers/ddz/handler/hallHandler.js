@@ -17,7 +17,7 @@ var Q = require('q');
 
 var friendService = require('../../../services/friendService');
 var addFriendQ = Q.nbind(friendService.addFriend, friendService);
-var replyAddFriendMsgQ = Q.nbind(friendService.replyAddFriendMsg, friendService);
+var confirmAddFriendQ = Q.nbind(friendService.confirmAddFriend, friendService);
 
 
 module.exports = function(app) {
@@ -156,9 +156,7 @@ Handler.prototype.useAssetItem = function(msg, session, next) {
 Handler.prototype.getPlayWithMeUsers = function (msg, session, next) {
   var userId = session.uid;
   logger.info('HallHandler.getPlayWithMeUsers, userId: ', userId);
-  MyPlayed.findOne({userId:userId})
-    //.sort({'playedUsers.lastPlayed': 1})
-    .execQ()
+  MyPlayed.findOneQ({userId:userId})
     .then(function(my_played){
       var return_result = [];
       logger.info('HallHandler.getPlayWithMeUsers, play_with_me_users=', my_played);
@@ -178,9 +176,7 @@ Handler.prototype.getPlayWithMeUsers = function (msg, session, next) {
 Handler.prototype.getFriends = function (msg, session, next) {
   var userId = session.uid;
   logger.info('HallHandler.getFriends, userId: ', userId);
-    MyFriend.find({userId:userId})
-    .sort({'friends.addDate': -1})
-    .execQ()
+    MyFriend.findOneQ({userId:userId})
     .then(function(my_friend){
       var return_result = [];
       logger.info('HallHandler.getFriends, friends=', my_friend);
@@ -211,11 +207,11 @@ Handler.prototype.addFriend = function (msg, session, next) {
 
 };
 
-Handler.prototype.replyAddFriendMsg = function(msg, session, next) {
+Handler.prototype.confirmAddFriend = function(msg, session, next) {
   var userId = session.uid;
   var friend_userId = msg.friend_userId;
-  var is_yes = msg.is_yes;
-  replyAddFriendMsgQ(userId, friend_userId, is_yes)
+  var accetp = msg.accetp;
+  confirmAddFriendQ(userId, friend_userId, accetp)
       .then(function(){
         utils.invokeCallback(callback, null, {result: true});
       })

@@ -40,11 +40,11 @@ function addFriend_test(){
 }
 
 function replyAddFriendMsg_yes_test(){
-    FriendService.replyAddFriendMsg(54531, 54530, true);
+    FriendService.confirmAddFriend(54531, 54530, true);
 }
 
 function replyAddFriendMsg_no_test(){
-    FriendService.replyAddFriendMsg(54531, 54530, false);
+    FriendService.confirmAddFriend(54531, 54530, false);
 }
 
 function getMyMessageBox_test(){

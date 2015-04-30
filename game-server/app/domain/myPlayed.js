@@ -25,6 +25,16 @@ var __toParams = function(model, opts) {
     updated_at: model.updated_at
   };
 
+  transObj.playedUsers.sort(function (x, y){
+    if (x.lastPlayed > y.lastPlayed){
+      return -1;
+    }
+    if (x.lastPlayed < y.lastPlayed){
+      return 1;
+    }
+    return 0;
+
+  });
   transObj = DomainUtils.adjustAttributes(transObj, opts);
 
   return transObj;

@@ -168,10 +168,10 @@ FriendService.addFriend = function (userId, friend_userId, friend_msg, callback)
         });
 };
 
-FriendService.replyAddFriendMsg = function (userId, friend_userId, is_yes, callback){
-    logger.info("[FriendService.replyAddFriendMsg], userId=", userId);
-    logger.info("[FriendService.replyAddFriendMsg], friend_userId=", friend_userId);
-    logger.info("[FriendService.replyAddFriendMsg], is_yes=", is_yes);
+FriendService.confirmAddFriend = function (userId, friend_userId, accept, callback){
+    logger.info("[FriendService.confirmAddFriend], userId=", userId);
+    logger.info("[FriendService.confirmAddFriend], friend_userId=", friend_userId);
+    logger.info("[FriendService.confirmAddFriend], is_yes=", accept);
     var result = {};
     Users.findOneQ({userId: friend_userId})
         .then(function(user){
@@ -185,19 +185,19 @@ FriendService.replyAddFriendMsg = function (userId, friend_userId, is_yes, callb
             msg_box.addFriendMsgs.forEach(function(msg){
                 if (msg.userId == friend_userId) {cur_msg = msg;}
             });
-            cur_msg.status = is_yes? 2:3;
+            cur_msg.status = accept? 2:3;
             msg_box.markModified('addFriendMsgs');
-            logger.info("FriendService.replyAddFriendMsg. msg_box.addFriendMsg:", msg_box.addFriendMsg);
+            logger.info("FriendService.confirmAddFriend. msg_box.addFriendMsg:", msg_box.addFriendMsg);
             msg_box.save();
 
-            if (is_yes) {
+            if (accept) {
                 return Users.findOneQ({userId: userId})
             }
             else {return null;}
 
         })
         .then(function(friend_user){
-            if (is_yes){
+            if (accept){
                 // result.friend_user 是被请求为好友的玩家
                 result.friend_user = friend_user;
                 return MyFriend.findOneQ({userId: friend_userId});
@@ -206,7 +206,7 @@ FriendService.replyAddFriendMsg = function (userId, friend_userId, is_yes, callb
 
         })
         .then(function(my_friend){
-            if (is_yes){
+            if (accept){
                 // result.my_friend 为加好友请求发起者的好友列表对象
                 if (my_friend == null){
                     my_friend = new MyFriend();
@@ -221,7 +221,7 @@ FriendService.replyAddFriendMsg = function (userId, friend_userId, is_yes, callb
             else {return null;}
         })
         .then(function(my_friend){
-            if (is_yes){
+            if (accept){
                 // result.friend_user_friend 为被请求者的好友列表对象
                 if (my_friend == null){
                     my_friend = new MyFriend();
@@ -245,14 +245,14 @@ FriendService.replyAddFriendMsg = function (userId, friend_userId, is_yes, callb
             return UserSession.findOneQ({userId: friend_userId});
         })
         .then(function(userSession){
-            logger.info("FriendService.replyAddFriendMsg. push message to client, ");
+            logger.info("FriendService.confirmAddFriend. push message to client, ");
             if (userSession != null){
-                var msgData = {userId: result.friend_user.userId, nickName: result.friend_user.nickName, is_yes: is_yes};
+                var msgData = {userId: result.friend_user.userId, nickName: result.friend_user.nickName, accept: accept};
                 var target = [{uid: result.user.userId, sid: userSession.frontendId}];
                 // 向加好友请求者发送加友是否被同意消息
                 process.nextTick(function() {
-                    logger.info('[FriendService.replyAddFriendMsg] replyFirendReqest.msgData: ', msgData);
-                    logger.info('[FriendService.replyAddFriendMsg] replyFirendReqest.target: ', target);
+                    logger.info('[FriendService.confirmAddFriend] replyFirendReqest.msgData: ', msgData);
+                    logger.info('[FriendService.confirmAddFriend] replyFirendReqest.target: ', target);
                     messageService.pushMessage('replyFirendReqest',msgData ,target);
                 });
             }
