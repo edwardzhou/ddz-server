@@ -26,13 +26,7 @@ var __toParams = function(model, opts) {
   };
 
   transObj.playedUsers.sort(function (x, y){
-    if (x.lastPlayed > y.lastPlayed){
-      return -1;
-    }
-    if (x.lastPlayed < y.lastPlayed){
-      return 1;
-    }
-    return 0;
+    return y.lastPlayed - x.lastPlayed;
 
   });
   transObj = DomainUtils.adjustAttributes(transObj, opts);

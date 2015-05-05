@@ -29,13 +29,7 @@ var __toParams = function(model, opts) {
         updated_at: model.updated_at
     };
     transObj.friends.sort(function (x, y){
-       if (x.addDate > y.addDate){
-           return -1;
-       }
-        if (x.addDate < y.addDate){
-            return 1;
-        }
-        return 0;
+       return y.addDate - x.addDate;
 
     });
     transObj = DomainUtils.adjustAttributes(transObj, opts);
