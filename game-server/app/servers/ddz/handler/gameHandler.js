@@ -14,10 +14,11 @@ var Handler = function(app) {
 
 Handler.prototype.ready = function(msg, session, next) {
   var room_id = session.get('room_id');
+  var table_id = msg.table_id;
   var uid = session.uid;
   var sid = session.frontendId;
 
-  this.app.rpc.area.gameRemote.readyGame(session, {uid: uid, serverId: sid, room_id: room_id}, function(err, data) {
+  this.app.rpc.area.gameRemote.readyGame(session, {uid: uid, serverId: sid, room_id: room_id, table_id: table_id}, function(err, data) {
     logger.info("[Connector.ready] area.gameRemote.readyGame returned: ", data);
     utils.invokeCallback(next, err, data);
     // next(null, data);

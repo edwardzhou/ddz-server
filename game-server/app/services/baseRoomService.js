@@ -1,3 +1,7 @@
+/**
+ * Created by edwardzhou on 15/5/2.
+ */
+
 var logger = require('pomelo-logger').getLogger('pomelo', __filename);
 var util = require('util');
 var GameRoom = require('../domain/gameRoom');
@@ -7,63 +11,83 @@ var PlayerState = require('../consts/consts').PlayerState;
 var Player = require('../domain/player');
 
 var robotService = require('./robotService');
-var exp = module.exports;
 
-var roomsMap = {};
-var pomeloApp = null;
+var BaseRoomService = function(pomeloApp) {
+  this.theApp = pomeloApp;
+  this.roomsMap = {};
+  this.onStartNewGameCallback = null;
+  this.clazzName = 'BaseRoomService';
+};
 
-/**
- * 初始化房间信息
- * @param app
- * @param roomIds
- * @returns {*}
- */
-exp.init = function(app, roomIds) {
-  logger.info("roomIds: ", roomIds);
-  pomeloApp = app;
-  //this.robotService = app.get('robotService');
+BaseRoomService.prototype.init = function(roomIds) {
+  var self = this;
+  logger.info("[%s][%s] roomIds: ",
+    self.theApp.getServerId(),
+    self.clazzName,
+    roomIds);
 
   for (var index=0; index<roomIds.length; index++) {
     var roomId = roomIds[index];
-    loadRoom(roomId, function(err, room) {
-        logger.info('roomService.init, room:', room);
-      if (!!room) {
-        roomsMap[room.roomId] = room;
-        room.roomService = this;
+    this.loadRoom(roomId, function(err, theRoomId, theRoom) {
+      logger.info('[%s] [%s] BaseRoomService.init, room:',
+        self.theApp.getServerId(),
+        self.clazzName,
+        theRoom);
+      if (!!theRoom) {
+        self.roomsMap[theRoom.roomId] = theRoom;
+        theRoom.roomService = self;
       } else {
-        logger.error('[%s] [RoomService.init] failed to load room[id = %d] error:', pomeloApp.getServerId(), roomId, err );
+        logger.error('[%s] [BaseRoomService.init] failed to load room[id = %d] error:',
+          self.theApp.getServerId(),
+          theRoomId,
+          err );
       }
     });
   }
 
-  return exp;
+  return this;
 };
-
-exp.onStartNewGameCallback = null;
 
 /**
  * 根据房间id获取房间实例。
  * @param roomId
  * @returns {*}
  */
-exp.getRoom = function(roomId) {
+BaseRoomService.prototype.getRoom = function(roomId) {
   //logger.info("roomsMap: %j", roomsMap);
-  return roomsMap[roomId];
+  return this.roomsMap[roomId];
 };
 
 /**
  * 重新加载房间信息
  * @param cb
  */
-exp.reloadRooms = function(cb) {
-  logger.info("[RoomService.reloadRooms] reload rooms...");
+BaseRoomService.prototype.reloadRooms = function(cb) {
+  logger.info("[BaseRoomService.reloadRooms] reload rooms...");
   for (var roomId in roomsMap) {
-    var room = roomsMap[roomId];
+    var room = this.roomsMap[roomId];
     room.reloadFromDb();
   }
 
   utils.invokeCallback(cb);
 };
+
+/**
+ * 加载房间信息
+ * @param roomId
+ * @param callback
+ */
+BaseRoomService.prototype.loadRoom = function(roomId, callback) {
+  GameRoom.findOne({roomId:roomId}, function(err, room) {
+    if (!!room) {
+      room.initRoom();
+    } else {
+      logger.error('[BaseRoomService.init] failed to load room[id = %d] error:', roomId, err );
+    }
+    utils.invokeCallback(callback, err, roomId, room);
+  });
+};
+
 
 /**
  * 玩家进入房间
@@ -72,28 +96,24 @@ exp.reloadRooms = function(cb) {
  * @param lastTableId - 玩家上次进入时的table id
  * @param cb
  */
-exp.enterRoom = function(player, roomId, lastTableId, cb) {
-  var room = roomsMap[roomId];
+BaseRoomService.prototype.enterRoom = function(player, roomId, autoReady, lastTableId, cb) {
+  var room = this.roomsMap[roomId];
 
-  room.startNewGameCallback = cb;
-//  if (!room.startNewGameCallback) {
-//    room.startNewGameCallback = cb;
-//  }
+  if (lastTableId == null && cb == null) {
+    cb = autoReady;
+    autoReady = true;
+  } else if (cb == null) {
+    cb = lastTableId;
+  }
 
-  room.enter(player, lastTableId);
-  exp.playerReady(room, player, function(table) {
-    //utils.invokeCallback(cb, table);
-  });
+  var thePlayer = room.enter(player, lastTableId);
+  if (!!autoReady) {
+    this.playerReady(room, thePlayer, function(err, table, startNewGame) {
+      utils.invokeCallback(cb, table);
+    });
+  }
 
   return room;
-
-  //var table = room.enter(player, lastTableId);
-
-  // table.setupEvents(engine);
-//  table.players.push(player);
-//  player.tableId = table.tableId;
-
-  //return table;
 };
 
 
@@ -103,8 +123,8 @@ exp.enterRoom = function(player, roomId, lastTableId, cb) {
  * @param tableId
  * @returns {*}
  */
-exp.getTable = function(roomId, tableId) {
-  var room = roomsMap[roomId];
+BaseRoomService.prototype.getTable = function(roomId, tableId) {
+  var room = this.roomsMap[roomId];
   if (!room)
     return null;
   return room.tablesMap[tableId];
@@ -116,12 +136,12 @@ exp.getTable = function(roomId, tableId) {
  * @param playerId
  * @param cb
  */
-exp.leave = function(roomId, playerId, cb) {
-  var room = roomsMap[roomId];
+BaseRoomService.prototype.leave = function(roomId, playerId, cb) {
+  var room = this.roomsMap[roomId];
   var player = room.getPlayer(playerId);
   var table = room.getGameTable(player.tableId);
   if (!!table && !!table.pokeGame) {
-    pomeloApp.get('cardService').gameOver(table, player, function() {
+    this.theApp.get('cardService').gameOver(table, player, function() {
       utils.invokeCallback(cb, room.leave(playerId));
     });
   } else {
@@ -131,8 +151,8 @@ exp.leave = function(roomId, playerId, cb) {
 };
 
 
-exp.cancelTable = function(table, room) {
-  //var self = this;
+BaseRoomService.prototype.cancelTable = function(table, room) {
+  var self = this;
   var index = room.tables.indexOf(table);
   room.tables.splice(index, 1);
   delete room.tablesMap[table.tableId];
@@ -149,7 +169,7 @@ exp.cancelTable = function(table, room) {
     if (!!player.robot) {
       //this.robotService.releaseRobotPlayers([player]);
       //room.idle_robots.push(player);
-      pomeloApp.rpc.robotServer.robotRemote.releaseRobotPlayers.toServer('*',[player], null);
+      this.theApp.rpc.robotServer.robotRemote.releaseRobotPlayers.toServer('*',[player], null);
     } else if (!!room.playersMap[player.userId] && !player.connectionLost) {
       room.readyPlayers.unshift(player);
     }
@@ -160,7 +180,7 @@ exp.cancelTable = function(table, room) {
   });
 };
 
-exp.playerReady = function(room, player, callback) {
+BaseRoomService.prototype.playerReady = function(room, player, callback) {
   var self = this;
   // this.clearPlayerReadyTimeout();
   var player = room.playersMap[player.userId];
@@ -175,17 +195,18 @@ exp.playerReady = function(room, player, callback) {
     room.tablesMap[table.tableId] = table;
 
     //utils.invokeCallback(callback, table);
-    utils.invokeCallback(self.onStartNewGameCallback, table);
+    //utils.invokeCallback(self.onStartNewGameCallback, table);
+    utils.invokeCallback(callback, null, table, true);
   }
 
   if (room.readyPlayers.length >0) {
     if (!room.playerReadyTimeout) {
-      room.playerReadyTimeout = setTimeout(exp.onPlayerReadyTimeout.bind(this, room), 10 * 1000);
+      room.playerReadyTimeout = setTimeout(self.onPlayerReadyTimeout.bind(self, room), 10 * 1000);
     }
   }
 };
 
-exp.onPlayerReadyTimeout = function(room) {
+BaseRoomService.prototype.onPlayerReadyTimeout = function(room) {
   var self = this;
 
   if (!!room.playerReadyTimeout) {
@@ -195,12 +216,12 @@ exp.onPlayerReadyTimeout = function(room) {
 
   var readyPlayers = room.readyPlayers.filter(function(p) {return !p.left;});
   if (readyPlayers.length > 0) {
-    pomeloApp.rpc.robotServer.robotRemote.idelRobotsCount.toServer('*',{}, function(err, robots_count){
+    self.theApp.rpc.robotServer.robotRemote.idelRobotsCount.toServer('*',{}, function(err, robots_count){
       console.log('[roomService.onPlayerReadyTimeout] robots_count=', robots_count);
       if (robots_count >= readyPlayers.length){
         var players = readyPlayers.splice(0, 3);
         utils.arrayRemove(room.readyPlayers, players);
-        pomeloApp.rpc.robotServer.robotRemote.getRobotPlayers.toServer('*',3-players.length, function(err, robotPlayers){
+        self.theApp.rpc.robotServer.robotRemote.getRobotPlayers.toServer('*',3-players.length, function(err, robotPlayers){
           players = players.concat(robotPlayers);
           for (var robotIndex=0; robotIndex<robotPlayers.length; robotIndex++) {
             robotPlayers[robotIndex].readyForStartGame = true;
@@ -211,13 +232,13 @@ exp.onPlayerReadyTimeout = function(room) {
           room.tables.push(table);
           room.tablesMap[table.tableId] = table;
 
-          console.log('this.startNewGameCallback ', room.startNewGameCallback);
+          //console.log('this.startNewGameCallback ', room.startNewGameCallback);
           //utils.invokeCallback(room.startNewGameCallback, table);
           utils.invokeCallback(self.onStartNewGameCallback, table);
         });
       }
       else {
-        room.playerReadyTimeout = setTimeout(exp.onPlayerReadyTimeout.bind(room), 10 * 1000);
+        room.playerReadyTimeout = setTimeout(self.onPlayerReadyTimeout.bind(self, room), 10 * 1000);
       }
     });
   }
@@ -248,48 +269,37 @@ exp.onPlayerReadyTimeout = function(room) {
   //}
 };
 
+BaseRoomService.prototype.releaseTable = function(room, table) {
+  var self = this;
 
-exp.releaseTable = function(room, table) {
   var index = room.tables.indexOf(table);
-  room.tables.splice(index, 1);
-  delete room.tablesMap[table.tableId];
+  if (index >= 0) {
+    room.tables.splice(index, 1);
+    delete room.tablesMap[table.tableId];
+  }
   table.room = null;
 
   for (var playerIndex=0; playerIndex<table.players.length; playerIndex++) {
     var player = table.players[playerIndex];
     if (!!player) {
       player.reset();
-      //var pIndex = room.readyPlayers.indexOf(player);
       var pIndex = room.getReadyPlayerIndexByUserId(player.userId);
-      if (pIndex >=0 ) {
+      if (pIndex >= 0) {
         room.readyPlayers.splice(pIndex, 1);
       }
 
-      if (player.robot)
-      {
+      if (player.robot) {
         //this.robotService.releaseRobotPlayers([player]);
-        pomeloApp.rpc.robotServer.robotRemote.releaseRobotPlayers.toServer('*', [player], null);
+        self.theApp.rpc.robotServer.robotRemote.releaseRobotPlayers.toServer('*', [player], null);
         //room.idle_robots.push(player);
       }
-
     }
   }
+
+  table.pokeGame = null;
+  table.players.splice(0, table.players.length);
 };
 
 
-var loadRoom = function(roomId, callback) {
 
-  GameRoom.findOne({roomId:roomId}, function(err, room) {
-    if (!!room) {
-      room.initRoom();
-    } else {
-      logger.error('[RoomService.init] failed to load room[id = %d] error:', roomId, err );
-    }
-    utils.invokeCallback(callback, err, room);
-  });
-//
-//  var room = new GameRoom({roomId:roomId, roomName: 'room_' + roomId});
-//  room.initRoom();
-//
-//  return room;
-};
+module.exports = BaseRoomService;

@@ -9,7 +9,7 @@ var appSignatureService = require('./app/services/appSignatureService');
 var logger = require('pomelo-logger').getLogger('pomelo', __filename);
 require('./app/domain/ArrayHelper');
 var UserSession = require('./app/domain/userSession');
-
+var util = require('util');
 
 /**
  * Init app for client.
@@ -37,18 +37,18 @@ app.configure('production|development', function () {
 
   var mongodbCfg = app.get('mongodb');
   var mongoose = require('mongoose');
-  mongoose.connect(mongodbCfg.url, mongodbCfg.options, function(err) {
+  mongoose.connect(mongodbCfg.url, mongodbCfg.options, function (err) {
   });
 
   var GameServerInstance = require('./app/domain/GameServerInstance');
   GameServerInstance.findQ({})
-    .then(function(instances) {
+    .then(function (instances) {
       app.set('gameInstances', instances);
     })
 
 });
 
-app.configure('production|development', 'userSystem|area|auth|ddz', function() {
+app.configure('production|development', 'userSystem|area|auth|ddz', function () {
 //  auth.enable('rpcDebugLog');
 //  var mongodbCfg = app.get('mongodb');
 //  var mongoose = require('mongoose');
@@ -67,7 +67,7 @@ app.configure('production|development', 'ddz|gate', function () {
       useDict: true,
       setNoDelay: true,
       useProtobuf: true,
-      handshake: function(msg, cb) {
+      handshake: function (msg, cb) {
         logger.info('handshake -> msg: ', msg, "\n", this, "\n");
         //appSignatureService.verifyAppSign(msg.user.aa, msg.user.ab, msg.user.ac, function(err, success){
         //  if (!!err) {
@@ -76,14 +76,14 @@ app.configure('production|development', 'ddz|gate', function () {
         //    cb(null, {authKey: 'aaaaaaaaaa'});
         //  }
         //});
-        UserSession.verifySession(msg.user.userId, msg.user.sessionToken, msg.user.v, function(err, success) {
+        UserSession.verifySession(msg.user.userId, msg.user.sessionToken, msg.user.v, function (err, success) {
           if (!!err) {
             cb(err, null);
           } else {
             cb(null, {authKey: 'aaaaaaaa'});
           }
         });
-       }
+      }
     });
   var clientIp = require('./app/filters/clientIp');
   app.before(clientIp());
@@ -96,20 +96,31 @@ app.configure('production|development', 'area', function () {
   var curServerId = app.getServerId();
   logger.info("app.getServerId: %s", curServerId);
 
+  var roomServiceName = app.getCurServer().roomService || 'normalRoomService';
+  var roomServicePath = util.format('./app/services/%s', roomServiceName);
+  logger.info('Server: %s init roomService with: %s', curServerId, roomServicePath);
+  var RoomServiceClass = require(roomServicePath);
+  //roomService.init(app, gameServer.roomIds);
+  logger.info('Server: %s init roomService: ', curServerId, RoomServiceClass);
+  var roomService = new RoomServiceClass(app);
+  app.set('roomService', roomService);
+
   if (!!app.getCurServer().instance) {
     var GameServerInstance = require('./app/domain/GameServerInstance');
     GameServerInstance.findOneQ({serverId: curServerId})
-      .then(function(gameServer) {
+      .then(function (gameServer) {
         logger.info('Server: %s init with rooms: %j', curServerId, gameServer.roomIds);
-        roomService.init(app, gameServer.roomIds);
-          userLevelService.init(app);
+        app.get('roomService').init(gameServer.roomIds);
+        userLevelService.init(app);
       })
-      .fail(function(error) {
+      .fail(function (error) {
         logger.error('ERROR: failed to load GameServerInstance for [%s]', curServerId, error);
       });
   }
 
   var cardService = require('./app/services/cardServiceFactory').createNormalCardService();
+  cardService.theApp = app;
+  cardService.roomService = roomService;
   app.set('cardService', cardService);
   tableService.init();
 
@@ -121,13 +132,13 @@ app.configure('production|development', 'area', function () {
 
 });
 
-app.configure('production|development', 'events', function() {
+app.configure('production|development', 'events', function () {
   var chargeEventService = require('./app/services/chargeEventService');
   chargeEventService.init(app, {});
   userLevelService.init(app);
 });
 
-app.configure('production|development', 'robotServer', function() {
+app.configure('production|development', 'robotServer', function () {
   var robotService = require('./app/services/robotService');
   robotService.init(app, {});
   //app.set('robotService', robotService);

@@ -62,8 +62,14 @@ Handler.prototype.tryEnterRoom = function(msg, session, next) {
   // room_id 为 null 或 <=0 , 则代表自动为玩家匹配合适的房间
   // room_id > 0, 则表示玩家想进入该房间
   var room_id = msg.room_id;
+  var table_id = msg.table_id || -1;
   var uid = session.uid;
   var results = {};
+
+  session.set('room_id', room_id);
+  session.push('room_id');
+
+  logger.debug('[EntryHandler.tryEnterRoom] msg:', msg);
 
   DdzProfile.findOneQ({userId: uid})
     .then(function(u) {
@@ -72,7 +78,7 @@ Handler.prototype.tryEnterRoom = function(msg, session, next) {
     })
     .then(function(rooms) {
       // 如果要进入的房间不存在
-      if (!!rooms || rooms.length == 0) {
+      if (rooms == null || rooms.length == 0) {
         // 则选出所有房间, 尝试为用户匹配合适的房间
         return GameRoom.getActiveRoomsQ();
       }
@@ -117,7 +123,7 @@ Handler.prototype.tryEnterRoom = function(msg, session, next) {
 
         });
 
-        self.app.rpc.area.roomRemote.tryEnter(session, uid, self.app.get('serverId'), session.id, room_id, function(err, room_server_id, result) {
+        self.app.rpc.area.roomRemote.tryEnter(session, uid, self.app.get('serverId'), session.id, room_id, table_id, function(err, room_server_id, result) {
           logger.info('enter result: ', err, room_server_id, result);
           if (!!err) {
             var errResp = new Result(ErrorCode.SYSTEM_ERROR, 0, err.toString());
@@ -153,6 +159,7 @@ Handler.prototype.tryEnterRoom = function(msg, session, next) {
 Handler.prototype.enterRoom = function(msg, session, next) {
   var self = this;
   var room_id = msg.room_id;
+  var table_id = msg.table_id || -1;
   var uid = session.uid;
   var username = msg.username;
 
@@ -162,6 +169,7 @@ Handler.prototype.enterRoom = function(msg, session, next) {
 
   //session.bind(uid);
   session.set("room_id", room_id);
+
   session.pushAll( function(err) {
      if (err) {
        console.error('set room_id for session service failed! error is : %j', err.stack);
@@ -176,7 +184,7 @@ Handler.prototype.enterRoom = function(msg, session, next) {
     session.push('closed_bound');
   }
 
-  this.app.rpc.area.roomRemote.enter(session, uid, this.app.get('serverId'), session.id, room_id, function(err, room_server_id, room) {
+  this.app.rpc.area.roomRemote.enter(session, uid, this.app.get('serverId'), session.id, room_id, table_id, function(err, room_server_id, room) {
     logger.info('enter result: ', err, room_server_id, room);
     if (!!err) {
       next(null, {err: err});

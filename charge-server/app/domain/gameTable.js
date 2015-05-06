@@ -181,8 +181,10 @@ GameTable.prototype.reset = function() {
   this.lordValue = 0;
   this.pokeGame = null;
   this.gameSate = GameState.PENDING_FOR_READY;
+  this.state = TableState.IDLE;
   for (var index=0; index<this.players.length; index++) {
     var player = this.players[index];
     player.reset();
+    player.tableId = this.tableId;
   }
 };

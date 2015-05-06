@@ -101,24 +101,10 @@ roomSchema.methods.initRoom = function(opts) {
   //  this._onPlayerReadyTimeout = this.onPlayerReadyTimeout.bind(this);
   //}
 
-  if (!opts.noLoadRobots)
-    this.loadRobots();
+  this.roomService = opts.roomService;
 
 };
 
-roomSchema.methods.loadRobots = function() {
-  var self = this;
-  User.find({robot:true})
-    .limit(10)
-    .execQ()
-    .then(function(users) {
-      for (var index=0; index<users.length; index++) {
-        var robotPlayer = new Player(users[index]);
-        self.robots.push(robotPlayer);
-        self.idle_robots.push(robotPlayer);
-      }
-    });
-};
 
 /**
  * 取新桌子id
@@ -194,6 +180,13 @@ roomSchema.methods.enter = function (player, lastTableId) {
 roomSchema.methods.arrangeTable = function(players) {
   var newTable = new GameTable({tableId: this.getNextTableId(), room: this, players: players});
 
+  return newTable;
+};
+
+roomSchema.methods.newTable = function(tableId) {
+  var newTable = new GameTable({tableId: tableId, room: this});
+  this.tables.push(newTable);
+  this.tablesMap[newTable.tableId] = newTable;
   return newTable;
 };
 
@@ -313,6 +306,8 @@ roomSchema.statics.getActiveRoomsQ = function(roomId) {
   var condition = {};
   if (!!roomId) {
     condition = {roomId: roomId};
+  } else {
+    condition = {roomType: '00'};
   }
   return this.find(condition)
     .sort('minCoinsQty')

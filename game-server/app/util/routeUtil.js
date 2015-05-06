@@ -6,7 +6,7 @@ var serverInstances = null;
 
 exp.area = function(session, msg, app, cb) {
   //logger.info('[<Server: %s> routUtil.area] msg: %j', app.getServerId(), msg);
-  var room_id = session.get('room_id') || msg.room_id ;
+  var room_id = msg.room_id || session.get('room_id');
   logger.info('[<Server: %s> routUtil.area] room_id: %d', app.getServerId(), room_id);
   var gameInstances = app.get('gameInstances');
 
