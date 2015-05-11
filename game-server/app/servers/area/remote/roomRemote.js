@@ -51,34 +51,38 @@ var remoteHandler = RoomRemote.prototype;
 remoteHandler.tryEnter = function(uid, sid, sessionId, room_id, table_id, cb) {
   var self = this;
   var thisServerId = self.app.getServerId();
-  User.findOne({userId: uid})
-    .populate('ddzProfile')
-    .execQ()
-    .then(function(user) {
-      var room = self.roomService.getRoom(room_id);
-      var errorCode = ErrorCode.SUCCESS;
-      var errorMsg = "";
-      if (room.minCoinsQty > 0) {
-        if (room.minCoinsQty > user.ddzProfile.coins) {
-          errorCode = ErrorCode.CANNOT_ENTER_ROOM;
-          errorMsg = '您的金币不足, 无法进入房间!';
-        }
-      }
-      if (errorCode == ErrorCode.SUCCESS && room.maxCoinsQty > 0) {
-        if (room.maxCoinsQty < user.ddzProfile.coins) {
-          errorCode = ErrorCode.CANNOT_ENTER_ROOM;
-          errorMsg = '您的金币超过房间的准入上限, 请移步到更高级的房间!';
-        }
-      }
-
-      utils.invokeCallback(cb, null, thisServerId, new Result(errorCode, 0, errorMsg));
-
-    })
-    .fail(function(err) {
-      logger.error('[RoomRemote.tryEnter] ERROR: ', err);
-      utils.invokeCallback(cb, null, thisServerId, new Result(ErrorCode.SYSTEM_ERROR, 0, err));
-    });
+  //User.findOne({userId: uid})
+  //  .populate('ddzProfile')
+  //  .execQ()
+  //  .then(function(user) {
+  //    var room = self.roomService.getRoom(room_id);
+  //    var errorCode = ErrorCode.SUCCESS;
+  //    var errorMsg = "";
+  //    if (room.minCoinsQty > 0) {
+  //      if (room.minCoinsQty > user.ddzProfile.coins) {
+  //        errorCode = ErrorCode.CANNOT_ENTER_ROOM;
+  //        errorMsg = '您的金币不足, 无法进入房间!';
+  //      }
+  //    }
+  //    if (errorCode == ErrorCode.SUCCESS && room.maxCoinsQty > 0) {
+  //      if (room.maxCoinsQty < user.ddzProfile.coins) {
+  //        errorCode = ErrorCode.CANNOT_ENTER_ROOM;
+  //        errorMsg = '您的金币超过房间的准入上限, 请移步到更高级的房间!';
+  //      }
+  //    }
+  //
+  //    utils.invokeCallback(cb, null, thisServerId, new Result(errorCode, 0, errorMsg));
+  //
+  //  })
+  //  .fail(function(err) {
+  //    logger.error('[RoomRemote.tryEnter] ERROR: ', err);
+  //    utils.invokeCallback(cb, null, thisServerId, new Result(ErrorCode.SYSTEM_ERROR, 0, err));
+  //  });
   //utils.invokeCallback(cb, null, thisServerId, {ret: ErrorCode.SUCCESS});
+
+  this.roomService.tryEnterRoom(uid, room_id, table_id, function(err, result) {
+    utils.invokeCallback(cb, null, thisServerId, result);
+  });
 };
 
 /**
@@ -120,11 +124,10 @@ remoteHandler.enter = function(uid, sid, sessionId, room_id, table_id, cb) {
 //        messageService.pushTableMessage(table, "onPlayerJoin", msg, null);
 //      });
 
-      var room = self.roomService.enterRoom(player, room_id, true, table_id, self._onPreStartNewGame);
-
-      // 返回结果
-      utils.invokeCallback(cb, null, thisServerId, room.toParams());
-
+      self.roomService.enterRoom(player, room_id, true, table_id, function(room){
+        // 返回结果
+        utils.invokeCallback(cb, null, thisServerId, room.toParams());
+      });
     });
   });
 

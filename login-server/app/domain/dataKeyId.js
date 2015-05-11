@@ -27,6 +27,12 @@ dataKeyIdSchema.statics.nextUserIdQ = function() {
     });
 };
 
+dataKeyIdSchema.statics.nextAppointIdQ = function() {
+  return this.findOneAndUpdateQ({keyName: 'appointId'}, {$inc: {nextKeyId:1}}, {upsert: true})
+    .then(function(idObj) {
+      return idObj.nextKeyId;
+    });
+};
 
 var DataKeyId = mongoose.model('DataKeyId', dataKeyIdSchema);
 

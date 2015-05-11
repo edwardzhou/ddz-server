@@ -46,6 +46,11 @@ var ErrorCode = {
   TABLE_RELEASED: 2002,
   CANNOT_ENTER_ROOM: 2100,
 
+  // 约战不存在
+  APPOINT_PLAY_NOT_EXISTS: 2200,
+  // 用户不属于该约战的成员
+  APPOINT_HAS_NO_SUCH_PLAYER: 2001,
+
   // 无效牌型
   INVALID_CARD_TYPE: 3001,
   // 牌型打不过上手牌（1. 牌型不配， 2. 没有大过对方）

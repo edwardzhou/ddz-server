@@ -9,6 +9,12 @@ var utils = require('../util/utils');
 var GameTable = require('../domain/gameTable');
 var PlayerState = require('../consts/consts').PlayerState;
 var Player = require('../domain/player');
+var User = require('../domain/user');
+//var BaseRoomService = require('./baseRoomService');
+var ErrorCode = require('../consts/errorCode');
+var Result = require('../domain/result');
+var messageService = require('./messageService');
+
 
 var robotService = require('./robotService');
 
@@ -88,6 +94,37 @@ BaseRoomService.prototype.loadRoom = function(roomId, callback) {
   });
 };
 
+BaseRoomService.prototype.tryEnterRoom = function(userId, roomId, tableId, cb) {
+  var self = this;
+  User.findOne({userId: userId})
+    .populate('ddzProfile')
+    .execQ()
+    .then(function(user) {
+      var room = self.getRoom(roomId);
+      var errorCode = ErrorCode.SUCCESS;
+      var errorMsg = "";
+      if (room.minCoinsQty > 0) {
+        if (room.minCoinsQty > user.ddzProfile.coins) {
+          errorCode = ErrorCode.CANNOT_ENTER_ROOM;
+          errorMsg = '您的金币不足, 无法进入房间!';
+        }
+      }
+      if (errorCode == ErrorCode.SUCCESS && room.maxCoinsQty > 0) {
+        if (room.maxCoinsQty < user.ddzProfile.coins) {
+          errorCode = ErrorCode.CANNOT_ENTER_ROOM;
+          errorMsg = '您的金币超过房间的准入上限, 请移步到更高级的房间!';
+        }
+      }
+
+      utils.invokeCallback(cb, null, new Result(errorCode, 0, errorMsg));
+
+    })
+    .fail(function(err) {
+      logger.error('[BaseRoomService.tryEnterRoom] ERROR: ', err);
+      utils.invokeCallback(cb, null, new Result(ErrorCode.SYSTEM_ERROR, 0, err));
+    });
+};
+
 
 /**
  * 玩家进入房间
@@ -109,11 +146,12 @@ BaseRoomService.prototype.enterRoom = function(player, roomId, autoReady, lastTa
   var thePlayer = room.enter(player, lastTableId);
   if (!!autoReady) {
     this.playerReady(room, thePlayer, function(err, table, startNewGame) {
-      utils.invokeCallback(cb, table);
+      //utils.invokeCallback(cb, table);
     });
   }
 
-  return room;
+  utils.invokeCallback(cb, room);
+  //return room;
 };
 
 
@@ -129,6 +167,13 @@ BaseRoomService.prototype.getTable = function(roomId, tableId) {
     return null;
   return room.tablesMap[tableId];
 };
+
+BaseRoomService.prototype.pushPlayerJoinEvents = function(theTable) {
+  process.nextTick(function () {
+    messageService.pushTableMessage(theTable, "onPlayerJoin", theTable.toParams(), null);
+  });
+};
+
 
 /**
  * 玩家离开房间
@@ -180,6 +225,20 @@ BaseRoomService.prototype.cancelTable = function(table, room) {
   });
 };
 
+BaseRoomService.prototype.updateTablePlayerUserSession = function(table) {
+  for (var index=0; index<table.players.length; index++) {
+    var p = table.players[index];
+    var data = {
+      roomId: table.room.roomId,
+      tableId: table.tableId,
+      gameId: null};
+    if (!!table.pokeGame) {
+      data.gameId = table.pokeGame.gameId;
+    }
+    p.userSession.sset(data);
+  }
+};
+
 BaseRoomService.prototype.playerReady = function(room, player, callback) {
   var self = this;
   // this.clearPlayerReadyTimeout();
@@ -196,7 +255,10 @@ BaseRoomService.prototype.playerReady = function(room, player, callback) {
 
     //utils.invokeCallback(callback, table);
     //utils.invokeCallback(self.onStartNewGameCallback, table);
-    utils.invokeCallback(callback, null, table, true);
+    this.updateTablePlayerUserSession(table);
+    //utils.invokeCallback(callback, null, table, true);
+    self.pushPlayerJoinEvents(table);
+    utils.invokeCallback(self.onStartNewGameCallback, table);
   }
 
   if (room.readyPlayers.length >0) {

@@ -12,6 +12,7 @@ var DomainUtils = require("./domainUtils");
 
 
 var MyFriendSchema = mongoose.Schema({
+    user_id: {type: mongoose.Schema.Types.ObjectId},
     userId: Number,   // 用户Id
     friends: {type: mongoose.Schema.Types.Mixed},
     created_at: {type: Date, default: Date.now},
@@ -24,9 +25,13 @@ var MyFriendSchema = mongoose.Schema({
 var __toParams = function(model, opts) {
     var transObj = {
         userId: model.userId,
-        friends: model.friends
+        friends: model.friends,
+        updated_at: model.updated_at
     };
+    transObj.friends.sort(function (x, y){
+       return y.addDate - x.addDate;
 
+    });
     transObj = DomainUtils.adjustAttributes(transObj, opts);
 
     return transObj;

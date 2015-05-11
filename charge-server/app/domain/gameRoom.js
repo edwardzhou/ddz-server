@@ -29,6 +29,7 @@ var roomSchemaFields = {
   playCardTimeout: {type: Number, default: 30}, // 出牌超时
   playCardCheatRate: {type: Number, default:40}, // 机器人作弊机率
   playCardCheatLimit: {type: Number, default:1}, // 每个牌局机器作弊次数限制
+  tableReleaseTimeout: {type: Number, default:0}, // 牌局结束后,牌桌的释放时间, 单位秒, 0 表示立即释放
   created_at: {type: Date, default: Date.now},
   updated_at: {type: Date, default: Date.now}
 };
@@ -206,6 +207,34 @@ roomSchema.methods.clearPlayerReadyTimeout = function() {
 roomSchema.methods.getGameTable = function(tableId) {
   return this.tablesMap[tableId];
 };
+
+roomSchema.methods.getGameTableIndex = function(tableId) {
+  for (var index=0; index<this.tables.length; index++) {
+    if (this.tables[index].tableId == tableId)
+      return index;
+  }
+
+  return -1;
+};
+
+/**
+ * 移除桌子
+ * @param tableId
+ */
+roomSchema.methods.removeTable = function(tableId) {
+  var table = this.getGameTable(tableId);
+  if (table == null)
+    return null;
+
+  this.tablesMap[tableId] = null;
+  var tableIndex = this.getGameTableIndex(tableId);
+  if (tableIndex >=0) {
+    this.tables.splice(tableIndex, 1);
+  }
+
+  return table;
+};
+
 
 /**
  * 取指定id的玩家

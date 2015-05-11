@@ -37,25 +37,25 @@ remoteHandler.readyGame = function(msg, cb) {
 
   this.roomService.playerReady(room, player, function(err, table, startNewGame) {
 
-    for (var index=0; index<table.players.length; index++) {
-      var p = table.players[index];
-      var data = {
-        roomId: table.room.roomId,
-        tableId: table.tableId,
-        gameId: null};
-      if (!!table.pokeGame) {
-        data.gameId = table.pokeGame.gameId;
-      }
-      p.userSession.sset(data);
-    }
-    var msg = table.toParams();
-    process.nextTick(function() {
-      messageService.pushTableMessage(table, "onPlayerJoin", msg, function() {
-        //if (startNewGame) {
-        //  self.cardService.startGame(table);
-        //}
-      });
-    });
+    //for (var index=0; index<table.players.length; index++) {
+    //  var p = table.players[index];
+    //  var data = {
+    //    roomId: table.room.roomId,
+    //    tableId: table.tableId,
+    //    gameId: null};
+    //  if (!!table.pokeGame) {
+    //    data.gameId = table.pokeGame.gameId;
+    //  }
+    //  p.userSession.sset(data);
+    //}
+    //var msg = table.toParams();
+    //process.nextTick(function() {
+    //  messageService.pushTableMessage(table, "onPlayerJoin", msg, function() {
+    //    //if (startNewGame) {
+    //    //  self.cardService.startGame(table);
+    //    //}
+    //  });
+    //});
   });
 
   utils.invokeCallback(cb, null, {result: 0});

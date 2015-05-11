@@ -1,50 +1,44 @@
 /**
- * Created by jeffcao on 15/4/21.
+ * Created by jeffcao on 15/4/23.
  */
-
-
-
 /**
- * 我的好友
+ * 我的消息
  */
 var mongoose = require('mongoose-q')();
 var DomainUtils = require("./domainUtils");
 
 
-var MyFriendSchema = mongoose.Schema({
+var MyMessageBoxSchema = mongoose.Schema({
     user_id: {type: mongoose.Schema.Types.ObjectId},
     userId: Number,   // 用户Id
-    friends: {type: mongoose.Schema.Types.Mixed},
+    addFriendMsgs: {type: mongoose.Schema.Types.Mixed},
     created_at: {type: Date, default: Date.now},
     updated_at: {type: Date, default: Date.now}
 }, {
-    collection: 'my_friends'
+    collection: 'my_message_boxes'
 });
 
 
 var __toParams = function(model, opts) {
     var transObj = {
         userId: model.userId,
-        friends: model.friends,
+        addFriendMsgs: model.addFriendMsgs,
         updated_at: model.updated_at
     };
-    transObj.friends.sort(function (x, y){
-       return y.addDate - x.addDate;
 
-    });
     transObj = DomainUtils.adjustAttributes(transObj, opts);
 
     return transObj;
 };
 
-MyFriendSchema.statics.toParams = __toParams;
+MyMessageBoxSchema.statics.toParams = __toParams;
 
-MyFriendSchema.methods.toParams = function(opts) {
+MyMessageBoxSchema.methods.toParams = function(opts) {
     return __toParams(this, opts);
 };
 
 
-var MyFriend = mongoose.model('MyFriend', MyFriendSchema);
+var MyMessageBox = mongoose.model('MyMessageBox', MyMessageBoxSchema);
 
 
-module.exports = MyFriend;
+module.exports = MyMessageBox;
