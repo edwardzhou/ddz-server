@@ -19,7 +19,7 @@ var utils = require('../util/utils');
 var crypto = require('crypto');
 var messageService = require('./messageService');
 var userLevelService = require('./userLevelService');
-var roomService = require('./roomService');
+//var roomService = require('./roomService');
 
 var Q = require('q');
 var removeUserSessionQ = Q.nbind(UserSession.removeAllByUserId, UserSession);

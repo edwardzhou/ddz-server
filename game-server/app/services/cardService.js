@@ -34,6 +34,7 @@ GameActionNames[ GameAction.GAME_OVER] = 'gameOverAction';
 var CardService = function(app) {
   this.theApp = app;
   this.actionsConfig = {}
+  this.roomService = null;
 };
 
 module.exports = CardService;
@@ -801,7 +802,8 @@ exp.gameOver = function(table, player, cb) {
       }
 
       // 释放桌子
-      tableService.release(table);
+      //tableService.release(table);
+      gameRoom.roomService.releaseTable(gameRoom, table);
     }
   });
 

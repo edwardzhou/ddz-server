@@ -1,6 +1,6 @@
 var logger = require('pomelo-logger').getLogger('pomelo', __filename);
 var roomDao = require('../../../dao/roomDao');
-var roomService = require('../../../services/roomService');
+//var roomService = require('../../../services/roomService');
 var messageService = require('../../../services/messageService');
 var cardService = require('../../../services/cardService');
 var Player = require('../../../domain/player');
@@ -19,6 +19,7 @@ var GameRemote = function(app) {
   this.channelService = app.get('channelService');
   this.sessionService = app.get('localSessionService');
   this.cardService = app.get('cardService');
+  this.roomService = app.get('roomService');
 };
 
 var remoteHandler = GameRemote.prototype;
@@ -30,31 +31,33 @@ remoteHandler.readyGame = function(msg, cb) {
   var sid = msg.serverId;
   var room_id = msg.room_id;
 
-  var room = roomService.getRoom(room_id);
+  var room = this.roomService.getRoom(room_id);
   var player = room.getPlayer(uid);
-  roomService.playerReady(room, player, function(table) {
-    for (var index=0; index<table.players.length; index++) {
-      var p = table.players[index];
-//      p.userSession.sset('roomId', table.room.roomId);
-//      p.userSession.sset('tableId', table.tableId);
-//      p.userSession.sset('table')
-      p.userSession.sset({roomId: table.room.roomId, tableId: table.tableId, gameId: table.pokeGame.gameId});
-    }
-    var msg = table.toParams();
-    process.nextTick(function() {
-      messageService.pushTableMessage(table, "onPlayerJoin", msg, function() {
-        self.cardService.startGame(table);
-      });
-    });
-  });
-  // var table = room.getGameTable(player.tableId);
-  // player.state = PlayerState.ready;
-  // player.ready();
+  //var table = room.getGameTable(player.tableId);
 
-  // messageService.pushTableMessage(this.app, table, "onPlayerJoin", table.toParams(), null);
-//  this.cardService.playerReady(table, player, function(err, data) {
-//    utils.invokeCallback(cb, err, data);
-//  });
+  this.roomService.playerReady(room, player, function(err, table, startNewGame) {
+
+    //for (var index=0; index<table.players.length; index++) {
+    //  var p = table.players[index];
+    //  var data = {
+    //    roomId: table.room.roomId,
+    //    tableId: table.tableId,
+    //    gameId: null};
+    //  if (!!table.pokeGame) {
+    //    data.gameId = table.pokeGame.gameId;
+    //  }
+    //  p.userSession.sset(data);
+    //}
+    //var msg = table.toParams();
+    //process.nextTick(function() {
+    //  messageService.pushTableMessage(table, "onPlayerJoin", msg, function() {
+    //    //if (startNewGame) {
+    //    //  self.cardService.startGame(table);
+    //    //}
+    //  });
+    //});
+  });
+
   utils.invokeCallback(cb, null, {result: 0});
 };
 
@@ -66,7 +69,7 @@ remoteHandler.grabLord = function(msg, cb) {
   var lordAction = msg.lordAction;
   var seqNo = msg.seqNo;
 
-  var room = roomService.getRoom(room_id);
+  var room = this.roomService.getRoom(room_id);
   var player = room.getPlayer(uid);
   var table = room.getGameTable(player.tableId);
 
@@ -83,7 +86,7 @@ remoteHandler.playCard = function(msg, cb) {
   var card = msg.card;
   var seqNo = msg.seqNo;
 
-  var room = roomService.getRoom(room_id);
+  var room = this.roomService.getRoom(room_id);
   var player = room.getPlayer(uid);
   var table = room.getGameTable(player.tableId);
 
@@ -98,7 +101,7 @@ remoteHandler.cancelDelegate = function(msg, cb) {
   var room_id = msg.room_id;
   var table_id = msg.table_id;
 
-  var room = roomService.getRoom(room_id);
+  var room = this.roomService.getRoom(room_id);
   var player = room.getPlayer(uid);
   var table = room.getGameTable(player.tableId)
 
@@ -117,7 +120,7 @@ remoteHandler.setDelegate = function(msg, cb) {
   var room_id = msg.room_id;
   var table_id = msg.table_id;
 
-  var room = roomService.getRoom(room_id);
+  var room = this.roomService.getRoom(room_id);
   var player = room.getPlayer(uid);
   var table = room.getGameTable(player.tableId)
 

@@ -29,6 +29,7 @@ var roomSchemaFields = {
   playCardTimeout: {type: Number, default: 30}, // 出牌超时
   playCardCheatRate: {type: Number, default:40}, // 机器人作弊机率
   playCardCheatLimit: {type: Number, default:1}, // 每个牌局机器作弊次数限制
+  tableReleaseTimeout: {type: Number, default:0}, // 牌局结束后,牌桌的释放时间, 单位秒, 0 表示立即释放
   created_at: {type: Date, default: Date.now},
   updated_at: {type: Date, default: Date.now}
 };
@@ -101,24 +102,10 @@ roomSchema.methods.initRoom = function(opts) {
   //  this._onPlayerReadyTimeout = this.onPlayerReadyTimeout.bind(this);
   //}
 
-  if (!opts.noLoadRobots)
-    this.loadRobots();
+  this.roomService = opts.roomService;
 
 };
 
-roomSchema.methods.loadRobots = function() {
-  var self = this;
-  User.find({robot:true})
-    .limit(10)
-    .execQ()
-    .then(function(users) {
-      for (var index=0; index<users.length; index++) {
-        var robotPlayer = new Player(users[index]);
-        self.robots.push(robotPlayer);
-        self.idle_robots.push(robotPlayer);
-      }
-    });
-};
 
 /**
  * 取新桌子id
@@ -197,6 +184,13 @@ roomSchema.methods.arrangeTable = function(players) {
   return newTable;
 };
 
+roomSchema.methods.newTable = function(tableId) {
+  var newTable = new GameTable({tableId: tableId, room: this});
+  this.tables.push(newTable);
+  this.tablesMap[newTable.tableId] = newTable;
+  return newTable;
+};
+
 roomSchema.methods.clearPlayerReadyTimeout = function() {
   if (!!this.playerReadyTimeout) {
     clearTimeout(this.playerReadyTimeout);
@@ -213,6 +207,34 @@ roomSchema.methods.clearPlayerReadyTimeout = function() {
 roomSchema.methods.getGameTable = function(tableId) {
   return this.tablesMap[tableId];
 };
+
+roomSchema.methods.getGameTableIndex = function(tableId) {
+  for (var index=0; index<this.tables.length; index++) {
+    if (this.tables[index].tableId == tableId)
+      return index;
+  }
+
+  return -1;
+};
+
+/**
+ * 移除桌子
+ * @param tableId
+ */
+roomSchema.methods.removeTable = function(tableId) {
+  var table = this.getGameTable(tableId);
+  if (table == null)
+    return null;
+
+  this.tablesMap[tableId] = null;
+  var tableIndex = this.getGameTableIndex(tableId);
+  if (tableIndex >=0) {
+    this.tables.splice(tableIndex, 1);
+  }
+
+  return table;
+};
+
 
 /**
  * 取指定id的玩家
@@ -313,6 +335,8 @@ roomSchema.statics.getActiveRoomsQ = function(roomId) {
   var condition = {};
   if (!!roomId) {
     condition = {roomId: roomId};
+  } else {
+    condition = {roomType: '00'};
   }
   return this.find(condition)
     .sort('minCoinsQty')

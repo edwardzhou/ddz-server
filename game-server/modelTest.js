@@ -31,6 +31,8 @@ PurchaseOrder = require('./app/domain/purchaseOrder');
 DdzGoodsPackageService = require('./app/services/ddzGoodsPackageService');
 PubSubEvent = require('./app/domain/pubSubEvent');
 Channel = require('./app/domain/channel');
+Player = require('./app/domain/player');
+AppointPlay = require('./app/domain/appointPlay');
 require('./app/domain/ArrayHelper');
 taskService = require('./app/services/taskService');
 

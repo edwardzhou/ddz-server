@@ -42,7 +42,14 @@ var ErrorCode = {
 
   // 桌子已经有3个用户
   TABLE_FULL: 2001,
+  // 牌桌已经解散
+  TABLE_RELEASED: 2002,
   CANNOT_ENTER_ROOM: 2100,
+
+  // 约战不存在
+  APPOINT_PLAY_NOT_EXISTS: 2200,
+  // 用户不属于该约战的成员
+  APPOINT_HAS_NO_SUCH_PLAYER: 2001,
 
   // 无效牌型
   INVALID_CARD_TYPE: 3001,

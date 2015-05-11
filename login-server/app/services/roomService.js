@@ -29,6 +29,7 @@ exp.init = function(app, roomIds) {
         logger.info('roomService.init, room:', room);
       if (!!room) {
         roomsMap[room.roomId] = room;
+        room.roomService = this;
       } else {
         logger.error('[%s] [RoomService.init] failed to load room[id = %d] error:', pomeloApp.getServerId(), roomId, err );
       }
@@ -37,6 +38,8 @@ exp.init = function(app, roomIds) {
 
   return exp;
 };
+
+exp.onStartNewGameCallback = null;
 
 /**
  * 根据房间id获取房间实例。
@@ -79,7 +82,7 @@ exp.enterRoom = function(player, roomId, lastTableId, cb) {
 
   room.enter(player, lastTableId);
   exp.playerReady(room, player, function(table) {
-    utils.invokeCallback(cb, table);
+    //utils.invokeCallback(cb, table);
   });
 
   return room;
@@ -158,6 +161,7 @@ exp.cancelTable = function(table, room) {
 };
 
 exp.playerReady = function(room, player, callback) {
+  var self = this;
   // this.clearPlayerReadyTimeout();
   var player = room.playersMap[player.userId];
   player.state = PlayerState.READY;
@@ -170,7 +174,8 @@ exp.playerReady = function(room, player, callback) {
     room.tables.push(table);
     room.tablesMap[table.tableId] = table;
 
-    utils.invokeCallback(callback, table);
+    //utils.invokeCallback(callback, table);
+    utils.invokeCallback(self.onStartNewGameCallback, table);
   }
 
   if (room.readyPlayers.length >0) {
@@ -181,6 +186,8 @@ exp.playerReady = function(room, player, callback) {
 };
 
 exp.onPlayerReadyTimeout = function(room) {
+  var self = this;
+
   if (!!room.playerReadyTimeout) {
     clearTimeout(room.playerReadyTimeout);
     room.playerReadyTimeout = null;
@@ -205,7 +212,8 @@ exp.onPlayerReadyTimeout = function(room) {
           room.tablesMap[table.tableId] = table;
 
           console.log('this.startNewGameCallback ', room.startNewGameCallback);
-          utils.invokeCallback(room.startNewGameCallback, table);
+          //utils.invokeCallback(room.startNewGameCallback, table);
+          utils.invokeCallback(self.onStartNewGameCallback, table);
         });
       }
       else {

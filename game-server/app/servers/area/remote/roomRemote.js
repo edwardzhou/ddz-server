@@ -1,6 +1,6 @@
 var logger = require('pomelo-logger').getLogger('pomelo', __filename);
 var roomDao = require('../../../dao/roomDao');
-var roomService = require('../../../services/roomService');
+//var roomService = require('../../../services/roomService');
 var messageService = require('../../../services/messageService');
 var Player = require('../../../domain/player');
 var User = require('../../../domain/user');
@@ -26,47 +26,63 @@ module.exports = function(app) {
  */
 var RoomRemote = function(app) {
   this.app = app;
+
+  var curServerId = app.getServerId();
+  logger.info("[RoomRemote.ctor]: %s", curServerId);
+
   // this.tableService = app.get('tableService');
   this.channelService = app.get('channelService');
   this.sessionService = app.get('localSessionService');
   this.cardService = app.get('cardService');
   this._onStartNewGame = this.onStartNewGame.bind(this);
   this._onPreStartNewGame = this.onPreStartNewGame.bind(this);
+  this._onPlayerJoin = this.onPlayerJoin.bind(this);
+  this.roomService = app.get('roomService');
+  if (!!this.roomService) {
+    this.roomService.onStartNewGameCallback = this._onPreStartNewGame;
+    this.roomService.onPlayerJoinCallback = this._onPlayerJoin;
+  }
+
+
 };
 
 var remoteHandler = RoomRemote.prototype;
 
-remoteHandler.tryEnter = function(uid, sid, sessionId, room_id, cb) {
+remoteHandler.tryEnter = function(uid, sid, sessionId, room_id, table_id, cb) {
   var self = this;
   var thisServerId = self.app.getServerId();
-  User.findOne({userId: uid})
-    .populate('ddzProfile')
-    .execQ()
-    .then(function(user) {
-      var room = roomService.getRoom(room_id);
-      var errorCode = ErrorCode.SUCCESS;
-      var errorMsg = "";
-      if (room.minCoinsQty > 0) {
-        if (room.minCoinsQty > user.ddzProfile.coins) {
-          errorCode = ErrorCode.CANNOT_ENTER_ROOM;
-          errorMsg = '您的金币不足, 无法进入房间!';
-        }
-      }
-      if (errorCode == ErrorCode.SUCCESS && room.maxCoinsQty > 0) {
-        if (room.maxCoinsQty < user.ddzProfile.coins) {
-          errorCode = ErrorCode.CANNOT_ENTER_ROOM;
-          errorMsg = '您的金币超过房间的准入上限, 请移步到更高级的房间!';
-        }
-      }
-
-      utils.invokeCallback(cb, null, thisServerId, new Result(errorCode, 0, errorMsg));
-
-    })
-    .fail(function(err) {
-      logger.error('[RoomRemote.tryEnter] ERROR: ', err);
-      utils.invokeCallback(cb, null, thisServerId, new Result(ErrorCode.SYSTEM_ERROR, 0, err));
-    });
+  //User.findOne({userId: uid})
+  //  .populate('ddzProfile')
+  //  .execQ()
+  //  .then(function(user) {
+  //    var room = self.roomService.getRoom(room_id);
+  //    var errorCode = ErrorCode.SUCCESS;
+  //    var errorMsg = "";
+  //    if (room.minCoinsQty > 0) {
+  //      if (room.minCoinsQty > user.ddzProfile.coins) {
+  //        errorCode = ErrorCode.CANNOT_ENTER_ROOM;
+  //        errorMsg = '您的金币不足, 无法进入房间!';
+  //      }
+  //    }
+  //    if (errorCode == ErrorCode.SUCCESS && room.maxCoinsQty > 0) {
+  //      if (room.maxCoinsQty < user.ddzProfile.coins) {
+  //        errorCode = ErrorCode.CANNOT_ENTER_ROOM;
+  //        errorMsg = '您的金币超过房间的准入上限, 请移步到更高级的房间!';
+  //      }
+  //    }
+  //
+  //    utils.invokeCallback(cb, null, thisServerId, new Result(errorCode, 0, errorMsg));
+  //
+  //  })
+  //  .fail(function(err) {
+  //    logger.error('[RoomRemote.tryEnter] ERROR: ', err);
+  //    utils.invokeCallback(cb, null, thisServerId, new Result(ErrorCode.SYSTEM_ERROR, 0, err));
+  //  });
   //utils.invokeCallback(cb, null, thisServerId, {ret: ErrorCode.SUCCESS});
+
+  this.roomService.tryEnterRoom(uid, room_id, table_id, function(err, result) {
+    utils.invokeCallback(cb, null, thisServerId, result);
+  });
 };
 
 /**
@@ -77,7 +93,7 @@ remoteHandler.tryEnter = function(uid, sid, sessionId, room_id, cb) {
  * @param room_id - 要进入的房间id
  * @param cb - 回调
  */
-remoteHandler.enter = function(uid, sid, sessionId, room_id, cb) {
+remoteHandler.enter = function(uid, sid, sessionId, room_id, table_id, cb) {
   var self = this;
   var thisServerId = self.app.getServerId();
 
@@ -108,14 +124,20 @@ remoteHandler.enter = function(uid, sid, sessionId, room_id, cb) {
 //        messageService.pushTableMessage(table, "onPlayerJoin", msg, null);
 //      });
 
-      var room = roomService.enterRoom(player, room_id, -1, self._onPreStartNewGame);
-
-      // 返回结果
-      utils.invokeCallback(cb, null, thisServerId, room.toParams());
-
+      self.roomService.enterRoom(player, room_id, true, table_id, function(room){
+        // 返回结果
+        utils.invokeCallback(cb, null, thisServerId, room.toParams());
+      });
     });
   });
 
+};
+
+
+remoteHandler.onPlayerJoin = function(table) {
+  var self = this;
+  var msgBack = (!!table.toParams)? table.toParams() : table;
+  messageService.pushTableMessage(table, 'onPlayerJoin', msgBack, null);
 };
 
 /**
@@ -140,12 +162,12 @@ remoteHandler.onPreStartNewGame = function(table) {
   // 如果缺乏有效实际用户，则取消桌子
   if (realPlayers.length == 0) {
     logger.warn("no real player for the table: %d, will cancel the table.", tableId);
-    roomService.cancelTable(table, table.room);
+    self.roomService.cancelTable(table, table.room);
   } else {
     // 要求桌子的每一个有效真实用户，在 4 秒钟内，回传牌局开始的确认信息，否则，取消桌子
     messageService.pushTableMessage(table, 'onPreStartGame', {tableId: tableId, roomId: roomId}, null);
     setTimeout( function(){
-      var timeoutTable = roomService.getTable(roomId, tableId);
+      var timeoutTable = self.roomService.getTable(roomId, tableId);
       logger.info('[roomRemote.onPreStartNewGame] [timeout] table => ', timeoutTable);
       if (timeoutTable == null) {
         logger.info('[roomRemote.onPreStartNewGame] [timeout] the table is no longer exists.');
@@ -158,7 +180,7 @@ remoteHandler.onPreStartNewGame = function(table) {
       }
 
       logger.info('[roomRemote.onPreStartNewGame] [timeout] the table do not BUSY in time, cancel it.');
-      roomService.cancelTable(timeoutTable, timeoutTable.room);
+      self.roomService.cancelTable(timeoutTable, timeoutTable.room);
     }, 4 * 1000);
   }
 };
@@ -175,8 +197,8 @@ remoteHandler.onPreStartNewGame = function(table) {
  */
 remoteHandler.ackPreStartGame = function(uid, sid, sessionId, roomId, tableId, cb) {
   var self = this;
-  var room = roomService.getRoom(roomId);
-  var table = roomService.getTable(roomId, tableId);
+  var room = self.roomService.getRoom(roomId);
+  var table = self.roomService.getTable(roomId, tableId);
   if (table == null) {
     utils.invokeCallback(cb, null);
     return;
@@ -213,8 +235,9 @@ remoteHandler.onStartNewGame = function(table) {
 };
 
 remoteHandler.reenter = function(uid, sid, sessionId, room_id, table_id, msgNo, cb) {
-  var player = roomService.getRoom(room_id).getPlayer(uid);
-  var table = roomService.getTable(room_id, table_id);
+  var player = self.roomService.getRoom(room_id).getPlayer(uid);
+  var table = self.roomService.getTable(room_id, table_id);
+  var self = this;
 
   console.log('[remoteHandler.reenter] client msgNo: ', msgNo);
   var hasGame = false;
@@ -246,7 +269,7 @@ remoteHandler.reenter = function(uid, sid, sessionId, room_id, table_id, msgNo, 
       process.nextTick(next);
       hasGame = true;
     } else {
-      roomService.enterRoom(player, room_id, -1, self._onPreStartNewGame);
+      self.roomService.enterRoom(player, room_id, -1, self._onPreStartNewGame);
     }
   } else {
     this.enter(uid, sid, sessionId, room_id, cb);
@@ -264,22 +287,23 @@ remoteHandler.reenter = function(uid, sid, sessionId, room_id, table_id, msgNo, 
 remoteHandler.leave = function(msg, cb) {
   var uid = msg.uid;
   var room_id = msg.room_id;
+  var self = this;
 
-  var room = roomService.getRoom(room_id);
+  var room = self.roomService.getRoom(room_id);
   if (!room) {
     utils.invokeCallback(cb, null, null);
     return;
   }
 
   var hasGame = false;
-  var player = roomService.getRoom(room_id).getPlayer(uid);
+  var player = self.roomService.getRoom(room_id).getPlayer(uid);
   if (!!player) {
     var table = room.getGameTable(player.tableId);
     hasGame = (!!table && !!table.pokeGame);
     var self_close = msg.self_close;
 
     var leaveFunc = function () {
-      roomService.leave(room_id, uid, function (table) {
+      self.roomService.leave(room_id, uid, function (table) {
 //        if (table.gameSate != GameState.PENDING_FOR_READY) {
 //          table.reset();
 //        }
@@ -327,5 +351,5 @@ remoteHandler.queryRooms = function(msg, cb) {
 };
 
 remoteHandler.reloadRooms = function(msg, cb) {
-  roomService.reloadRooms(cb);
+  self.roomService.reloadRooms(cb);
 };

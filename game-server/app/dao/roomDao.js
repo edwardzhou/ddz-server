@@ -12,7 +12,7 @@ roomDao.getActiveRooms = function(cb) {
 //    }
 //    utils.invokeCallback(cb, null, rooms);
 //  });
-  GameRoom.find({}).sort('sortIndex').exec(function(err, roomDocs) {
+  GameRoom.find({roomType:'00'}).sort('sortIndex').exec(function(err, roomDocs) {
     var rooms = [];
     for (var index=0; index<roomDocs.length; index++) {
       rooms.push(roomDocs[index].toParams());
