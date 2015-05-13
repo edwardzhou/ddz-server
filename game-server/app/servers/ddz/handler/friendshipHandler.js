@@ -73,10 +73,10 @@ Handler.prototype.addFriend = function (msg, session, next) {
   var friend_msg = msg.friend_msg;
   addFriendQ(userId, friend_userId, friend_msg)
     .then(function(result){
-      utils.invokeCallback(callback, null, result);
+      utils.invokeCallback(next, null, result);
     })
     .fail(function(error){
-      utils.invokeCallback(callback, null, {result: false, err: error});
+      utils.invokeCallback(next, null, {result: false, err: error});
     });
 
 };
@@ -84,13 +84,13 @@ Handler.prototype.addFriend = function (msg, session, next) {
 Handler.prototype.confirmAddFriend = function(msg, session, next) {
   var userId = session.uid;
   var friend_userId = msg.friend_userId;
-  var accetp = msg.accetp;
-  confirmAddFriendQ(userId, friend_userId, accetp)
+  var accept = msg.accetp;
+  confirmAddFriendQ(userId, friend_userId, accept)
     .then(function(){
-      utils.invokeCallback(callback, null, {result: true});
+      utils.invokeCallback(next, null, {result: true});
     })
     .fail(function(error){
-      utils.invokeCallback(callback, null, {result: false, err: error});
+      utils.invokeCallback(next, null, {result: false, err: error});
     });
 
 };
