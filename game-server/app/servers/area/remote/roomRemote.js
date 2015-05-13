@@ -351,5 +351,5 @@ remoteHandler.queryRooms = function(msg, cb) {
 };
 
 remoteHandler.reloadRooms = function(msg, cb) {
-  self.roomService.reloadRooms(cb);
+  this.roomService.reloadRooms(cb);
 };
