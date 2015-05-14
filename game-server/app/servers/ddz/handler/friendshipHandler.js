@@ -16,7 +16,8 @@ var Q = require('q');
 
 var friendService = require('../../../services/friendService');
 var addFriendQ = Q.nbind(friendService.addFriend, friendService);
-var confirmAddFriendQ = Q.nbind(friendService.confirmAddFriend, friendService);
+var acceptAddFriendQ = Q.nbind(friendService.acceptFriend, friendService);
+var denyAddFriendQ = Q.nbind(friendService.denyFriend, friendService);
 
 module.exports = function(app) {
   return new Handler(app);
@@ -84,12 +85,18 @@ Handler.prototype.addFriend = function (msg, session, next) {
 Handler.prototype.confirmAddFriend = function(msg, session, next) {
   var userId = session.uid;
   var friend_userId = msg.friend_userId;
-  var accept = msg.accetp;
-  confirmAddFriendQ(userId, friend_userId, accept)
+  var accept = msg.accept;
+  var confirmFuncQ = acceptAddFriendQ;
+  if (!accept) {
+    confirmFuncQ = denyAddFriendQ;
+  }
+
+  confirmFuncQ(userId, friend_userId)
     .then(function(){
       utils.invokeCallback(next, null, {result: true});
     })
     .fail(function(error){
+      logger.error('[friendshipHandler.confirmAddFriend] error: ', error);
       utils.invokeCallback(next, null, {result: false, err: error});
     });
 

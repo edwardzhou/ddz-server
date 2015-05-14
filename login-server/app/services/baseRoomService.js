@@ -69,8 +69,9 @@ BaseRoomService.prototype.getRoom = function(roomId) {
  * @param cb
  */
 BaseRoomService.prototype.reloadRooms = function(cb) {
+
   logger.info("[BaseRoomService.reloadRooms] reload rooms...");
-  for (var roomId in roomsMap) {
+  for (var roomId in this.roomsMap) {
     var room = this.roomsMap[roomId];
     room.reloadFromDb();
   }
