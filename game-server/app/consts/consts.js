@@ -80,6 +80,13 @@ var CONSTS = {
     BY_PASSWORD: 3
   },
 
+  AddFriendStatus: {
+    NEW: 0,
+    READ: 1,
+    ACCEPTED: 2,
+    DENIED: 3
+  },
+
   PokeCardValue: {
     NONE: 0,    // 无效
     THREE: 3,   // 3
