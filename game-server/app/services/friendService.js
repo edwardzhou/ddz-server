@@ -6,8 +6,7 @@ var logger = require('pomelo-logger').getLogger('pomelo', __filename);
 var util = require('util');
 var User = require('../domain/user');
 var Player = require('../domain/player');
-var MyPlayed = require('../domain/myPlayed');
-var MyFriend = require('../domain/myFriend');
+var MyPlayedFriend = require('../domain/myPlayedFriend');
 var MyMessabeBox = require('../domain/myMessageBox');
 var messageService = require('./messageService');
 var UserSession = require('../domain/userSession');
@@ -62,49 +61,44 @@ FriendService.updatePlayWithMeUsers = function (players, play_results) {
   }
 };
 
-FriendService.doUpdatePlayWithMePlayer = function (me_player, friend_players) {
+FriendService.doUpdatePlayWithMePlayer = function (self_player, friend_players) {
   logger.info("[FriendService.doUpdatePlayWithMePlayer], friend_players=", friend_players);
-  MyPlayed.findOneQ({userId: me_player.userId})
-    .then(function (played_user) {
-      if (played_user == null) {
-        var new_played_user = new MyPlayed();
-        new_played_user.user_id = me_player.id;
-        new_played_user.userId = me_player.userId;
-        new_played_user.playedUsers = [];
-        for (var j = 0; j < friend_players.length; j++) {
-          new_played_user.playedUsers.push({
-            userId: friend_players[j].userId, nickName: friend_players[j].nickName,
-            headIcon: friend_players[j].headIcon, gender: friend_players.gender, lastPlayed: Date.now(),
-            gameStat: {won: 0, lose: 0}
-          });
-        }
+  var userParams = {only: ['userId', 'nickName', 'gender', 'headIcon']};
 
-        new_played_user.save();
-        logger.info("[FriendService.doUpdatePlayWithMePlayer], new_play_whith_player:", new_played_user);
-      }
-      else {
-
-        for (var j = 0; j < friend_players.length; j++) {
-          var is_new_played = true;
-          var friend_player = friend_players[j];
-          for (var i = 0; i < played_user.playedUsers.length; i++) {
-            if (played_user.playedUsers[i].userId == friend_player.userId) {
-              played_user.playedUsers[i].lastPlayed = Date.now();
-              is_new_played = false;
-            }
-          }
-          if (is_new_played) {
-            played_user.playedUsers.push({
-              userId: friend_player.userId, nickName: friend_player.nickName,
-              headIcon: friend_player.headIcon, gender: friend_player.gender, lastPlayed: Date.now()
-            });
-          }
-        }
-        played_user.markModified('playedUsers');
-        played_user.save();
-        logger.info("[FriendService.doUpdatePlayWithMePlayer], play_whith_player:", played_user);
+  MyPlayedFriend.findOneQ({userId: self_player.userId})
+    .then(function (myPlayedFriend) {
+      if (myPlayedFriend == null) {
+        myPlayedFriend = new MyPlayedFriend();
+        myPlayedFriend.user_id = self_player.id;
+        myPlayedFriend.userId = self_player.userId;
+        myPlayedFriend.playedUsers = [];
+        myPlayedFriend.friends = [];
       }
 
+      var myPlayed = null;
+      var myFriend = null;
+      for (var j = 0; j < friend_players.length; j++) {
+        myPlayed = myPlayedFriend.findPlayedUser(friend_players[j].userId);
+        myFriend = myPlayedFriend.findFriend(friend_players[j].userId);
+        if (!!myPlayed) {
+          myPlayed.lastPlayed = Date.now();
+        } else {
+          myPlayed = friend_players[j].toParams(userParams);
+          myPlayed.lastPlayed = Date.now();
+          myPlayed.isFriend = !!myFriend;
+          myPlayedFriend.playedUsers.push(myPlayed);
+        }
+      }
+
+      myPlayedFriend.sortPlayedUsers();
+
+      return myPlayedFriend.saveQ();
+    })
+    .then(function(myPlayedFriend) {
+      logger.info("[FriendService.doUpdatePlayWithMePlayer], new_play_whit_player:", myPlayedFriend);
+    })
+    .fail(function (err) {
+      logger.error('[FriendService.doUpdatePlayWithMePlayer] error: ', err);
     });
 };
 
@@ -116,16 +110,12 @@ FriendService.addFriend = function (userId, friend_userId, friend_msg, callback)
   User.findOneQ({userId: userId})
     .then(function (user) {
       result.user = user;
-      result.userInfo = result.user.toParams({only:['userId', 'nickName', 'gender', 'headIcon']});
-      return MyFriend.findOneQ({userId: userId});
+      result.userInfo = result.user.toParams({only: ['userId', 'nickName', 'gender', 'headIcon']});
+      return MyPlayedFriend.findOneQ({userId: userId});
     })
-    .then(function (my_friend) {
-      if (my_friend != null && my_friend.friends != null) {
-        my_friend.friends.forEach(function (friend) {
-          if (friend.userId == friend_userId) {
-            throw genError("already is friend");
-          }
-        });
+    .then(function (myPlayedFriend) {
+      if (!!myPlayedFriend && !!myPlayedFriend.findFriend(friend_userId)) {
+        throw genError("already is friend");
       }
       return User.findOneQ({userId: friend_userId});
     })
@@ -133,25 +123,31 @@ FriendService.addFriend = function (userId, friend_userId, friend_msg, callback)
       result.friend_user = friend_user;
       return MyMessabeBox.findOneQ({userId: friend_userId});
     })
-    .then(function (msg_box) {
-      if (msg_box == null) {
+    .then(function (friendMsgBox) {
+      if (friendMsgBox == null) {
         logger.info("FriendService.addFriend. new MyMessageBox");
-        msg_box = new MyMessabeBox();
-        msg_box.user_id = result.friend_user.id;
-        msg_box.userId = result.friend_user.userId;
-        msg_box.addFriendMsgs = [];
+        friendMsgBox = new MyMessabeBox();
+        friendMsgBox.user_id = result.friend_user.id;
+        friendMsgBox.userId = result.friend_user.userId;
       }
-      msg_box.addFriendMsgs.push({
-        userId: userId,
-        userInfo: result.userInfo,
-        msg: friend_msg,
-        status: AddFriendStatus.NEW,
-        date: Date.now()
-      });
 
-      logger.info("FriendService.addFriend. msg_box.addFriendMsg:", msg_box.addFriendMsg);
-      msg_box.markModified('addFriendMsgs');
-      msg_box.save();
+      var msg = friendMsgBox.findFromArray(friendMsgBox.addFriendMsgs, 'userId', userId);
+      if (!!msg) {
+        msg.status = AddFriendStatus.NEW;
+        msg.date = Date.now();
+      } else {
+        friendMsgBox.addFriendMsgs.push({
+          userId: userId,
+          userInfo: result.userInfo,
+          msg: friend_msg,
+          status: AddFriendStatus.NEW,
+          date: Date.now()
+        });
+      }
+
+      logger.info("FriendService.addFriend. msg_box.addFriendMsg:", friendMsgBox.addFriendMsg);
+      friendMsgBox.markModified('addFriendMsgs');
+      friendMsgBox.save();
 
       return UserSession.findOneQ({userId: friend_userId});
     })
@@ -186,7 +182,7 @@ FriendService.addFriend = function (userId, friend_userId, friend_msg, callback)
     });
 };
 
-FriendService.acceptFriend = function(userId, friend_userId, callback) {
+FriendService.acceptFriend = function (userId, friend_userId, callback) {
   logger.info("[FriendService.acceptFriend], userId=", userId);
   logger.info("[FriendService.acceptFriend], friend_userId=", friend_userId);
   var result = {};
@@ -201,14 +197,7 @@ FriendService.acceptFriend = function(userId, friend_userId, callback) {
     .then(function (msg_box) {
       // 修改被请求者的加好友消息状态
 
-      var cur_msg = null;
-      for (var index=0; index<msg_box.addFriendMsgs.length; index++) {
-        if (msg_box.addFriendMsgs[index].userId == friend_userId) {
-          cur_msg = msg_box.addFriendMsgs[index];
-          break;
-        }
-      }
-
+      var cur_msg = msg_box.findFromArray(msg_box.addFriendMsgs, 'userId', friend_userId);
       cur_msg.status = AddFriendStatus.ACCEPTED;
       msg_box.markModified('addFriendMsgs');
       logger.info("FriendService.acceptFriend. msg_box.addFriendMsg:", msg_box.addFriendMsg);
@@ -220,52 +209,66 @@ FriendService.acceptFriend = function(userId, friend_userId, callback) {
     .then(function (user) {
       result.user = user;
 
-      return MyFriend.findOneQ({userId: userId});
+      return MyPlayedFriend.findOneQ({userId: userId});
     })
-    .then(function (selfFriends) {
-      if (selfFriends == null) {
-        selfFriends = new MyFriend();
-        selfFriends.friends = [];
-        selfFriends.user_id = result.user.id;
-        selfFriends.userId = result.user.userId;
+    .then(function (selfPlayedFriend) {
+      if (selfPlayedFriend == null) {
+        selfPlayedFriend = new MyFriend();
+        selfPlayedFriend.user_id = result.user.id;
+        selfPlayedFriend.userId = result.user.userId;
       }
 
-      result.selfFriends = selfFriends;
-      var isFriendshipExists = selfFriends.friends.filter(function(friend) {
-          return friend.userId == result.friend_user.userId
-        }).length > 0;
-      if (!isFriendshipExists) {
+      result.selfPlayedFriend = selfPlayedFriend;
+      var friendship = selfPlayedFriend.findFriend(friend_userId);
+      if (!friendship) {
         var userInfo = result.friend_user.toParams(userParams);
         userInfo.addDate = Date.now();
-        result.selfFriends.friends.push(userInfo);
+        selfPlayedFriend.friends.push(userInfo);
       }
 
-      selfFriends.markModified('friends');
-      return selfFriends.saveQ();
-    })
-    .then(function() {
-      return MyFriend.findOneQ({userId: friend_userId});
-    })
-    .then(function(friendFriends) {
-      if (friendFriends == null) {
-        friendFriends = new MyFriend();
-        friendFriends.friends = [];
-        friendFriends.user_id = result.friend_user.id;
-        friendFriends.userId = result.friend_user.userId;
+      selfPlayedFriend.sortFriends();
+
+      var played = selfPlayedFriend.findPlayedUser(friend_userId);
+      if (!!played) {
+        played.isFriend = true;
+        selfPlayedFriend.markModified('playedUsers');
+        selfPlayedFriend.playedUsersTm = Date.now();
       }
-      result.friendFriends = friendFriends;
-      var isFriendshipExists = friendFriends.friends.filter(function(friend) {
-          return friend.userId = result.user.userId;
-        }).length > 0;
-      if (!isFriendshipExists) {
+
+      selfPlayedFriend.markModified('friends');
+      selfPlayedFriend.friendsTm = Date.now();
+      return selfPlayedFriend.saveQ();
+    })
+    .then(function () {
+      return MyPlayedFriend.findOneQ({userId: friend_userId});
+    })
+    .then(function (friendPlayedFriend) {
+      if (friendPlayedFriend == null) {
+        friendPlayedFriend = new MyFriend();
+        friendPlayedFriend.user_id = result.friend_user.id;
+        friendPlayedFriend.userId = result.friend_user.userId;
+      }
+
+      result.friendPlayedFriend = friendPlayedFriend;
+      var friendship = friendPlayedFriend.findFriend(result.user.userId);
+      if (!friendship) {
         var userInfo = result.user.toParams(userParams);
         userInfo.addDate = Date.now();
-        result.friendFriends.friends.push(userInfo);
+        friendPlayedFriend.friends.push(userInfo);
       }
-      friendFriends.markModified('friends');
-      return friendFriends.saveQ();
+
+      var played = friendPlayedFriend.findPlayedUser(result.user.userId);
+      if (!!played) {
+        played.isFriend = true;
+        friendPlayedFriend.markModified('playedUsers');
+        friendPlayedFriend.playedUsersTm = Date.now();
+        friendPlayedFriend.friendsTm = Date.now();
+      }
+
+      friendPlayedFriend.markModified('friends');
+      return friendPlayedFriend.saveQ();
     })
-    .then(function() {
+    .then(function () {
       return UserSession.findOneQ({userId: friend_userId});
     })
     .then(function (userSession) {
@@ -284,17 +287,17 @@ FriendService.acceptFriend = function(userId, friend_userId, callback) {
     })
     .fail(function (error) {
       var errCode = error.errCode || ErrorCode.SYSTEM_ERROR;
-      logger.info('[FriendService.replyFirendReqest] faild. error:', error);
+      logger.info('[FriendService.replyFriendRequest] failed. error:', error);
       utils.invokeCallback(callback, {err: errCode}, null);
     })
     .done(function () {
-      logger.info('[FriendService.replyFirendReqest] done.');
+      logger.info('[FriendService.replyFriendRequest] done.');
       utils.invokeCallback(callback, null, result.friend_user.toParams(userParams));
     });
 
 };
 
-FriendService.denyFriend = function(userId, friend_userId, callback) {
+FriendService.denyFriend = function (userId, friend_userId, callback) {
   logger.info("[FriendService.denyFriend], userId=", userId);
   logger.info("[FriendService.denyFriend], friend_userId=", friend_userId);
   var result = {};
@@ -309,13 +312,13 @@ FriendService.denyFriend = function(userId, friend_userId, callback) {
     .then(function (msg_box) {
       // 修改被请求者的加好友消息状态
 
-      var cur_msg = null;
-      for (var index=0; index<msg_box.addFriendMsgs.length; index++) {
-        if (msg_box.addFriendMsgs[index].userId == friend_userId) {
-          cur_msg = msg_box.addFriendMsgs[index];
-          break;
-        }
-      }
+      var cur_msg = msg_box.findFromArray(msg_box.addFriendMsgs, 'userId', friend_userId);
+      //for (var index=0; index<msg_box.addFriendMsgs.length; index++) {
+      //  if (msg_box.addFriendMsgs[index].userId == friend_userId) {
+      //    cur_msg = msg_box.addFriendMsgs[index];
+      //    break;
+      //  }
+      //}
 
       cur_msg.status = AddFriendStatus.DENIED;
       msg_box.markModified('addFriendMsgs');
@@ -337,8 +340,8 @@ FriendService.denyFriend = function(userId, friend_userId, callback) {
         var target = [{uid: friend_userId, sid: userSession.frontendId}];
         // 向加好友请求者发送加友是否被同意消息
         process.nextTick(function () {
-          logger.info('[FriendService.denyFriend] replyFriendReqest.msgData: ', msgData);
-          logger.info('[FriendService.denyFriend] replyFriendReqest.target: ', target);
+          logger.info('[FriendService.denyFriend] replyFriendRequest.msgData: ', msgData);
+          logger.info('[FriendService.denyFriend] replyFriendRequest.target: ', target);
           messageService.pushMessage('replyFriendRequest', msgData, target);
         });
       }
@@ -354,118 +357,3 @@ FriendService.denyFriend = function(userId, friend_userId, callback) {
     });
 
 };
-
-FriendService.confirmAddFriend = function (userId, friend_userId, accept, callback) {
-  logger.info("[FriendService.confirmAddFriend], userId=", userId);
-  logger.info("[FriendService.confirmAddFriend], friend_userId=", friend_userId);
-  logger.info("[FriendService.confirmAddFriend], is_yes=", accept);
-  var result = {};
-  User.findOneQ({userId: friend_userId})
-    .then(function (user) {
-      // result.user 为加好友请求发起者
-      result.user = user;
-      return MyMessabeBox.findOneQ({userId: userId});
-    })
-    .then(function (msg_box) {
-      // 修改被请求者的加好友消息状态
-      var cur_msg = msg_box.addFriendMsgs[0];
-      msg_box.addFriendMsgs.forEach(function (msg) {
-        if (msg.userId == friend_userId) {
-          cur_msg = msg;
-        }
-      });
-      cur_msg.status = accept ? 2 : 3;
-      msg_box.markModified('addFriendMsgs');
-      logger.info("FriendService.confirmAddFriend. msg_box.addFriendMsg:", msg_box.addFriendMsg);
-      msg_box.save();
-
-      if (accept) {
-        return User.findOneQ({userId: userId})
-      }
-      else {
-        return null;
-      }
-
-    })
-    .then(function (friend_user) {
-      if (accept) {
-        // result.friend_user 是被请求为好友的玩家
-        result.friend_user = friend_user;
-        return MyFriend.findOneQ({userId: friend_userId});
-      }
-      else {
-        return null;
-      }
-
-    })
-    .then(function (my_friend) {
-      if (accept) {
-        // result.my_friend 为加好友请求发起者的好友列表对象
-        if (my_friend == null) {
-          my_friend = new MyFriend();
-          my_friend.friends = [];
-          my_friend.user_id = result.user.id;
-          my_friend.userId = result.user.userId;
-
-        }
-        result.my_friend = my_friend;
-        return MyFriend.findOneQ({userId: userId});
-      }
-      else {
-        return null;
-      }
-    })
-    .then(function (my_friend) {
-      if (accept) {
-        // result.friend_user_friend 为被请求者的好友列表对象
-        if (my_friend == null) {
-          my_friend = new MyFriend();
-          my_friend.friends = [];
-          my_friend.user_id = result.friend_user.id;
-          my_friend.userId = result.friend_user.userId;
-        }
-        result.friend_user_friend = my_friend;
-
-        // 将被请求者加入请求者的好友列表
-        result.my_friend.friends.push({
-          userId: result.friend_user.userId, nickName: result.friend_user.nickName,
-          headIcon: result.friend_user.headIcon, gender: result.friend_user.gender, addDate: Date.now()
-        });
-        result.my_friend.markModified('friends');
-        result.my_friend.save();
-        // 将请求者加入被请求者的好友列表
-        result.friend_user_friend.friends.push({
-          userId: result.user.userId, nickName: result.user.nickName,
-          headIcon: result.user.headIcon, gender: result.user.gender, addDate: Date.now()
-        });
-        result.friend_user_friend.markModified('friends');
-        result.friend_user_friend.save();
-      }
-      return UserSession.findOneQ({userId: friend_userId});
-    })
-    .then(function (userSession) {
-      logger.info("FriendService.confirmAddFriend. push message to client, ");
-      if (userSession != null) {
-        var msgData = {userId: result.friend_user.userId, nickName: result.friend_user.nickName, accept: accept};
-        var target = [{uid: result.user.userId, sid: userSession.frontendId}];
-        // 向加好友请求者发送加友是否被同意消息
-        process.nextTick(function () {
-          logger.info('[FriendService.confirmAddFriend] replyFirendReqest.msgData: ', msgData);
-          logger.info('[FriendService.confirmAddFriend] replyFirendReqest.target: ', target);
-          messageService.pushMessage('replyFirendReqest', msgData, target);
-        });
-      }
-
-    })
-    .fail(function (error) {
-      var errCode = error.errCode || ErrorCode.SYSTEM_ERROR;
-      logger.info('[FriendService.replyFirendReqest] faild. error:', error);
-      utils.invokeCallback(callback, {err: errCode}, null);
-    })
-    .done(function () {
-      logger.info('[FriendService.replyFirendReqest] done.');
-      utils.invokeCallback(callback, null, true);
-    });
-};
-
-

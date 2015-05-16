@@ -9,32 +9,45 @@ var DomainUtils = require("./domainUtils");
 
 
 var MyMessageBoxSchema = mongoose.Schema({
-    user_id: {type: mongoose.Schema.Types.ObjectId},
-    userId: Number,   // 用户Id
-    addFriendMsgs: {type: mongoose.Schema.Types.Mixed},
-    created_at: {type: Date, default: Date.now},
-    updated_at: {type: Date, default: Date.now}
+  user_id: {type: mongoose.Schema.Types.ObjectId},
+  userId: Number,   // 用户Id
+  addFriendMsgs: [{type: mongoose.Schema.Types.Mixed}],
+  created_at: {type: Date, default: Date.now},
+  updated_at: {type: Date, default: Date.now}
 }, {
-    collection: 'my_message_boxes'
+  collection: 'my_message_boxes'
 });
 
 
-var __toParams = function(model, opts) {
-    var transObj = {
-        userId: model.userId,
-        addFriendMsgs: model.addFriendMsgs,
-        updated_at: model.updated_at
-    };
+var __toParams = function (model, opts) {
+  var transObj = {
+    userId: model.userId,
+    addFriendMsgs: model.addFriendMsgs,
+    updated_at: model.updated_at
+  };
 
-    transObj = DomainUtils.adjustAttributes(transObj, opts);
+  transObj = DomainUtils.adjustAttributes(transObj, opts);
 
-    return transObj;
+  return transObj;
 };
 
 MyMessageBoxSchema.statics.toParams = __toParams;
 
-MyMessageBoxSchema.methods.toParams = function(opts) {
-    return __toParams(this, opts);
+MyMessageBoxSchema.methods.toParams = function (opts) {
+  return __toParams(this, opts);
+};
+
+MyMessageBoxSchema.methods.findFromArray = function (array, key, value) {
+  if (array == null)
+    return null;
+
+  for (var index=0; index<array.length; index++) {
+    if (array[index][key] == value) {
+      return array[index];
+    }
+  }
+
+  return null;
 };
 
 
