@@ -7,8 +7,7 @@ var logger = require('pomelo-logger').getLogger(__filename);
 var utils = require('../../../util/utils');
 var Result = require('../../../domain/result');
 var User = require('../../../domain/user');
-var MyPlayed = require('../../../domain/myPlayed');
-var MyFriend = require('../../../domain/myFriend');
+var MyPlayedFriend = require('../../../domain/myPlayedFriend');
 var MyMessageBox = require('../../../domain/myMessageBox');
 
 var ErrorCode = require('../../../consts/errorCode');
@@ -31,12 +30,12 @@ var Handler = function(app) {
 Handler.prototype.getPlayWithMeUsers = function (msg, session, next) {
   var userId = session.uid;
   logger.info('FriendshipHandler.getPlayWithMeUsers, userId: ', userId);
-  MyPlayed.findOneQ({userId:userId})
-    .then(function(my_played){
+  MyPlayedFriend.findOneQ({userId:userId})
+    .then(function(myPlayedFriend){
       var return_result = [];
-      logger.info('FriendshipHandler.getPlayWithMeUsers, play_with_me_users=', my_played);
-      if (my_played != null) {
-        return_result =  my_played.toParams().playedUsers;
+      logger.info('FriendshipHandler.getPlayWithMeUsers, play_with_me_users=', myPlayedFriend);
+      if (myPlayedFriend != null) {
+        return_result =  myPlayedFriend.playedUsers;
       }
       logger.info('FriendshipHandler.getPlayWithMeUsers done.');
       logger.info('FriendshipHandler.getPlayWithMeUsers done. return_result:',return_result);
@@ -51,12 +50,12 @@ Handler.prototype.getPlayWithMeUsers = function (msg, session, next) {
 Handler.prototype.getFriends = function (msg, session, next) {
   var userId = session.uid;
   logger.info('FriendshipHandler.getFriends, userId: ', userId);
-  MyFriend.findOneQ({userId:userId})
-    .then(function(my_friend){
+  MyPlayedFriend.findOneQ({userId:userId})
+    .then(function(myPlayedFriend){
       var return_result = [];
-      logger.info('FriendshipHandler.getFriends, friends=', my_friend);
-      if (my_friend != null) {
-        return_result = my_friend.toParams();
+      logger.info('FriendshipHandler.getFriends, friends=', myPlayedFriend);
+      if (myPlayedFriend != null) {
+        return_result = myPlayedFriend.friends;
       }
       logger.info('FriendshipHandler.getFriends done.');
       utils.invokeCallback(next, null, {result: true, users: return_result});
