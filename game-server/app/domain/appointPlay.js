@@ -30,9 +30,12 @@ AppointPlaySchema.index({'players.userId': 1});
 
 var __toParams = function(model, opts) {
   var transObj = {
+    appointId: model.appointId,
     userId: model.userId,
     title: model.title,
-    players: model.players.toParams(),
+    //players: model.players.toParams(),
+    roomId: model.roomId,
+    players: model.players,
     expired_at: model.expired_at,
     updated_at: model.updated_at
   };
