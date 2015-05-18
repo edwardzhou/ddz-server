@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": false,
   "dependencies": {
-    "pomelo": "1.1.6",
+    "pomelo": "1.1.7",
     "pomelo-logger": "*",
     "mongoose": "4.x",
     "mongodb": "*",

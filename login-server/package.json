@@ -6,7 +6,7 @@
     "start": "node ./bin/www"
   },
   "dependencies": {
-    "pomelo": "1.1.6",
+    "pomelo": "1.1.7",
     "pomelo-logger": "*",
     "express": "~4.10.6",
     "body-parser": "~1.10.1",

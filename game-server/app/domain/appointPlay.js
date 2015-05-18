@@ -25,6 +25,8 @@ var AppointPlaySchema = mongoose.Schema({
   collection: 'appoint_plays'
 });
 
+AppointPlaySchema.index({userId: 1});
+AppointPlaySchema.index({'players.userId': 1});
 
 var __toParams = function(model, opts) {
   var transObj = {

@@ -35,7 +35,7 @@ Handler.prototype.getPlayWithMeUsers = function (msg, session, next) {
       var return_result = [];
       logger.info('FriendshipHandler.getPlayWithMeUsers, play_with_me_users=', myPlayedFriend);
       if (myPlayedFriend != null) {
-        return_result =  myPlayedFriend.playedUsers;
+        return_result =  myPlayedFriend.playedUsers.slice(0, 20);
       }
       logger.info('FriendshipHandler.getPlayWithMeUsers done.');
       logger.info('FriendshipHandler.getPlayWithMeUsers done. return_result:',return_result);

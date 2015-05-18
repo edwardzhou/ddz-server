@@ -26,6 +26,8 @@ var DdzBankruptSaveSchema = new mongoose.Schema({
   collection: 'ddz_bankrupt_saves'
 });
 
+DdzBankruptSaveSchema.index({userId: 1});
+
 var __toParams = function (model, opts) {
 
   var transObj = {
