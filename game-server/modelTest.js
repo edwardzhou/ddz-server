@@ -35,6 +35,7 @@ Player = require('./app/domain/player');
 AppointPlay = require('./app/domain/appointPlay');
 require('./app/domain/ArrayHelper');
 taskService = require('./app/services/taskService');
+MyPlayedFriend = require('./app/domain/myPlayedFriend');
 
 AppServerInfo = require('./app/domain/appServerInfo');
 

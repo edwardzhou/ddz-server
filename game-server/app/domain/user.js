@@ -81,6 +81,8 @@ var userSchema = new mongoose.Schema({
   updated_at: {type: Date, default: Date.now}
 });
 
+userSchema.index({userId: 1});
+
 var md5_data = function(password, salt) {
   var data = password;
   if (!!salt) {
