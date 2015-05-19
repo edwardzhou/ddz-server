@@ -28,15 +28,12 @@ var Handler = function(app) {
   this.app = app;
 };
 
-Handler.prototype.createAppointPlay = function (msg, session, next) {
-  var userId = session.uid;
-  var player1_userId = msg.player1_userId;
-  var player2_userId = msg.player2_userId;
+var userIdCompareFunc = function(a,b) {
+  return a - b;
+};
 
-  var results = {};
-  logger.info('AppointPlayHandler.createAppointPlay, userId: ', userId);
-
-  User.findOneQ({userId: userId})
+var createNewAppointPlayQ = function(results, userId, player1_userId, player2_userId) {
+  return User.findOneQ({userId: userId})
     .then(function(user) {
       results.creator = user;
       return User.findQ({userId: {$in: [player1_userId, player2_userId]}});
@@ -45,7 +42,38 @@ Handler.prototype.createAppointPlay = function (msg, session, next) {
       results.player1 = users[0];
       results.player2 = users[1];
 
-      return AppointPlay.createAppointPlayQ(results.creator, [results.creator, results.player1, results.player2])
+      return AppointPlay.createAppointPlayQ(results.creator, [results.creator, results.player1, results.player2]);
+    });
+};
+
+
+Handler.prototype.createAppointPlay = function (msg, session, next) {
+  var userId = session.uid;
+  var player1_userId = msg.player1_userId;
+  var player2_userId = msg.player2_userId;
+  var orgIds = [userId, player1_userId, player2_userId].sort(userIdCompareFunc);
+
+  var results = {};
+  logger.info('AppointPlayHandler.createAppointPlay, userId: ', userId);
+
+  AppointPlay.findQ({'players.userId': userId})
+    .then(function(plays) {
+      var existPlay = null;
+      if (!!plays && plays.length>0) {
+        for (var index=0; index<plays.length; index++) {
+          var playerIds = plays[index].players.map(function(p) {return p.userId;}).sort(userIdCompareFunc);
+          if (Array.isSameContents(orgIds, playerIds)) {
+            existPlay = plays[index];
+            break;
+          }
+        }
+      }
+
+      if (!!existPlay) {
+        return existPlay;
+      } else {
+        return createNewAppointPlayQ(results, userId, player1_userId, player2_userId);
+      }
     })
     .then(function(newAppointPlay) {
       utils.invokeCallback(next, null, {result:true, appointPlay: newAppointPlay.toParams()});

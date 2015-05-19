@@ -38,6 +38,20 @@ Array.indexOf = function(theArray, item) {
   return -1;
 };
 
+Array.isSameContents = function(thisArray, otherArray) {
+  if (thisArray.length != otherArray.length) {
+    return false;
+  }
+
+  for (var index=0; index<thisArray.length; index++) {
+    if (thisArray[index] != otherArray[index]) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
 Array.prototype.toParams = function(excludeAttrs) {
   var result = [];
   var obj;
