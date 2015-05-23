@@ -36,8 +36,8 @@ var __toParams = function(model, opts) {
     //players: model.players.toParams(),
     roomId: model.roomId,
     players: model.players,
-    expired_at: model.expired_at,
-    updated_at: model.updated_at
+    expired_at: model.expired_at.getTime(),
+    updated_at: model.updated_at.getTime()
   };
 
   transObj = DomainUtils.adjustAttributes(transObj, opts);

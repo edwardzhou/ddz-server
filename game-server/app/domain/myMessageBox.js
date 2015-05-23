@@ -12,11 +12,15 @@ var MyMessageBoxSchema = mongoose.Schema({
   user_id: {type: mongoose.Schema.Types.ObjectId},
   userId: Number,   // 用户Id
   addFriendMsgs: [{type: mongoose.Schema.Types.Mixed}],
+  sysMsgs: [{type: mongoose.Schema.Types.Mixed}],
+  chatMsg: [{type: mongoose.Schema.Types.Mixed}],
   created_at: {type: Date, default: Date.now},
   updated_at: {type: Date, default: Date.now}
 }, {
   collection: 'my_message_boxes'
 });
+
+MyMessageBoxSchema.index({userId: 1});
 
 
 var __toParams = function (model, opts) {

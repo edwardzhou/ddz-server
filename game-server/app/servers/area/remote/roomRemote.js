@@ -124,7 +124,7 @@ remoteHandler.enter = function(uid, sid, sessionId, room_id, table_id, cb) {
 //        messageService.pushTableMessage(table, "onPlayerJoin", msg, null);
 //      });
 
-      self.roomService.enterRoom(player, room_id, true, table_id, function(room){
+      self.roomService.enterRoom(player, room_id, true, table_id, function(err, room){
         // 返回结果
         utils.invokeCallback(cb, null, thisServerId, room.toParams());
       });

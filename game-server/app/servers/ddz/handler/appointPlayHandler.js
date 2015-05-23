@@ -14,10 +14,11 @@ var MyMessageBox = require('../../../domain/myMessageBox');
 var ErrorCode = require('../../../consts/errorCode');
 var Q = require('q');
 
-var friendService = require('../../../services/friendService');
-var addFriendQ = Q.nbind(friendService.addFriend, friendService);
-var acceptAddFriendQ = Q.nbind(friendService.acceptFriend, friendService);
-var denyAddFriendQ = Q.nbind(friendService.denyFriend, friendService);
+//var friendService = require('../../../services/friendService');
+var notificationService = require('../../../services/notificationService');
+//var addFriendQ = Q.nbind(friendService.addFriend, friendService);
+//var acceptAddFriendQ = Q.nbind(friendService.acceptFriend, friendService);
+//var denyAddFriendQ = Q.nbind(friendService.denyFriend, friendService);
 
 module.exports = function(app) {
   return new Handler(app);
@@ -77,9 +78,26 @@ Handler.prototype.createAppointPlay = function (msg, session, next) {
     })
     .then(function(newAppointPlay) {
       utils.invokeCallback(next, null, {result:true, appointPlay: newAppointPlay.toParams()});
+      notificationService.pushAppointPlayNotification(newAppointPlay, userId);
     })
     .fail(function(error) {
       logger.error('AppointPlayHandler.createAppointPlay failed.', error);
       utils.invokeCallback(next, null, {result: false, err: error});
+    });
+};
+
+Handler.prototype.getAppointPlays = function(msg, session, next) {
+  var userId = session.uid;
+
+  AppointPlay.findQ({'players.userId': userId})
+    .then(function(appointPlays) {
+      var msgBack = {
+        result: true,
+        appointPlays: appointPlays.toParams()
+      };
+      utils.invokeCallback(next, null, msgBack);
+    })
+    .fail(function(err) {
+      utils.invokeCallback(next, null, {result: false, err: err});
     });
 };
