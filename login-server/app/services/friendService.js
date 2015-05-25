@@ -77,16 +77,19 @@ FriendService.doUpdatePlayWithMePlayer = function (self_player, friend_players) 
 
       var myPlayed = null;
       var myFriend = null;
-      for (var j = 0; j < friend_players.length; j++) {
-        myPlayed = myPlayedFriend.findPlayedUser(friend_players[j].userId);
-        myFriend = myPlayedFriend.findFriend(friend_players[j].userId);
+      for (var index = 0; index < friend_players.length; index++) {
+        myPlayed = myPlayedFriend.findPlayedUser(friend_players[index].userId);
+        myFriend = myPlayedFriend.findFriend(friend_players[index].userId);
         if (!!myPlayed) {
           myPlayed.lastPlayed = Date.now();
         } else {
-          myPlayed = friend_players[j].toParams(userParams);
+          myPlayed = friend_players[index].toParams(userParams);
           myPlayed.lastPlayed = Date.now();
-          myPlayed.isFriend = !!myFriend;
           myPlayedFriend.playedUsers.push(myPlayed);
+        }
+        myPlayed.isFriend = !!myFriend;
+        if (!!myFriend) {
+          myFriend.lastPlayed = myPlayed.lastPlayed;
         }
       }
 

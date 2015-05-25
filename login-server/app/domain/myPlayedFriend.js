@@ -22,6 +22,8 @@ var MyPlayedFriendSchema = mongoose.Schema({
   collection: 'my_played_friends'
 });
 
+MyPlayedFriendSchema.index({userId: 1});
+
 var __toParams = function(model, opts) {
   var transObj = {
     userId: model.userId,
@@ -65,7 +67,7 @@ MyPlayedFriendSchema.methods.findFriend = function(userId) {
 
 MyPlayedFriendSchema.methods.sortPlayedUsers = function() {
   this.playedUsers.sort(function(a, b) {
-    return a.lastPlayed - b.lastPlayed;
+    return b.lastPlayed - a.lastPlayed;
   });
 
   this.markModified('playedUsers');
@@ -73,7 +75,15 @@ MyPlayedFriendSchema.methods.sortPlayedUsers = function() {
 
 MyPlayedFriendSchema.methods.sortFriends = function() {
   this.friends.sort(function(a, b) {
-    return a.addDate - b.addDate;
+    if (!!a.lastPlayed && !!b.lastPlayed) {
+      return b.lastPlayed - a.lastPlayed;
+    } else if (!!a.lastPlayed) {
+      return -1;
+    } else if (!!b.lastPlayed) {
+      return 1;
+    } else {
+      return b.addDate - a.addDate;
+    }
   });
 
   this.markModified('friends');
