@@ -50,6 +50,7 @@ var DdzProfileSchema = mongoose.Schema({
   collection: 'ddz_user_profiles'
 });
 
+DdzProfileSchema.index({userId: 1});
 
 var __toParams = function(model, opts) {
   var transObj = {

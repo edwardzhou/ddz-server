@@ -19,7 +19,7 @@ var userSchema = new mongoose.Schema({
   nickName: String,   // 昵称
   mobileNo: String,   // 手机号
   email: String,      // 邮箱
-  headIcon: {type: String, default: 'head1'}, // 头像
+  headIcon: {type: String, default: 1}, // 头像
   gender: {type: String, default: '女'}, // 性别
   passwordSalt: String, // 密码盐
   passwordDigest: String, // 密码串

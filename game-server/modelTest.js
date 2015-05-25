@@ -424,5 +424,32 @@ rechargeRobots = function() {
     })
 };
 
+fixUserHeadIcon = function() {
+  var players = {};
+  User.findQ({})
+    .then(function(users) {
+      for (var index=0; index<users.length; index++) {
+        users[index].headIcon = index % 8 + 1;
+        users[index].save();
+        players[users[index].userId] = users[index];
+      }
+      return MyPlayedFriend.findQ({});
+    })
+    .then(function(playedFriends) {
+      for (var index=0; index<playedFriends.length; index++) {
+        var playedFriend = playedFriends[index];
+        playedFriend.playedUsers.forEach(function(p) {
+          p.headIcon = players[p.userId].headIcon;
+        });
+        playedFriend.friends.forEach(function(p) {
+          p.headIcon = players[p.userId].headIcon;
+        });
+        playedFriend.markModified('playedUsers');
+        playedFriend.markModified('friends');
+        playedFriend.save();
+      }
+    })
+};
+
 //testCreateRobots();
 

@@ -29,6 +29,9 @@ var PurchaseOrderSchema = mongoose.Schema({
 });
 
 
+PurchaseOrderSchema.index({orderId: 1});
+PurchaseOrderSchema.index({userId: 1});
+
 /**
  * 创建订单
  * @param userId - 用户id
