@@ -235,9 +235,9 @@ remoteHandler.onStartNewGame = function(table) {
 };
 
 remoteHandler.reenter = function(uid, sid, sessionId, room_id, table_id, msgNo, cb) {
+  var self = this;
   var player = self.roomService.getRoom(room_id).getPlayer(uid);
   var table = self.roomService.getTable(room_id, table_id);
-  var self = this;
 
   console.log('[remoteHandler.reenter] client msgNo: ', msgNo);
   var hasGame = false;

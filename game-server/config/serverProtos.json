@@ -146,7 +146,8 @@
       "required uInt32 ante": 6,
       "required float rake": 7,
       "required uInt32 minCoinsQty": 8,
-      "required uInt32 maxCoinsQty": 9
+      "required uInt32 maxCoinsQty": 9,
+      "optional string recruitPackageId": 10
     },
     "repeated GameRoom rooms": 1
   },
