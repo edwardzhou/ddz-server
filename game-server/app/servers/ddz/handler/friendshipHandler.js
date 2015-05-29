@@ -12,6 +12,7 @@ var MyMessageBox = require('../../../domain/myMessageBox');
 
 var ErrorCode = require('../../../consts/errorCode');
 var Q = require('q');
+var date = require("date-extended");
 
 var friendService = require('../../../services/friendService');
 var addFriendQ = Q.nbind(friendService.addFriend, friendService);
@@ -104,23 +105,21 @@ Handler.prototype.confirmAddFriend = function(msg, session, next) {
 Handler.prototype.getMyMessageBoxes = function(msg, session, next){
   var userId = session.uid;
   var return_msg_box = {addFriendMsgs: []};
+  var weekAgo = date.daysAgo(7);
+
   MyMessageBox.findOneQ({userId: userId})
     .then(function(msg_box){
-      return_msg_box.addFriendMsgs = [];
-      msg_box.addFriendMsgs.forEach(function(msg){
-        if (msg.status == 0){
-          return_msg_box.addFriendMsgs.push(JSON.parse(JSON.stringify(msg)));
-          msg.status = 1;
-        }
+      //return_msg_box.addFriendMsgs = [];
+      var addFriendMsgs = msg_box.addFriendMsgs.filter(function(msg) {
+        return msg.status == 0;
       });
-      msg_box.markModified('addFriendMsgs');
-      return msg_box.saveQ();
-
+      return_msg_box.addFriendMsgs = addFriendMsgs;
     })
     .then(function(){
       utils.invokeCallback(next, null, {result: true, myMsgBox: return_msg_box});
     })
     .fail(function(error){
-      utils.invokeCallback(next, null, {err: errCode, result: false});
+      utils.invokeCallback(next, null, {err: error, result: false});
     })
 };
+

@@ -16,7 +16,8 @@
     "q": "*",
     "mongoose-q": "*",
     "mpath": "*",
-    "crc": "0.2.0"
+    "crc": "0.2.0",
+    "date-extended": "*"
   }
 }
 
