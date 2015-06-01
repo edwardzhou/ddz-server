@@ -12,6 +12,9 @@ var messageService = require('./messageService');
 var UserSession = require('../domain/userSession');
 var ErrorCode = require('../consts/errorCode');
 var AddFriendStatus = require('../consts/consts').AddFriendStatus;
+var consts = require('../consts/consts');
+var MsgType = consts.MsgType;
+var MsgStatus = consts.MsgStatus;
 
 var utils = require('../util/utils');
 
@@ -134,22 +137,26 @@ FriendService.addFriend = function (userId, friend_userId, friend_msg, callback)
         friendMsgBox.userId = result.friend_user.userId;
       }
 
-      var msg = friendMsgBox.findFromArray(friendMsgBox.addFriendMsgs, 'userId', userId);
+      // var msg = friendMsgBox.findFromArray(friendMsgBox.addFriendMsgs, 'userId', userId);
+      var msg = friendMsgBox.findMsgItem(MsgType.ADD_FRIEND, 'userId', userId);
       if (!!msg) {
         msg.status = AddFriendStatus.NEW;
-        msg.date = Date.now();
+        msg.updated_at = Date.now();
       } else {
-        friendMsgBox.addFriendMsgs.push({
-          userId: userId,
-          userInfo: result.userInfo,
-          msg: friend_msg,
-          status: AddFriendStatus.NEW,
-          date: Date.now()
-        });
+        msg = friendMsgBox.pushNewAddFriendMsg(reuslt.userInfo);
+        //friendMsgBox.addFriendMsgs.push({
+        //  userId: userId,
+        //  userInfo: result.userInfo,
+        //  msg: friend_msg,
+        //  status: AddFriendStatus.NEW,
+        //  date: Date.now()
+        //});
       }
 
-      logger.info("FriendService.addFriend. msg_box.addFriendMsg:", friendMsgBox.addFriendMsg);
-      friendMsgBox.markModified('addFriendMsgs');
+      result.addFriendMsg = msg;
+
+      //logger.info("FriendService.addFriend. msg_box.addFriendMsg:", friendMsgBox.addFriendMsg);
+      friendMsgBox.markModified('messages');
       friendMsgBox.save();
 
       return UserSession.findOneQ({userId: friend_userId});
@@ -159,6 +166,7 @@ FriendService.addFriend = function (userId, friend_userId, friend_msg, callback)
       if (userSession != null) {
         var msgData = {
           userInfo: result.userInfo,
+          msgItemId: results.addFriendMsg.id,
           msg: friend_msg
         };
         var target = [{uid: result.friend_user.userId, sid: userSession.frontendId}];
@@ -200,10 +208,11 @@ FriendService.acceptFriend = function (userId, friend_userId, callback) {
     .then(function (msg_box) {
       // 修改被请求者的加好友消息状态
 
-      var cur_msg = msg_box.findFromArray(msg_box.addFriendMsgs, 'userId', friend_userId);
-      cur_msg.status = AddFriendStatus.ACCEPTED;
-      msg_box.markModified('addFriendMsgs');
-      logger.info("FriendService.acceptFriend. msg_box.addFriendMsg:", msg_box.addFriendMsg);
+      //var cur_msg = msg_box.findFromArray(msg_box.addFriendMsgs, 'userId', friend_userId);
+      var cur_msg = msg_box.findMsgItem(MsgType.ADD_FRIEND, 'userId', friend_userId);
+      cur_msg.data.status = AddFriendStatus.ACCEPTED;
+      msg_box.markModified('messages');
+      //logger.info("FriendService.acceptFriend. msg_box.addFriendMsg:", msg_box.addFriendMsg);
       return msg_box.saveQ();
     })
     .then(function () {
@@ -315,17 +324,11 @@ FriendService.denyFriend = function (userId, friend_userId, callback) {
     .then(function (msg_box) {
       // 修改被请求者的加好友消息状态
 
-      var cur_msg = msg_box.findFromArray(msg_box.addFriendMsgs, 'userId', friend_userId);
-      //for (var index=0; index<msg_box.addFriendMsgs.length; index++) {
-      //  if (msg_box.addFriendMsgs[index].userId == friend_userId) {
-      //    cur_msg = msg_box.addFriendMsgs[index];
-      //    break;
-      //  }
-      //}
-
-      cur_msg.status = AddFriendStatus.DENIED;
-      msg_box.markModified('addFriendMsgs');
-      logger.info("FriendService.denyFriend. msg_box.addFriendMsg:", msg_box.addFriendMsg);
+      //var cur_msg = msg_box.findFromArray(msg_box.addFriendMsgs, 'userId', friend_userId);
+      var cur_msg = msg_box.findMsgItem(MsgType.ADD_FRIEND, 'userId', friend_userId);
+      cur_msg.data.status = AddFriendStatus.DENIED;
+      msg_box.markModified('messages');
+      //logger.info("FriendService.denyFriend. msg_box.addFriendMsg:", msg_box.addFriendMsg);
       return msg_box.saveQ();
     })
     .then(function () {

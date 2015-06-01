@@ -87,6 +87,19 @@ var CONSTS = {
     DENIED: 3
   },
 
+  MsgType: {
+    SYS_MSG: 1,
+    ADD_FRIEND: 2,
+    CHAT_MSG: 3
+  },
+
+  MsgStatus: {
+    NEW: 0,
+    DELIVERD: 1,
+    READ: 2,
+    DELETE: 3
+  },
+
   PokeCardValue: {
     NONE: 0,    // 无效
     THREE: 3,   // 3

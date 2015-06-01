@@ -6,7 +6,18 @@
  */
 var mongoose = require('mongoose-q')();
 var DomainUtils = require("./domainUtils");
+var consts = require('../consts/consts');
+var MsgType = consts.MsgType;
+var MsgStatus = consts.MsgStatus;
+var AddFriendStatus = consts.AddFriendStatus;
 
+var MessageItemSchema = mongoose.Schema({
+  msgType: Number,
+  msgStatus: Number,
+  data: {type: mongoose.Schema.Types.Mixed},
+  created_at: {type: Date, default: Date.now},
+  updated_at: {type: Date, default: Date.now}
+});
 
 var MyMessageBoxSchema = mongoose.Schema({
   user_id: {type: mongoose.Schema.Types.ObjectId},
@@ -14,6 +25,7 @@ var MyMessageBoxSchema = mongoose.Schema({
   addFriendMsgs: [{type: mongoose.Schema.Types.Mixed}],
   sysMsgs: [{type: mongoose.Schema.Types.Mixed}],
   chatMsg: [{type: mongoose.Schema.Types.Mixed}],
+  messages: [MessageItemSchema],
   created_at: {type: Date, default: Date.now},
   updated_at: {type: Date, default: Date.now}
 }, {
@@ -54,6 +66,38 @@ MyMessageBoxSchema.methods.findFromArray = function (array, key, value) {
   return null;
 };
 
+MyMessageBoxSchema.methods.pushNewAddFriendMsg = function(requesterInfo) {
+  this.messages.push({
+    userId: requesterInfo.userId,
+    msgType: MsgType.ADD_FRIEND,
+    msgStatus: MsgStatus.NEW,
+    data: {
+      userInfo: requesterInfo,
+      status: AddFriendStatus.NEW
+    }
+  });
+
+  return this.messages[this.messages.length-1];
+};
+
+MyMessageBoxSchema.methods.pushNewChatMsg = function() {
+
+};
+
+MyMessageBoxSchema.methods.pushNewSysMsg = function() {
+
+};
+
+MyMessageBoxSchema.methods.findMsgItem = function(msgType, key, value) {
+
+  for (var index=0; index<this.messages.length; index++) {
+    if (this.messages.msgType == msgType && this.messages[index][key] == value) {
+      return array[index];
+    }
+  }
+
+  return null;
+};
 
 var MyMessageBox = mongoose.model('MyMessageBox', MyMessageBoxSchema);
 
