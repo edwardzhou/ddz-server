@@ -36,6 +36,7 @@ AppointPlay = require('./app/domain/appointPlay');
 require('./app/domain/ArrayHelper');
 taskService = require('./app/services/taskService');
 MyPlayedFriend = require('./app/domain/myPlayedFriend');
+MyMessageBox = require('./app/domain/myMessageBox');
 
 AppServerInfo = require('./app/domain/appServerInfo');
 
@@ -451,5 +452,15 @@ fixUserHeadIcon = function() {
     })
 };
 
+testSendChatMsg = function() {
+  var session = {uid: 54532};
+  var handler = new require('./app/servers/ddz/handler/chatHandler')();
+  handler.sendChatMsg({toUserId: 52524, chatText: 'ooo'}, session, function(err, data) {
+    console.log('error: ', err);
+    console.log('data:', data);
+  });
+};
+
+testSendChatMsg();
 //testCreateRobots();
 

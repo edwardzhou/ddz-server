@@ -139,13 +139,14 @@ FriendService.addFriend = function (userId, friend_userId, friend_msg, callback)
         msg.status = AddFriendStatus.NEW;
         msg.date = Date.now();
       } else {
-        friendMsgBox.addFriendMsgs.push({
-          userId: userId,
-          userInfo: result.userInfo,
-          msg: friend_msg,
-          status: AddFriendStatus.NEW,
-          date: Date.now()
-        });
+        msg = friendMsgBox.pushNewAddFriendMsg(result.userInfo);
+        //friendMsgBox.addFriendMsgs.push({
+        //  userId: userId,
+        //  userInfo: result.userInfo,
+        //  msg: friend_msg,
+        //  status: AddFriendStatus.NEW,
+        //  date: Date.now()
+        //});
       }
 
       logger.info("FriendService.addFriend. msg_box.addFriendMsg:", friendMsgBox.addFriendMsg);

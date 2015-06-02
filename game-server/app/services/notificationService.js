@@ -9,7 +9,7 @@ var util = require('util');
 var User = require('../domain/user');
 var Player = require('../domain/player');
 var MyPlayedFriend = require('../domain/myPlayedFriend');
-var MyMessabeBox = require('../domain/myMessageBox');
+var MyMessageBox = require('../domain/myMessageBox');
 var messageService = require('./messageService');
 var UserSession = require('../domain/userSession');
 var ErrorCode = require('../consts/errorCode');
@@ -87,6 +87,33 @@ NotificationService.pushNotification = function (userId, msgType, msgBody, pushB
       utils.invokeCallback(cb, err, results);
     })
 };
+
+NotificationService.tryPushNotification = function(userId, msgRoute, msgData, cb) {
+  var results = {};
+  UserSession.findOneQ({userId: userId})
+    .then(function(userSession) {
+      results.userSession = userSession;
+      if (!!userSession) {
+        process.nextTick(function () {
+          messageService.pushMessage(msgRoute, msgData, [{
+            uid: userSession.userId,
+            sid: userSession.frontendId
+          }], function() {
+            utils.invokeCallback(cb, null, true);
+          });
+        });
+      }
+      else {
+        utils.invokeCallback(cb, null, false);
+      }
+    })
+    .fail(function(err) {
+      logger.error('[NotificationService.tryPushNotification] error: ', err);
+      utils.invokeCallback(cb, err);
+    })
+};
+
+NotificationService.tryPushNotificationQ = Q.nbind(NotificationService.tryPushNotification, NotificationService);
 
 NotificationService.pushAppointPlayNotification = function(appointPlay, requestUserId) {
   var requester = null;
