@@ -107,7 +107,10 @@ Handler.prototype.getMyMessageBoxes = function(msg, session, next){
   var return_msg_box = {addFriendMsgs: []};
   var weekAgo = date.daysAgo(7);
 
-  MyMessageBox.findOneQ({userId: userId})
+  User.findOneQ({userId: userId})
+    .then(function(user) {
+      return MyMessageBox.findByUserQ(user);
+    })
     .then(function(msg_box){
       //return_msg_box.addFriendMsgs = [];
       var addFriendMsgs = msg_box.addFriendMsgs.filter(function(msg) {
@@ -125,6 +128,7 @@ Handler.prototype.getMyMessageBoxes = function(msg, session, next){
       utils.invokeCallback(next, null, {result: true, myMsgBox: return_msg_box});
     })
     .fail(function(error){
+      logger.error('[friendshipHandler.getMyMessageBoxes] error: ', error);
       utils.invokeCallback(next, null, {err: error, result: false});
     })
 };
