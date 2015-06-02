@@ -113,7 +113,13 @@ Handler.prototype.getMyMessageBoxes = function(msg, session, next){
       var addFriendMsgs = msg_box.addFriendMsgs.filter(function(msg) {
         return msg.status == 0;
       });
+      var chatMsgs = msg_box.chatMsgs.filter(function(msg) {
+        return msg.status == 0;
+      });
       return_msg_box.addFriendMsgs = addFriendMsgs;
+      return_msg_box.chatMsgs = chatMsgs;
+      return_msg_box.addFriendMsgs.sort(function(a,b) { return b.date - a.date;});
+      return_msg_box.chatMsgs.sort(function(a,b) { return b.date - a.date;});
     })
     .then(function(){
       utils.invokeCallback(next, null, {result: true, myMsgBox: return_msg_box});

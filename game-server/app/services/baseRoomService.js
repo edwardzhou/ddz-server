@@ -222,7 +222,7 @@ BaseRoomService.prototype.cancelTable = function(table, room) {
   }
 
   process.nextTick(function(){
-    exp.onPlayerReadyTimeout(room);
+    self.onPlayerReadyTimeout(room);
   });
 };
 
