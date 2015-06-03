@@ -121,8 +121,8 @@ Handler.prototype.getMyMessageBoxes = function(msg, session, next){
       });
       return_msg_box.addFriendMsgs = addFriendMsgs;
       return_msg_box.chatMsgs = chatMsgs;
-      return_msg_box.addFriendMsgs.sort(function(a,b) { return b.date - a.date;});
-      return_msg_box.chatMsgs.sort(function(a,b) { return b.date - a.date;});
+      //return_msg_box.addFriendMsgs.sort(function(a,b) { return b.date - a.date;});
+      //return_msg_box.chatMsgs.sort(function(a,b) { return b.date - a.date;});
     })
     .then(function(){
       utils.invokeCallback(next, null, {result: true, myMsgBox: return_msg_box});
@@ -133,3 +133,30 @@ Handler.prototype.getMyMessageBoxes = function(msg, session, next){
     })
 };
 
+Handler.prototype.ackChatMsg = function(msg, session, next){
+  var userId = session.uid;
+  var msgId = msg.msgId;
+
+  User.findOneQ({userId: userId})
+    .then(function(user) {
+      return MyMessageBox.findByUserQ(user);
+    })
+    .then(function(msg_box){
+      for (var index=msg_box.chatMsgs.length-1; index>=0; index--) {
+        var chatMsg = msg_box.chatMsgs[index];
+        if (chatMsg.msgId == msgId) {
+          chatMsg.status = 1;
+          msg_box.markModified('chatMsgs');
+          msg_box.saveQ();
+          break;
+        }
+      }
+    })
+    .then(function(){
+      utils.invokeCallback(next, null, {result: true});
+    })
+    .fail(function(error){
+      logger.error('[friendshipHandler.ackChatMsg] error: ', error);
+      utils.invokeCallback(next, null, {err: error, result: false});
+    })
+};
