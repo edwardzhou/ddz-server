@@ -88,6 +88,33 @@ NotificationService.pushNotification = function (userId, msgType, msgBody, pushB
     })
 };
 
+NotificationService.tryPushNotification = function(userId, msgRoute, msgData, cb) {
+  var results = {};
+  UserSession.findOneQ({userId: userId})
+    .then(function(userSession) {
+      results.userSession = userSession;
+      if (!!userSession) {
+        process.nextTick(function () {
+          messageService.pushMessage(msgRoute, msgData, [{
+            uid: userSession.userId,
+            sid: userSession.frontendId
+          }], function() {
+            utils.invokeCallback(cb, null, true);
+          });
+        });
+      }
+      else {
+        utils.invokeCallback(cb, null, false);
+      }
+    })
+    .fail(function(err) {
+      logger.error('[NotificationService.tryPushNotification] error: ', err);
+      utils.invokeCallback(cb, err);
+    })
+};
+
+NotificationService.tryPushNotificationQ = Q.nbind(NotificationService.tryPushNotification, NotificationService);
+
 NotificationService.pushAppointPlayNotification = function(appointPlay, requestUserId) {
   var requester = null;
 

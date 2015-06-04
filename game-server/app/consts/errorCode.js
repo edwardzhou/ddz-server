@@ -59,7 +59,8 @@ var ErrorCode = {
   // 无法进入房间,金币不足
   COINS_NOT_ENOUGH: 5000,
 
-
+  // 数据不存在
+  DATA_NOT_FOUND: 10001,
 
   SYSTEM_ERROR: 100000,
 

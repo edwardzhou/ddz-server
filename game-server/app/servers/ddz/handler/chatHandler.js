@@ -7,8 +7,10 @@ var logger = require('pomelo-logger').getLogger(__filename);
 var utils = require('../../../util/utils');
 var Result = require('../../../domain/result');
 var User = require('../../../domain/user');
+var MyMessageBox = require('../../../domain/myMessageBox');
 var UserSession = require('../../../domain/userSession');
 var messageService = require('../../../services/messageService');
+var notificationService = require('../../../services/notificationService');
 
 var userService = require('../../../services/userService');
 
@@ -58,3 +60,21 @@ Handler.prototype.sendGamingChatText = function (msg, session, next) {
     });
 };
 
+Handler.prototype.sendChatMsg = function(msg, session, next) {
+  var userId = session.uid;
+  var receiverId = msg.toUserId;
+  var chatText = msg.chatText;
+  var results = {};
+
+  MyMessageBox.newChatMsgQ(userId, receiverId, chatText)
+    .then(function(msgItem) {
+      return notificationService.tryPushNotificationQ(receiverId, 'onChatMsg', msgItem.toParams());
+    })
+    .then(function() {
+      utils.invokeCallback(next, null, {result: true});
+    })
+    .fail(function(err) {
+      logger.error('[chatHandler.sendChatMsg] error: ', err);
+      utils.invokeCallback(next, null, {result: false, error: err});
+    });
+};

@@ -36,6 +36,7 @@ AppointPlay = require('./app/domain/appointPlay');
 require('./app/domain/ArrayHelper');
 taskService = require('./app/services/taskService');
 MyPlayedFriend = require('./app/domain/myPlayedFriend');
+MyMessageBox = require('./app/domain/myMessageBox');
 
 AppServerInfo = require('./app/domain/appServerInfo');
 
@@ -450,6 +451,20 @@ fixUserHeadIcon = function() {
       }
     })
 };
+
+testMessageHandler = function() {
+  var handler = new require('./app/servers/ddz/handler/messageHandler')();
+  handler.getMyMessageBox({}, {uid: 54532}, function(err, data) {
+    console.log('error => ', err);
+    console.log('data => ', data);
+  })
+  handler.getMyMessageBox({msgType: 2}, {uid: 54532}, function(err, data) {
+    console.log('error => ', err);
+    console.log('data => ', data);
+  })
+};
+
+testMessageHandler();
 
 //testCreateRobots();
 
