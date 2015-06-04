@@ -129,7 +129,7 @@ FriendService.addFriend = function (userId, friend_userId, friend_msg, callback)
     })
     .then(function (friend_user) {
       results.friend_user = friend_user;
-      return MyMessabeBox.newAddFriendMsgQ(friend_userId, results.user);
+      return MyMessageBox.newAddFriendMsgQ(friend_userId, results.user);
     })
     .then(function (msgItem) {
       results.addFriendMsg = msgItem;
@@ -159,7 +159,7 @@ FriendService.acceptFriend = function (userId, friend_userId, msgId, callback) {
   var userParams = {only: ['userId', 'nickName', 'gender', 'headIcon']};
 
   // 取message
-  MyMessabeBox.findOneQ({_id: msgId})
+  MyMessageBox.findOneQ({_id: msgId})
     .then(function(msgItem) {
       // msgItem 可能为空, 过期失效被系统删除.
       if (msgItem == null) {
@@ -282,7 +282,7 @@ FriendService.denyFriend = function (userId, friend_userId, msgId, callback) {
   var userParams = {only: ['userId', 'nickName', 'gender', 'headIcon']};
 
   // 取message
-  MyMessabeBox.findOneQ({_id: msgId})
+  MyMessageBox.findOneQ({_id: msgId})
     .then(function(msgItem) {
       // msgItem 可能为空, 过期失效被系统删除.
       if (msgItem == null) {
