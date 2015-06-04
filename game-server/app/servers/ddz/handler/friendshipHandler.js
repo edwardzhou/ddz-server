@@ -9,6 +9,10 @@ var Result = require('../../../domain/result');
 var User = require('../../../domain/user');
 var MyPlayedFriend = require('../../../domain/myPlayedFriend');
 var MyMessageBox = require('../../../domain/myMessageBox');
+var consts = require('../../../consts/consts');
+var MsgType = consts.MsgType;
+var MsgStatus = consts.MsgStatus;
+var AddFriendStatus = consts.AddFriendStatus;
 
 var ErrorCode = require('../../../consts/errorCode');
 var Q = require('q');
@@ -85,13 +89,14 @@ Handler.prototype.addFriend = function (msg, session, next) {
 Handler.prototype.confirmAddFriend = function(msg, session, next) {
   var userId = session.uid;
   var friend_userId = msg.friend_userId;
+  var msgId = msg.msgId;
   var accept = msg.accept;
   var confirmFuncQ = acceptAddFriendQ;
   if (!accept) {
     confirmFuncQ = denyAddFriendQ;
   }
 
-  confirmFuncQ(userId, friend_userId)
+  confirmFuncQ(userId, friend_userId, msgId)
     .then(function(){
       utils.invokeCallback(next, null, {result: true});
     })
@@ -101,35 +106,3 @@ Handler.prototype.confirmAddFriend = function(msg, session, next) {
     });
 
 };
-
-Handler.prototype.getMyMessageBoxes = function(msg, session, next){
-  var userId = session.uid;
-  var return_msg_box = {addFriendMsgs: []};
-  var weekAgo = date.daysAgo(7);
-
-  User.findOneQ({userId: userId})
-    .then(function(user) {
-      return MyMessageBox.findByUserQ(user);
-    })
-    .then(function(msg_box){
-      //return_msg_box.addFriendMsgs = [];
-      var addFriendMsgs = msg_box.addFriendMsgs.filter(function(msg) {
-        return msg.status == 0;
-      });
-      var chatMsgs = msg_box.chatMsgs.filter(function(msg) {
-        return msg.status == 0;
-      });
-      return_msg_box.addFriendMsgs = addFriendMsgs;
-      return_msg_box.chatMsgs = chatMsgs;
-      return_msg_box.addFriendMsgs.sort(function(a,b) { return b.date - a.date;});
-      return_msg_box.chatMsgs.sort(function(a,b) { return b.date - a.date;});
-    })
-    .then(function(){
-      utils.invokeCallback(next, null, {result: true, myMsgBox: return_msg_box});
-    })
-    .fail(function(error){
-      logger.error('[friendshipHandler.getMyMessageBoxes] error: ', error);
-      utils.invokeCallback(next, null, {err: error, result: false});
-    })
-};
-

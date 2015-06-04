@@ -7,9 +7,9 @@ var logger = require('pomelo-logger').getLogger(__filename);
 var utils = require('../../../util/utils');
 var Result = require('../../../domain/result');
 var User = require('../../../domain/user');
+var MyMessageBox = require('../../../domain/myMessageBox');
 var UserSession = require('../../../domain/userSession');
 var messageService = require('../../../services/messageService');
-var MyMessageBox = require('../../../domain/myMessageBox');
 var notificationService = require('../../../services/notificationService');
 
 var userService = require('../../../services/userService');
@@ -66,24 +66,9 @@ Handler.prototype.sendChatMsg = function(msg, session, next) {
   var chatText = msg.chatText;
   var results = {};
 
-  User.findOneQ({userId: userId})
-    .then(function(user) {
-      results.user = user;
-
-      return User.findOneQ({userId: receiverId});
-    })
-    .then(function(user) {
-      results.receiver = user;
-
-      return MyMessageBox.findByUserQ(results.receiver);
-    })
-    .then(function(msgBox) {
-      results.newChatMsg = msgBox.pushNewChatMsg(results.user, chatText);
-
-      return msgBox.saveQ();
-    })
-    .then(function(msgBox) {
-      return notificationService.tryPushNotificationQ(results.receiver.userId, 'onChatMsg', results.newChatMsg);
+  MyMessageBox.newChatMsgQ(userId, receiverId, chatText)
+    .then(function(msgItem) {
+      return notificationService.tryPushNotificationQ(receiverId, 'onChatMsg', msgItem.toParams());
     })
     .then(function() {
       utils.invokeCallback(next, null, {result: true});

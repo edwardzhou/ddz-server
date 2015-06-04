@@ -7,11 +7,16 @@ var util = require('util');
 var User = require('../domain/user');
 var Player = require('../domain/player');
 var MyPlayedFriend = require('../domain/myPlayedFriend');
-var MyMessabeBox = require('../domain/myMessageBox');
+var Result = require('../domain/result');
+var MyMessageBox = require('../domain/myMessageBox');
 var messageService = require('./messageService');
+var notificationService = require('./notificationService');
 var UserSession = require('../domain/userSession');
 var ErrorCode = require('../consts/errorCode');
 var AddFriendStatus = require('../consts/consts').AddFriendStatus;
+var consts = require('../consts/consts');
+var MsgType = consts.MsgType;
+var MsgStatus = consts.MsgStatus;
 
 var utils = require('../util/utils');
 
@@ -109,11 +114,11 @@ FriendService.addFriend = function (userId, friend_userId, friend_msg, callback)
   logger.info("[FriendService.addFriend], userId=", userId);
   logger.info("[FriendService.addFriend], friend_msg=", friend_msg);
   logger.info("[FriendService.addFriend], friend_userId=", friend_userId);
-  var result = {};
+  var results = {};
   User.findOneQ({userId: userId})
     .then(function (user) {
-      result.user = user;
-      result.userInfo = result.user.toParams({only: ['userId', 'nickName', 'gender', 'headIcon']});
+      results.user = user;
+      results.userInfo = results.user.toParams({only: ['userId', 'nickName', 'gender', 'headIcon']});
       return MyPlayedFriend.findOneQ({userId: userId});
     })
     .then(function (myPlayedFriend) {
@@ -123,53 +128,14 @@ FriendService.addFriend = function (userId, friend_userId, friend_msg, callback)
       return User.findOneQ({userId: friend_userId});
     })
     .then(function (friend_user) {
-      result.friend_user = friend_user;
-      return MyMessabeBox.findOneQ({userId: friend_userId});
+      results.friend_user = friend_user;
+      return MyMessabeBox.newAddFriendMsgQ(friend_userId, results.user);
     })
-    .then(function (friendMsgBox) {
-      if (friendMsgBox == null) {
-        logger.info("FriendService.addFriend. new MyMessageBox");
-        friendMsgBox = new MyMessabeBox();
-        friendMsgBox.user_id = result.friend_user.id;
-        friendMsgBox.userId = result.friend_user.userId;
-      }
+    .then(function (msgItem) {
+      results.addFriendMsg = msgItem;
 
-      var msg = friendMsgBox.findFromArray(friendMsgBox.addFriendMsgs, 'userId', userId);
-      if (!!msg) {
-        msg.status = AddFriendStatus.NEW;
-        msg.date = Date.now();
-      } else {
-        msg = friendMsgBox.pushNewAddFriendMsg(result.userInfo);
-        //friendMsgBox.addFriendMsgs.push({
-        //  userId: userId,
-        //  userInfo: result.userInfo,
-        //  msg: friend_msg,
-        //  status: AddFriendStatus.NEW,
-        //  date: Date.now()
-        //});
-      }
-
-      logger.info("FriendService.addFriend. msg_box.addFriendMsg:", friendMsgBox.addFriendMsg);
-      friendMsgBox.markModified('addFriendMsgs');
-      friendMsgBox.save();
-
-      return UserSession.findOneQ({userId: friend_userId});
-    })
-    .then(function (userSession) {
-      logger.info("FriendService.addFriend. push message to client");
-      if (userSession != null) {
-        var msgData = {
-          userInfo: result.userInfo,
-          msg: friend_msg
-        };
-        var target = [{uid: result.friend_user.userId, sid: userSession.frontendId}];
-
-        process.nextTick(function () {
-          logger.info('[FriendService.addFriend] addFriendRequest.msgData: ', msgData);
-          logger.info('[FriendService.addFriend] addFriendRequest.target: ', target);
-          messageService.pushMessage('addFriendRequest', msgData, target);
-        });
-      }
+      var msgData = msgItem.toParams();
+      notificationService.tryPushNotification(friend_userId, 'addFriendRequest', msgData);
     })
     .fail(function (error) {
       logger.info('[FriendService.addFriend] failed. error:', error.errCode);
@@ -186,52 +152,68 @@ FriendService.addFriend = function (userId, friend_userId, friend_msg, callback)
     });
 };
 
-FriendService.acceptFriend = function (userId, friend_userId, callback) {
+FriendService.acceptFriend = function (userId, friend_userId, msgId, callback) {
   logger.info("[FriendService.acceptFriend], userId=", userId);
   logger.info("[FriendService.acceptFriend], friend_userId=", friend_userId);
-  var result = {};
+  var results = {};
   var userParams = {only: ['userId', 'nickName', 'gender', 'headIcon']};
 
-  User.findOneQ({userId: friend_userId})
-    .then(function (friend_user) {
-      // result.user 为加好友请求发起者
-      result.friend_user = friend_user;
-      return MyMessabeBox.findOneQ({userId: userId});
-    })
-    .then(function (msg_box) {
-      // 修改被请求者的加好友消息状态
-
-      var cur_msg = msg_box.findFromArray(msg_box.addFriendMsgs, 'userId', friend_userId);
-      cur_msg.status = AddFriendStatus.ACCEPTED;
-      msg_box.markModified('addFriendMsgs');
-      logger.info("FriendService.acceptFriend. msg_box.addFriendMsg:", msg_box.addFriendMsg);
-      return msg_box.saveQ();
-    })
-    .then(function () {
-      return User.findOneQ({userId: userId});
-    })
-    .then(function (user) {
-      result.user = user;
-
-      return MyPlayedFriend.findOneQ({userId: userId});
-    })
-    .then(function (selfPlayedFriend) {
-      if (selfPlayedFriend == null) {
-        selfPlayedFriend = new MyFriend();
-        selfPlayedFriend.user_id = result.user.id;
-        selfPlayedFriend.userId = result.user.userId;
+  // 取message
+  MyMessabeBox.findOneQ({_id: msgId})
+    .then(function(msgItem) {
+      // msgItem 可能为空, 过期失效被系统删除.
+      if (msgItem == null) {
+        var error = Result.genErrorResult(ErrorCode.DATA_NOT_FOUND, 0, '该好友请求已失效!');
+        throw error;
       }
 
-      result.selfPlayedFriend = selfPlayedFriend;
+      // msgItem 不是该两用户的
+      if (msgItem.userId != userId || msgItem.msgUserId != friend_userId) {
+        throw Result.genErrorResult(ErrorCode.SYSTEM_ERROR, 0, '非法请求!');
+      }
+
+      results.msgItem = msgItem;
+
+      // 标记已接受并保存
+      msgItem.msgData.status = AddFriendStatus.ACCEPTED;
+      msgItem.markModified('msgData');
+      return msgItem.saveQ();
+    })
+    .then(function() {
+      // 取自身用户
+      return User.findOneQ({userId: userId});
+    })
+    .then(function(selfUser) {
+      results.selfUser = selfUser;
+      // 取好友用户
+      return User.findOneQ({userId: friend_userId});
+    })
+    .then(function(friendUser) {
+      results.friendUser = friendUser;
+      // 取自身的好友关系
+      return MyPlayedFriend.findOneQ({userId: userId});
+    })
+    .then(function(selfPlayedFriend) {
+      // 如果还没有数据, 则新建
+      if (selfPlayedFriend == null) {
+        selfPlayedFriend = new MyPlayedFriend();
+        selfPlayedFriend.user_id = results.selfUser.id;
+        selfPlayedFriend.userId = results.selfUser.userId;
+      }
+      results.selfPlayedFriend = selfPlayedFriend;
+
+      // 如果不是好友关系, 则添加到好友列表, 已是的不需要处理
       var friendship = selfPlayedFriend.findFriend(friend_userId);
       if (!friendship) {
-        var userInfo = result.friend_user.toParams(userParams);
+        var userInfo = results.friendUser.toParams(userParams);
         userInfo.addDate = Date.now();
         selfPlayedFriend.friends.push(userInfo);
       }
 
+      // 对好友排序
       selfPlayedFriend.sortFriends();
 
+      // 如果是打过牌的, 对其标记为好友
       var played = selfPlayedFriend.findPlayedUser(friend_userId);
       if (!!played) {
         played.isFriend = true;
@@ -244,24 +226,28 @@ FriendService.acceptFriend = function (userId, friend_userId, callback) {
       return selfPlayedFriend.saveQ();
     })
     .then(function () {
+      // 取好友的好友关系数据
       return MyPlayedFriend.findOneQ({userId: friend_userId});
     })
-    .then(function (friendPlayedFriend) {
+    .then(function(friendPlayedFriend) {
+      // 如果好友还没有好友关系数据, 则新建数据
       if (friendPlayedFriend == null) {
         friendPlayedFriend = new MyFriend();
-        friendPlayedFriend.user_id = result.friend_user.id;
-        friendPlayedFriend.userId = result.friend_user.userId;
+        friendPlayedFriend.user_id = results.friendUser.id;
+        friendPlayedFriend.userId = results.friendUser.userId;
       }
+      results.friendPlayedFriend = friendPlayedFriend;
 
-      result.friendPlayedFriend = friendPlayedFriend;
-      var friendship = friendPlayedFriend.findFriend(result.user.userId);
+      // 如果不是好友关系, 则添加到好友列表, 已是的不需要处理
+      var friendship = friendPlayedFriend.findFriend(results.selfUser.userId);
       if (!friendship) {
-        var userInfo = result.user.toParams(userParams);
+        var userInfo = results.selfUser.toParams(userParams);
         userInfo.addDate = Date.now();
         friendPlayedFriend.friends.push(userInfo);
       }
 
-      var played = friendPlayedFriend.findPlayedUser(result.user.userId);
+      // 如果是打过牌的, 对其标记为好友
+      var played = friendPlayedFriend.findPlayedUser(results.selfUser.userId);
       if (!!played) {
         played.isFriend = true;
         friendPlayedFriend.markModified('playedUsers');
@@ -272,92 +258,68 @@ FriendService.acceptFriend = function (userId, friend_userId, callback) {
       friendPlayedFriend.markModified('friends');
       return friendPlayedFriend.saveQ();
     })
-    .then(function () {
-      return UserSession.findOneQ({userId: friend_userId});
-    })
-    .then(function (userSession) {
-      logger.info("FriendService.acceptFriend. push message to client, ");
-      if (userSession != null) {
-        var msgData = {userInfo: result.user.toParams(userParams), accept: 1};
-
-        var target = [{uid: friend_userId, sid: userSession.frontendId}];
-        // 向加好友请求者发送加友是否被同意消息
-        process.nextTick(function () {
-          logger.info('[FriendService.acceptFriend] replyFriendReqest.msgData: ', msgData);
-          logger.info('[FriendService.acceptFriend] replyFriendReqest.target: ', target);
-          messageService.pushMessage('replyFriendRequest', msgData, target);
-        });
-      }
+    .then(function() {
+      // 尝试推送通知消息给在线好友
+      var msgData = {userInfo: results.selfUser.toParams(userParams), accept: 1};
+      notificationService.tryPushNotificationQ(friend_userId, 'replyFriendRequest', msgData);
     })
     .fail(function (error) {
       var errCode = error.errCode || ErrorCode.SYSTEM_ERROR;
+      var errMsg = error.message || '系统错误';
       logger.info('[FriendService.replyFriendRequest] failed. error:', error);
-      utils.invokeCallback(callback, {err: errCode}, null);
+      utils.invokeCallback(callback, {err: errCode, errMsg: errMsg}, null);
     })
     .done(function () {
       logger.info('[FriendService.replyFriendRequest] done.');
-      utils.invokeCallback(callback, null, result.friend_user.toParams(userParams));
+      utils.invokeCallback(callback, null, results.friendUser.toParams(userParams));
     });
-
 };
 
-FriendService.denyFriend = function (userId, friend_userId, callback) {
+FriendService.denyFriend = function (userId, friend_userId, msgId, callback) {
   logger.info("[FriendService.denyFriend], userId=", userId);
   logger.info("[FriendService.denyFriend], friend_userId=", friend_userId);
-  var result = {};
+  var results = {};
   var userParams = {only: ['userId', 'nickName', 'gender', 'headIcon']};
 
-  User.findOneQ({userId: friend_userId})
-    .then(function (friend_user) {
-      // result.user 为加好友请求发起者
-      result.friend_user = friend_user;
-      return MyMessabeBox.findOneQ({userId: userId});
-    })
-    .then(function (msg_box) {
-      // 修改被请求者的加好友消息状态
+  // 取message
+  MyMessabeBox.findOneQ({_id: msgId})
+    .then(function(msgItem) {
+      // msgItem 可能为空, 过期失效被系统删除.
+      if (msgItem == null) {
+        throw Result.genErrorResult(ErrorCode.DATA_NOT_FOUND, 0, '该好友请求已失效!');
+      }
 
-      var cur_msg = msg_box.findFromArray(msg_box.addFriendMsgs, 'userId', friend_userId);
-      //for (var index=0; index<msg_box.addFriendMsgs.length; index++) {
-      //  if (msg_box.addFriendMsgs[index].userId == friend_userId) {
-      //    cur_msg = msg_box.addFriendMsgs[index];
-      //    break;
-      //  }
-      //}
+      // msgItem 不是该两用户的
+      if (msgItem.userId != userId || msgItem.msgUserId != friend_userId) {
+        throw Result.genErrorResult(ErrorCode.SYSTEM_ERROR, 0, '非法请求!');
+      }
 
-      cur_msg.status = AddFriendStatus.DENIED;
-      msg_box.markModified('addFriendMsgs');
-      logger.info("FriendService.denyFriend. msg_box.addFriendMsg:", msg_box.addFriendMsg);
-      return msg_box.saveQ();
+      results.msgItem = msgItem;
+
+      // 标记已接受并保存
+      msgItem.msgData.status = AddFriendStatus.DENIED;
+      msgItem.markModified('msgData');
+      return msgItem.saveQ();
     })
     .then(function () {
       return User.findOneQ({userId: userId});
     })
-    .then(function (user) {
-      result.user = user;
-      return UserSession.findOneQ({userId: friend_userId});
-    })
-    .then(function (userSession) {
-      logger.info("FriendService.denyFriend. push message to client, ");
-      if (userSession != null) {
-        var msgData = {userInfo: result.user.toParams(userParams), accept: 0};
+    .then(function (selfUser) {
+      results.selfUser = selfUser;
 
-        var target = [{uid: friend_userId, sid: userSession.frontendId}];
-        // 向加好友请求者发送加友是否被同意消息
-        process.nextTick(function () {
-          logger.info('[FriendService.denyFriend] replyFriendRequest.msgData: ', msgData);
-          logger.info('[FriendService.denyFriend] replyFriendRequest.target: ', target);
-          messageService.pushMessage('replyFriendRequest', msgData, target);
-        });
-      }
+      // 尝试推送通知消息给在线好友
+      var msgData = {userInfo: results.selfUser.toParams(userParams), accept: 0};
+      notificationService.tryPushNotificationQ(friend_userId, 'replyFriendRequest', msgData);
     })
     .fail(function (error) {
       var errCode = error.errCode || ErrorCode.SYSTEM_ERROR;
-      logger.info('[FriendService.denyFriend] faild. error:', error);
-      utils.invokeCallback(callback, {err: errCode}, null);
+      var errMsg = error.message || '系统错误';
+      logger.info('[FriendService.replyFriendRequest] failed. error:', error);
+      utils.invokeCallback(callback, error, null);
     })
     .done(function () {
-      logger.info('[FriendService.denyFriend] done.');
-      utils.invokeCallback(callback, null, result.friend_user.toParams(userParams));
+      logger.info('[FriendService.replyFriendRequest] done.');
+      utils.invokeCallback(callback, null, {result: true});
     });
 
 };

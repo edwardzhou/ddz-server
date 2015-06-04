@@ -6,15 +6,22 @@
  */
 var mongoose = require('mongoose-q')();
 var DomainUtils = require("./domainUtils");
-var AddFriendStatus = require('../consts/consts').AddFriendStatus;
-var User = require('./user');
+
+var User = require('../domain/user');
+var consts = require('../consts/consts');
+var MsgType = consts.MsgType;
+var MsgStatus = consts.MsgStatus;
+var AddFriendStatus = consts.AddFriendStatus;
+
+var userAttrs = {only: ['userId', 'nickName', 'gender', 'headIcon']};
+
 
 var MyMessageBoxSchema = mongoose.Schema({
-  user_id: {type: mongoose.Schema.Types.ObjectId},
   userId: Number,   // 用户Id
-  addFriendMsgs: [{type: mongoose.Schema.Types.Mixed}],
-  sysMsgs: [{type: mongoose.Schema.Types.Mixed}],
-  chatMsgs: [{type: mongoose.Schema.Types.Mixed}],
+  msgType: Number,  // 消息类型 (系统消息, 加好友消息, 聊天消息)
+  msgStatus: Number, // 消息状态 (0 - new, 1 - delivered, 2 - read, 3 - delete)
+  msgUserId: Number, // 消息相关的用户ID, 系统消息为 0
+  msgData: {type: mongoose.Schema.Types.Mixed, default: {_placeholder:''}},
   created_at: {type: Date, default: Date.now},
   updated_at: {type: Date, default: Date.now}
 }, {
@@ -26,9 +33,13 @@ MyMessageBoxSchema.index({userId: 1});
 
 var __toParams = function (model, opts) {
   var transObj = {
+    id: model.id,
     userId: model.userId,
-    addFriendMsgs: model.addFriendMsgs,
-    updated_at: model.updated_at
+    msgUserId: model.msgUserId,
+    msgStatus: model.msgStatus,
+    msgType: model.msgType,
+    msgData: model.msgData,
+    updated_at: model.updated_at.getTime()
   };
 
   transObj = DomainUtils.adjustAttributes(transObj, opts);
@@ -42,68 +53,46 @@ MyMessageBoxSchema.methods.toParams = function (opts) {
   return __toParams(this, opts);
 };
 
-MyMessageBoxSchema.statics.findByUserQ = function(user) {
-  var thisClass = this;
-  return MyMessageBox.findOneQ({userId: user.userId})
-    .then(function(msgBox) {
-      if (!msgBox) {
-        msgBox = new MyMessageBox();
-        msgBox.userId = user.userId;
-        msgBox.user_id = user.id;
-        return msgBox.saveQ();
+
+MyMessageBoxSchema.statics.newAddFriendMsgQ = function(userId, requesterInfo) {
+  return MyMessageBox.findOneQ({userId: userId, msgUserId: requesterInfo.userId})
+    .then(function(msgItem) {
+      if (msgItem == null) {
+        msgItem = new MyMessageBox();
+        msgItem.userId = userId;
+        msgItem.msgUserId = requesterInfo.userId;
+        msgItem.msgType = MsgType.ADD_FRIEND;
       }
-      return msgBox;
+
+      msgItem.msgStatus = MsgStatus.NEW;
+      msgItem.msgData.userInfo = User.toParams(requesterInfo, userAttrs);
+      msgItem.msgData.status = AddFriendStatus.NEW;
+      msgItem.updated_at = Date.now();
+      return msgItem.saveQ();
     });
 };
 
-MyMessageBoxSchema.methods.findFromArray = function (array, key, value) {
-  if (array == null)
-    return null;
+MyMessageBoxSchema.statics.newChatMsgQ = function(fromUserId, toUserId, chatText) {
+  var results = {};
+  return User.findOneQ({userId: fromUserId})
+    .then(function(fromUser) {
+      results.fromUser = fromUser;
 
-  for (var index=0; index<array.length; index++) {
-    if (array[index][key] == value) {
-      return array[index];
-    }
-  }
+      var newMsg = new MyMessageBox();
+      newMsg.userId = toUserId;
+      newMsg.msgType = MsgType.CHAT_MSG;
+      newMsg.msgUserId = fromUserId;
+      newMsg.msgStatus = MsgStatus.NEW;
+      newMsg.msgData.userInfo = User.toParams(fromUser, userAttrs);
+      newMsg.msgData.chatText = chatText;
 
-  return null;
+      return newMsg.saveQ();
+    });
 };
 
-MyMessageBoxSchema.methods.pushNewAddFriendMsg = function (requestor) {
-  var userAttrs = {only: ['userId', 'nickName', 'gender', 'headIcon']};
-  var newMsg = {
-    msgId: mongoose.Types.ObjectId(),
-    userId: requestor.userId,
-    userInfo: User.toParams(requestor, userAttrs),
-    status: AddFriendStatus.NEW,
-    date: Date.now()
-  };
+MyMessageBoxSchema.methods.pushNewSysMsg = function() {
 
-  this.addFriendMsgs.push(newMsg);
-  this.markModified('addFriendMsgs');
-
-  return newMsg;
 };
-
-MyMessageBoxSchema.methods.pushNewChatMsg = function (sender, chatMsg) {
-  var userAttrs = {only: ['userId', 'nickName', 'gender', 'headIcon']};
-  var newMsg = {
-    msgId: mongoose.Types.ObjectId().toString(),
-    userId: sender.userId,
-    userInfo: User.toParams(sender, userAttrs),
-    chatMsg: chatMsg,
-    status: 0,
-    date: Date.now()
-  };
-
-  this.chatMsgs.push(newMsg);
-  this.markModified('chatMsgs');
-
-  return newMsg;
-};
-
-
-
 
 var MyMessageBox = mongoose.model('MyMessageBox', MyMessageBoxSchema);
 

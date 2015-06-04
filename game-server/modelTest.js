@@ -452,6 +452,7 @@ fixUserHeadIcon = function() {
     })
 };
 
+
 testSendChatMsg = function() {
   var session = {uid: 54532};
   var handler = new require('./app/servers/ddz/handler/chatHandler')();
@@ -461,6 +462,18 @@ testSendChatMsg = function() {
   });
 };
 
-testSendChatMsg();
+testMessageHandler = function() {
+  var handler = new require('./app/servers/ddz/handler/messageHandler')();
+  handler.getMyMessageBox({}, {uid: 54532}, function(err, data) {
+    console.log('error => ', err);
+    console.log('data => ', data);
+  })
+  handler.getMyMessageBox({msgType: 2}, {uid: 54532}, function(err, data) {
+    console.log('error => ', err);
+    console.log('data => ', data);
+  })
+};
+
+
 //testCreateRobots();
 
