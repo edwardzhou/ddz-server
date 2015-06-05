@@ -63,8 +63,10 @@
     "optional string roomDesc": 3,
     "optional uInt32 minCoinsQty": 4,
     "optional uInt32 maxCoinsQty": 5,
-    "optional uInt32 ante": 6,
-    "optional float rake": 7
+    "optional string criteriaText": 6,
+    "optional string recruitPackageId": 7,
+    "optional uInt32 ante": 8,
+    "optional float rake": 9
   },
   "onPlayerJoin": {
     "required uInt32 tableId": 1,
@@ -147,7 +149,8 @@
       "required float rake": 7,
       "required uInt32 minCoinsQty": 8,
       "required uInt32 maxCoinsQty": 9,
-      "optional string recruitPackageId": 10
+      "optional string criteriaText": 10,
+      "optional string recruitPackageId": 11
     },
     "repeated GameRoom rooms": 1
   },

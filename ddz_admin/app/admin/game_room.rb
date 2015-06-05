@@ -12,7 +12,9 @@ ActiveAdmin.register GameRoom do
     permitted << :startLordValue
     permitted << :minCoinsQty
     permitted << :maxCoinsQty
+    permitted << :criteriaText
     permitted << :sortIndex
+    permitted << :startGameTimeout
     permitted << :readyTimeout
     permitted << :recruitPackageId
     permitted << :grabbingLordTimeout
@@ -35,8 +37,10 @@ ActiveAdmin.register GameRoom do
     column :startLordValue
     column :minCoinsQty
     column :maxCoinsQty
+    column :criteriaText
     column :recruitPackageId
     column :sortIndex
+    column :startGameTimeout
     column :readyTimeout
     column :grabbingLordTimeout
     column :playCardTimeout
@@ -64,8 +68,10 @@ ActiveAdmin.register GameRoom do
       f.input :startLordValue
       f.input :maxCoinsQty
       f.input :minCoinsQty
+      f.input :criteriaText
       f.input :recruitPackageId
       f.input :sortIndex
+      f.input :startGameTimeout
       f.input :readyTimeout
       f.input :grabbingLordTimeout
       f.input :playCardTimeout

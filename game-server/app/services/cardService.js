@@ -784,7 +784,7 @@ exp.gameOver = function(table, player, cb) {
               }
 
               if (!!returnValues.needRecharge) {
-                msgBack.ddzGoodsPackage = returnValues.ddzGoodsPackage.toParams(pkgAttrs);
+                msgBack.curRoomDdzPkg = returnValues.ddzGoodsPackage.toParams(pkgAttrs);
               }
 
               var uidSid = returnValues.player.getUidSid();

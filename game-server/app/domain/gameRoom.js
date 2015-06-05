@@ -19,12 +19,14 @@ var roomSchemaFields = {
   rake: Number,       // 佣金
   startLordValue: Number,       // 起始倍数
   maxPlayers: Number, // 最大人数
+  criteriaText: String, // 准入资格文本说明
   minCoinsQty: {type: Number, default: 0}, // 准入资格, 最小金币数, 0 代表无限制
   maxCoinsQty: {type: Number, default: 0}, // 准入资格, 最大金币数, 0 代表无限制
   roomType: String,   // 房间类型
   sortIndex: Number,  // 排序
   recruitPackageId: String, // 金币不足时, 充值的道具包id
-  readyTimeout: {type: Number, default: 15},  // 就绪超时
+  startGameTimeout: {type: Number, default: 5}, // 玩家等待开局超时时间
+  readyTimeout: {type: Number, default: 10},  // 就绪超时
   grabbingLordTimeout: {type: Number, default: 20}, // 叫地主超时
   playCardTimeout: {type: Number, default: 30}, // 出牌超时
   playCardCheatRate: {type: Number, default:40}, // 机器人作弊机率
@@ -168,6 +170,12 @@ roomSchema.methods.enter = function (player, lastTableId) {
 
   // 玩家加入桌子
   // player = table.addPlayer(player);
+  var existPlayer = this.playersMap[player.userId];
+
+  if (!!existPlayer) {
+    return existPlayer;
+  }
+
   if (!player instanceof Player) {
     player = new Player(player);
   }
@@ -282,6 +290,7 @@ var __toParams = function(model, opts) {
     maxPlayers: model.maxPlayers,
     minCoinsQty: model.minCoinsQty,
     maxCoinsQty: model.maxCoinsQty,
+    criteriaText: model.criteriaText,
     recruitPackageId: model.recruitPackageId,
     roomType: model.roomType
   };
@@ -310,9 +319,11 @@ roomSchema.methods.reloadFromDb = function() {
       self.maxPlayers = room.maxPlayers;
       self.minCoinsQty = room.minCoinsQty;
       self.maxCoinsQty = room.maxCoinsQty;
+      self.criteriaText = room.criteriaText;
       self.roomType = room.roomType;
       self.sortIndex = room.sortIndex;
       self.readyTimeout = room.readyTimeout;
+      self.startGameTimeout = room.startGameTimeout;
       self.grabbingLordTimeout = room.grabbingLordTimeout;
       self.playCardTimeout = room.playCardTimeout;
       self.playCardCheatLimit = room.playCardCheatLimit;

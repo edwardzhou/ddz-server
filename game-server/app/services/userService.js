@@ -621,7 +621,12 @@ UserService.findMatchingGameRoom = function(user, room_id, callback) {
       if (!!results.room) {
         returnValues.room = results.room;
         returnValues.room_id = results.room.roomId;
-        returnValues.needRecharge = 0;
+        if (results.ddzProfile.coins < results.room.minCoinsQty) {
+          returnValues.needRecharge = 1;
+        }
+        else {
+          returnValues.needRecharge = 0;
+        }
       } else {
         returnValues.ddzGoodsPackage = results.ddzGoodsPackage;
         returnValues.room = results.rooms[0];

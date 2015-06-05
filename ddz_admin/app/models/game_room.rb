@@ -9,10 +9,12 @@ class GameRoom
   field :ante, type: Integer
   field :rake, type: Float
   field :startLordValue, type: Integer
+  field :criteriaText, type: String
   field :maxCoinsQty, type: Integer
   field :minCoinsQty, type: Integer
   field :sortIndex, type: Integer
   field :recruitPackageId, type: String
+  field :startGameTimeout, type: Integer, default: 5
   field :readyTimeout, type: Integer, default: 10
   field :grabbingLordTimeout, type: Integer, default: 20
   field :playCardTimeout, type: Integer, default: 30

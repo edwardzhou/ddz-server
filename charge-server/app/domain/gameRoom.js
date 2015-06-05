@@ -282,6 +282,7 @@ var __toParams = function(model, opts) {
     maxPlayers: model.maxPlayers,
     minCoinsQty: model.minCoinsQty,
     maxCoinsQty: model.maxCoinsQty,
+    recruitPackageId: model.recruitPackageId,
     roomType: model.roomType
   };
 

@@ -151,7 +151,7 @@ BaseRoomService.prototype.enterRoom = function(player, roomId, autoReady, lastTa
     });
   }
 
-  utils.invokeCallback(cb, room);
+  utils.invokeCallback(cb, null, room);
   //return room;
 };
 
@@ -222,7 +222,7 @@ BaseRoomService.prototype.cancelTable = function(table, room) {
   }
 
   process.nextTick(function(){
-    exp.onPlayerReadyTimeout(room);
+    self.onPlayerReadyTimeout(room);
   });
 };
 
