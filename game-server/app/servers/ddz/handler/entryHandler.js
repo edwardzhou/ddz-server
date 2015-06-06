@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2015 深圳市辉游科技有限公司.
+ */
+
 var format = require('util').format;
 var utils = require('../../../util/utils');
 var logger = require('pomelo-logger').getLogger(__filename);

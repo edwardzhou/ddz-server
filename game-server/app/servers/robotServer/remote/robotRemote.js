@@ -1,6 +1,7 @@
 /**
- * Created by jeffcao on 15/4/1.
+ * Copyright (c) 2015 深圳市辉游科技有限公司.
  */
+
 var logger = require('pomelo-logger').getLogger('pomelo', __filename);
 var robotService = require('../../../services/robotService');
 var format = require('util').format;

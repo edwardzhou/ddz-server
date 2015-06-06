@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2015 深圳市辉游科技有限公司.
+ */
+
 var express = require('express');
 var path = require('path');
 var favicon = require('serve-favicon');

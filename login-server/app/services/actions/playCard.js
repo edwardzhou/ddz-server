@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2015 深圳市辉游科技有限公司.
+ */
+
 var CardUtil = require('../../util/cardUtil');
 var PokeCard = require('../../domain/pokeCard');
 var utils = require('../../util/utils');

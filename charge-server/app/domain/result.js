@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2015 深圳市辉游科技有限公司.
+ */
+
 var Result = function(retCode, subCode, message) {
   this.retCode = retCode; // default Success
   this.subCode = subCode || 0;

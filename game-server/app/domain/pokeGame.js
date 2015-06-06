@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2015 深圳市辉游科技有限公司.
+ */
+
 var GameState = require('../consts/consts').GameState;
 var PokeCard = require('./pokeCard');
 var EventEmitter = require('events').EventEmitter;

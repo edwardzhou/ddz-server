@@ -1,6 +1,7 @@
 /**
- * Created by edwardzhou on 14-9-1.
+ * Copyright (c) 2015 深圳市辉游科技有限公司.
  */
+
 var logger = require('pomelo-logger').getLogger('pomelo', __filename);
 var UserSession = require('../../../domain/userSession');
 var DdzGoodsPackage = require('../../../domain/ddzGoodsPackage');

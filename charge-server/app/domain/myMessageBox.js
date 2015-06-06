@@ -1,6 +1,7 @@
 /**
- * Created by jeffcao on 15/4/23.
+ * Copyright (c) 2015 深圳市辉游科技有限公司.
  */
+
 /**
  * 我的消息
  */

@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2015 深圳市辉游科技有限公司.
+ */
+
 //var agent = require('webkit-devtools-agent');
 //var heapdump = require('heapdump');
 var pomelo = require('pomelo');

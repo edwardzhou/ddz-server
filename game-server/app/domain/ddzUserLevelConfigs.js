@@ -1,6 +1,7 @@
 /**
- * Created by jeffcao on 15/2/16.
+ * Copyright (c) 2015 深圳市辉游科技有限公司.
  */
+
 var mongoose = require('mongoose-q')();
 var Schema = mongoose.Schema;
 var crypto = require('crypto');

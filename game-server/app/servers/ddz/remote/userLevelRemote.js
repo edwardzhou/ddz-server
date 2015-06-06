@@ -1,9 +1,7 @@
 /**
- * Created by jeffcao on 15/2/26.
+ * Copyright (c) 2015 深圳市辉游科技有限公司.
  */
-/**
- * Created by jeffcao on 15/2/26.
- */
+
 var logger = require('pomelo-logger').getLogger('pomelo', __filename);
 var userLevelService = require('../../../services/userLevelService');
 var format = require('util').format;

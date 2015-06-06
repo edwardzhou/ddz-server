@@ -1,6 +1,7 @@
 /**
- * Created by edwardzhou on 13-12-5.
+ * Copyright (c) 2015 深圳市辉游科技有限公司.
  */
+
 var utils = require('../../util/utils');
 var GameState = require('../../consts/consts').GameState;
 var PlayerState = require('../../consts/consts').PlayerState;

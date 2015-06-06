@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2015 深圳市辉游科技有限公司.
+ */
+
 var CardType = require('../consts/consts').CardType;
 var PokeCardValue = require('../consts/consts').PokeCardValue;
 var Combinatorics = require('js-combinatorics').Combinatorics;

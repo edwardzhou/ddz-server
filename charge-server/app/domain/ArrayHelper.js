@@ -1,6 +1,7 @@
 /**
- * Created by edwardzhou on 14/12/22.
+ * Copyright (c) 2015 深圳市辉游科技有限公司.
  */
+
 
 Array.prototype.append = function(otherArray) {
   for (var index=0; index<otherArray.length; index++) {

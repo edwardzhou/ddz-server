@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2015 深圳市辉游科技有限公司.
+ */
+
 var PokeGroup = function(pokes) {
   this.pokeCards = pokes.slice(0);
   this.pokeValue = this.pokeCards[0].value;

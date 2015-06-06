@@ -1,5 +1,5 @@
 /**
- * Created by edwardzhou on 14-8-6.
+ * Copyright (c) 2015 深圳市辉游科技有限公司.
  */
 
 var PokeCardValue = require('../consts/consts').PokeCardValue;

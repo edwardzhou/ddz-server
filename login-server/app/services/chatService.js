@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2015 深圳市辉游科技有限公司.
+ */
+
 var dispatcher = require('../util/dispatcher');
 var Code = require('../../../shared/code');
 var Event = require('../consts/consts').Event;

@@ -1,5 +1,5 @@
 /**
- * Created by edward on 13-12-9.
+ * Copyright (c) 2015 深圳市辉游科技有限公司.
  */
 
 var logger = require('pomelo-logger').getLogger(__filename);

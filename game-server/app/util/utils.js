@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2015 深圳市辉游科技有限公司.
+ */
+
 var utils = module.exports;
 var uint32 = require('uint32');
 

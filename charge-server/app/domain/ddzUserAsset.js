@@ -1,7 +1,6 @@
 /**
- * Created by edwardzhou on 14/12/29.
+ * Copyright (c) 2015 深圳市辉游科技有限公司.
  */
-
 
 var mongoose = require('mongoose-q')();
 var Schema = mongoose.Schema;

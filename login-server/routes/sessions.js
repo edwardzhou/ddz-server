@@ -1,5 +1,5 @@
 /**
- * Created by edwardzhou on 15/1/5.
+ * Copyright (c) 2015 深圳市辉游科技有限公司.
  */
 
 var express = require('express');

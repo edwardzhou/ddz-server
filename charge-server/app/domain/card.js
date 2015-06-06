@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2015 深圳市辉游科技有限公司.
+ */
+
 var CardType = require('../consts/consts').CardType;
 var CardTypeString = require('../consts/consts').CardTypeString;
 var CardUtil = require('../util/cardUtil');

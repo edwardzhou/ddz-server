@@ -1,5 +1,5 @@
 /**
- * Created by edwardzhou on 14-7-11.
+ * Copyright (c) 2015 深圳市辉游科技有限公司.
  */
 
 var mongoose = require('mongoose-q')();

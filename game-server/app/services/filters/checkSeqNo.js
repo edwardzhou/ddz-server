@@ -1,6 +1,7 @@
 /**
- * Created by edwardzhou on 13-12-2.
+ * Copyright (c) 2015 深圳市辉游科技有限公司.
  */
+
 var util = require('util');
 var utils = require('../../util/utils');
 var FilterBase = require('./filterBase');

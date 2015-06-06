@@ -1,6 +1,7 @@
 /**
- * Created by edwardzhou on 14-7-23.
+ * Copyright (c) 2015 深圳市辉游科技有限公司.
  */
+
 var logger = require('pomelo-logger').getLogger('pomelo', __filename);
 var User = require('../domain/user');
 var DataKeyId = require('../domain/dataKeyId');
@@ -621,7 +622,12 @@ UserService.findMatchingGameRoom = function(user, room_id, callback) {
       if (!!results.room) {
         returnValues.room = results.room;
         returnValues.room_id = results.room.roomId;
-        returnValues.needRecharge = 0;
+        if (results.ddzProfile.coins < results.room.minCoinsQty) {
+          returnValues.needRecharge = 1;
+        }
+        else {
+          returnValues.needRecharge = 0;
+        }
       } else {
         returnValues.ddzGoodsPackage = results.ddzGoodsPackage;
         returnValues.room = results.rooms[0];

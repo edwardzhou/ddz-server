@@ -1,5 +1,5 @@
 /**
- * Created by edwardzhou on 15/4/15.
+ * Copyright (c) 2015 深圳市辉游科技有限公司.
  */
 
 require('./ArrayHelper');

@@ -1,8 +1,6 @@
 /**
- * Created by edwardzhou on 15/5/20.
+ * Copyright (c) 2015 深圳市辉游科技有限公司.
  */
-
-
 
 var logger = require('pomelo-logger').getLogger('pomelo', __filename);
 var util = require('util');

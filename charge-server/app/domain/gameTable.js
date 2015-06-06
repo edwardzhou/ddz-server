@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2015 深圳市辉游科技有限公司.
+ */
+
 var EventEmitter = require('events').EventEmitter;
 var Player = require('./player');
 var util = require('util');

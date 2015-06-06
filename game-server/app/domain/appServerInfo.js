@@ -1,6 +1,7 @@
 /**
- * Created by edwardzhou on 15/3/3.
+ * Copyright (c) 2015 深圳市辉游科技有限公司.
  */
+
 
 var DomainUtils = require("./domainUtils");
 var mongoose = require('mongoose-q')();

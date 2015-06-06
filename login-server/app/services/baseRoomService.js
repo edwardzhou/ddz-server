@@ -1,5 +1,5 @@
 /**
- * Created by edwardzhou on 15/5/2.
+ * Copyright (c) 2015 深圳市辉游科技有限公司.
  */
 
 var logger = require('pomelo-logger').getLogger('pomelo', __filename);
@@ -264,7 +264,7 @@ BaseRoomService.prototype.playerReady = function(room, player, callback) {
 
   if (room.readyPlayers.length >0) {
     if (!room.playerReadyTimeout) {
-      room.playerReadyTimeout = setTimeout(self.onPlayerReadyTimeout.bind(self, room), 10 * 1000);
+      room.playerReadyTimeout = setTimeout(self.onPlayerReadyTimeout.bind(self, room), room.startGameTimeout * 1000);
     }
   }
 };
@@ -301,7 +301,7 @@ BaseRoomService.prototype.onPlayerReadyTimeout = function(room) {
         });
       }
       else {
-        room.playerReadyTimeout = setTimeout(self.onPlayerReadyTimeout.bind(self, room), 10 * 1000);
+        room.playerReadyTimeout = setTimeout(self.onPlayerReadyTimeout.bind(self, room), room.startGameTimeout * 1000);
       }
     });
   }

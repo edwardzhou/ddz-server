@@ -1,6 +1,7 @@
 /**
- * Created by jeffcao on 15/2/10.
+ * Copyright (c) 2015 深圳市辉游科技有限公司.
  */
+
 var logger = require('pomelo-logger').getLogger(__filename);
 var utils = require('../../util/utils');
 var oneDayMillSeconds = 3600 * 24  * 1000;

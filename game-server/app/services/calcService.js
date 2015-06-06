@@ -1,6 +1,7 @@
 /**
- * Created by jeffcao on 15/3/17.
+ * Copyright (c) 2015 深圳市辉游科技有限公司.
  */
+
 var logger = require('pomelo-logger').getLogger(__filename);
 var utils = require('../util/utils');
 var PokeCard = require('../domain/pokeCard');

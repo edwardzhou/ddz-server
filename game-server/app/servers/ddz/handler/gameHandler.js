@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2015 深圳市辉游科技有限公司.
+ */
+
 var format = require('util').format;
 var logger = require('pomelo-logger').getLogger(__filename);
 var GameTable = require('../../../domain/gameTable');
