@@ -60,6 +60,13 @@ UserService.signInByAuthToken = function (signInParams, callback) {
   var frontendSessionId = signInParams.frontendSessionId;
   var result = {};
 
+  var access_token = null;
+
+  if (!!loginInfo.anySDK) {
+    access_token = loginInfo.anySDK.access_token;
+  }
+
+
   User.findOne({userId: userId})
     .populate('ddzProfile ddzLoginRewards')
     .execQ()
@@ -68,7 +75,15 @@ UserService.signInByAuthToken = function (signInParams, callback) {
         throw genError(ErrorCode.USER_NOT_FOUND);
       }
       logger.info('user.ddzLoginRewards', user.ddzLoginRewards);
-      if (!user.verifyToken(authToken, mac)) {
+      if (!!access_token && !!user.anySDK && user.anySDK.access_token == access_token) {
+
+        if (!!handsetInfo) {
+          user.setSignedInHandsetInfo(handsetInfo);
+        }
+        user.updateAuthToken();
+        // result.user = user;
+      }
+      else if (!user.verifyToken(authToken, mac)) {
         throw genError(ErrorCode.AUTH_TOKEN_INVALID);
       }
 

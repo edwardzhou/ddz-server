@@ -54,7 +54,13 @@ var checkLogin = function(req, res) {
             if (!!user) {
               respJson.ext.userId = user.userId;
               respJson.ext.authToken = user.authToken;
+              respJson.ext.access_token = respJson.data.access_token;
+              user.anySDK.access_token = respJson.data.access_token;
+              user.markModified('anySDK');
+              return user.saveQ();
             }
+          })
+          .then(function() {
             var respText = JSON.stringify(respJson);
             console.log('#write response: \n' + respText);
             res.write(respText);

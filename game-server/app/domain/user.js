@@ -34,6 +34,7 @@ var userSchema = new mongoose.Schema({
   appVersion: String,     // app版本
   anySDK: {
     channel: String,
+    access_token: String,
     user_sdk: String,
     uid: String,
     server_id: String

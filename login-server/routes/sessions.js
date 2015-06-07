@@ -70,7 +70,8 @@ var doLoginPost = function(req, res) {
   if (!!params.anySDK) {
     loginInfo.anySDK.user_sdk = params.anySDK.user_sdk;
     loginInfo.anySDK.uid = params.anySDK.uid;
-    loginInfo.anySDK.channel = params.channel;
+    loginInfo.anySDK.channel = params.anySDK.channel;
+    loginInfo.anySDK.access_token = params.anySDK.access_token;
   }
 
   var password = params.password;
