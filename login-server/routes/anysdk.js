@@ -57,7 +57,7 @@ var checkLogin = function(req, res) {
             }
             var respText = JSON.stringify(respJson);
             console.log('#write response: \n' + respText);
-            res.write(JSON.stringify(respText));
+            res.write(respText);
             res.end();
           })
           .fail(function(err) {
