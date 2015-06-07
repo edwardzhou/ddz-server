@@ -62,8 +62,8 @@ UserService.signInByAuthToken = function (signInParams, callback) {
 
   var access_token = null;
 
-  if (!!loginInfo.anySDK) {
-    access_token = loginInfo.anySDK.access_token;
+  if (!!signInParams.anySDK) {
+    access_token = signInParams.anySDK.access_token;
   }
 
 
