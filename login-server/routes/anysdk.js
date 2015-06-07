@@ -48,14 +48,16 @@ var checkLogin = function(req, res) {
         User.findOneQ({"anySDK.user_sdk": user_sdk, "anySDK.uid": user_sdk_uid})
           .then(function(user) {
             respJson.ext = {};
-            respJson.ext.result = true
+            respJson.ext.result = true;
             respJson.ext.user_sdk = respJson.common.user_sdk;
             respJson.ext.uid = respJson.common.uid;
             if (!!user) {
               respJson.ext.userId = user.userId;
-              respJson.ext.token = user.authToken;
+              respJson.ext.authToken = user.authToken;
             }
-            res.write(JSON.stringify(respJson));
+            var respText = JSON.stringify(respJson);
+            console.log('#write response: \n' + respText);
+            res.write(JSON.stringify(respText));
             res.end();
           })
           .fail(function(err) {
