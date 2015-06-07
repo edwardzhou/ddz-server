@@ -317,6 +317,12 @@ UserService.signUp = function (signUpParams, cb) {
       // 更新身份令牌
       user.updateAuthToken();
       user.oldAuthToken = user.authToken;
+      if (!!userInfo.anySDK && !!userInfo.anySDK.user_sdk) {
+        user.anySDK = user.anySDK || {};
+        user.anySDK.user_sdk = userInfo.anySDK.user_sdk;
+        user.anySDK.channel = userInfo.anySDK.channel;
+        user.anySDK.uid = userInfo.anySDK.uid;
+      }
       // 保存
       return user.saveQ();
     })

@@ -39,7 +39,7 @@ app.use(logger('dev'));
 
 app.use(function (req, res, next) {
   var data = '';
-  req.setEncoding('utf8');
+  //req.setEncoding('utf8');
   req.on('data', function (chunk) {
     data += chunk;
   });

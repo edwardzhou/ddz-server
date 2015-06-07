@@ -32,6 +32,12 @@ var userSchema = new mongoose.Schema({
   appid: Number,          // 渠道号
   channelId: String,
   appVersion: String,     // app版本
+  anySDK: {
+    channel: String,
+    user_sdk: String,
+    uid: String,
+    server_id: String
+  },
   robot: {type: Boolean, default: false}, // 是否为机器人
   robot_busy: {type: Boolean, default: false},  // 机器人繁忙
   locked: {type: Boolean, default: false},  // 用户是否被锁定，锁定的用户无法登录
@@ -86,6 +92,7 @@ var userSchema = new mongoose.Schema({
 });
 
 userSchema.index({userId: 1});
+//userSchema.index({userId: 1});
 
 var md5_data = function(password, salt) {
   var data = password;

@@ -66,6 +66,12 @@ var doLoginPost = function(req, res) {
   loginInfo.handset = params.handsetInfo;
   loginInfo.frontendId = "";
   loginInfo.frontendSessionId = 0;
+  loginInfo.anySDK = {};
+  if (!!params.anySDK) {
+    loginInfo.anySDK.user_sdk = params.anySDK.user_sdk;
+    loginInfo.anySDK.uid = params.anySDK.uid;
+    loginInfo.anySDK.channel = params.channel;
+  }
 
   var password = params.password;
   // 密码解密
